@@ -11,14 +11,13 @@
     <Text Style="grey53" Value="@DateLabel" />
     <Newline />
 
-    <Text Style="bold underline" Value="Tips" />
-    <Newline />
     @if (HasTips)
     {
-        <Border BorderColor=@Color.Grey93 Header="Tips">
+        <Border BorderColor=@Color.BlueViolet Header="Tips">
             @foreach (var tip in Model.Tips)
             {
                 <RazorConsole.Components.Text Style="grey53 italic" Value="@tip" />
+                <Newline />
             }
         </Border>
     }

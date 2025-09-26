@@ -1,16 +1,23 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
+using RazorConsole.Core.Rendering.ComponentMarkup;
 using Spectre.Console;
 
 namespace RazorConsole.Core.Rendering;
 
 public static class HtmlToSpectreMarkupConverter
 {
+    private static readonly IReadOnlyList<IComponentMarkupConverter> ComponentConverters = new IComponentMarkupConverter[]
+    {
+        new TextComponentMarkupConverter(),
+        new NewlineComponentMarkupConverter(),
+        new SpacerComponentMarkupConverter(),
+        new SpinnerComponentMarkupConverter(),
+    };
+
     public static string Convert(string html)
     {
         if (string.IsNullOrWhiteSpace(html))
@@ -61,6 +68,11 @@ public static class HtmlToSpectreMarkupConverter
 
     private static void AppendElement(XElement element, StringBuilder builder)
     {
+        if (TryConvertUsingComponentConverters(element, builder))
+        {
+            return;
+        }
+
         var name = element.Name.LocalName.ToLowerInvariant();
 
         switch (name)
@@ -140,19 +152,9 @@ public static class HtmlToSpectreMarkupConverter
                 builder.AppendLine();
                 break;
             case "div":
-                if (TryHandleStructuredBlock(element, builder))
-                {
-                    break;
-                }
-
                 AppendChildrenWithSpacing(element, builder);
                 break;
             case "span":
-                if (TryHandleTextSpan(element, builder))
-                {
-                    break;
-                }
-
                 AppendChildrenWithSpacing(element, builder);
                 break;
             case "section":
@@ -189,132 +191,16 @@ public static class HtmlToSpectreMarkupConverter
         }
     }
 
-    private static bool TryHandleTextSpan(XElement element, StringBuilder builder)
+    private static bool TryConvertUsingComponentConverters(XElement element, StringBuilder builder)
     {
-        if (element.Attribute("data-text") is null)
+        foreach (var converter in ComponentConverters)
         {
-            return false;
-        }
-
-        var style = element.Attribute("data-style")?.Value;
-        var isMarkupValue = element.Attribute("data-ismarkup")?.Value;
-        var isMarkup = bool.TryParse(isMarkupValue, out var parsed) && parsed;
-
-        var content = element.Value ?? string.Empty;
-        AppendStyledContent(builder, style, content, requiresEscape: !isMarkup);
-
-        return true;
-    }
-
-    private static bool TryHandleStructuredBlock(XElement element, StringBuilder builder)
-    {
-        if (element.Attribute("data-newline") is not null)
-        {
-            var count = Math.Max(GetIntAttribute(element, "data-count", 1), 0);
-            for (var i = 0; i < count; i++)
-            {
-                builder.AppendLine();
-            }
-
-            return true;
-        }
-
-        if (element.Attribute("data-spacer") is not null)
-        {
-            var lines = Math.Max(GetIntAttribute(element, "data-lines", 1), 0);
-            var fill = element.Attribute("data-fill")?.Value;
-
-            if (lines == 0)
+            if (converter.TryConvert(element, builder))
             {
                 return true;
             }
-
-            if (string.IsNullOrEmpty(fill))
-            {
-                for (var i = 0; i < lines; i++)
-                {
-                    builder.AppendLine();
-                }
-            }
-            else
-            {
-                var fillChar = fill[0].ToString();
-                for (var i = 0; i < lines; i++)
-                {
-                    AppendStyledContent(builder, null, fillChar, requiresEscape: true);
-                    builder.AppendLine();
-                }
-            }
-
-            return true;
-        }
-
-        if (element.Attribute("data-spinner") is not null)
-        {
-            var message = element.Attribute("data-message")?.Value ?? string.Empty;
-            var style = element.Attribute("data-style")?.Value;
-            var spinnerType = element.Attribute("data-spinner-type")?.Value;
-
-            var glyph = ResolveSpinnerGlyph(spinnerType);
-            var content = string.IsNullOrWhiteSpace(message)
-                ? glyph
-                : string.Concat(glyph, " ", message);
-
-            AppendStyledContent(builder, style, content, requiresEscape: true);
-            return true;
         }
 
         return false;
-    }
-
-    private static void AppendStyledContent(StringBuilder builder, string? style, string content, bool requiresEscape)
-    {
-        if (requiresEscape)
-        {
-            content = Markup.Escape(content);
-        }
-
-        if (string.IsNullOrWhiteSpace(style))
-        {
-            builder.Append(content);
-            return;
-        }
-
-        builder.Append('[');
-        builder.Append(style);
-        builder.Append(']');
-        builder.Append(content);
-        builder.Append("[/]");
-    }
-
-    private static int GetIntAttribute(XElement element, string attributeName, int fallback)
-    {
-        var raw = element.Attribute(attributeName)?.Value;
-        if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
-        {
-            return value;
-        }
-
-        return fallback;
-    }
-
-    private static string ResolveSpinnerGlyph(string? spinnerType)
-    {
-        static string FirstFrame(Spinner spinner)
-            => spinner.Frames?.FirstOrDefault() ?? "⠋";
-
-        if (!string.IsNullOrWhiteSpace(spinnerType))
-        {
-            var property = typeof(Spinner.Known)
-                .GetProperties(BindingFlags.Public | BindingFlags.Static)
-                .FirstOrDefault(p => string.Equals(p.Name, spinnerType, StringComparison.OrdinalIgnoreCase));
-
-            if (property?.GetValue(null) is Spinner spinner)
-            {
-                return FirstFrame(spinner);
-            }
-        }
-
-        return FirstFrame(Spinner.Known.Dots);
     }
 }

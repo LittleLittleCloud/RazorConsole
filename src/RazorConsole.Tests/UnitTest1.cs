@@ -75,4 +75,16 @@ public class HtmlRenderingTests
 
         Assert.Equal("[yellow]⠋ Working[/]", markup);
     }
+
+    [Fact]
+    public void Convert_RendersBorderComponentWithAsciiFrame()
+    {
+        const string html = "<div data-border=\"panel\" data-header=\"Header\" data-border-color=\"steelblue\"><span data-text=\"true\">Inner</span></div>";
+
+        var markup = HtmlToSpectreMarkupConverter.Convert(html);
+
+        Assert.Contains("╭", markup);
+        Assert.Contains("Header", markup);
+        Assert.Contains("Inner", markup);
+    }
 }
