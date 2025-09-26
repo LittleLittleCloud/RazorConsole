@@ -1,0 +1,13 @@
+@namespace RazorConsole.Components
+
+@using Microsoft.AspNetCore.Components
+
+<span data-text="true" data-style="@Style">@Value</span>
+
+@code {
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+}

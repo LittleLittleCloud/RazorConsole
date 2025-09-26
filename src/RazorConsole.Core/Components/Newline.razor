@@ -1,0 +1,21 @@
+@namespace RazorConsole.Components
+
+@using Microsoft.AspNetCore.Components
+
+<div data-newline="true"
+     data-count="@Count"></div>
+
+@code {
+    private const int DefaultCount = 1;
+
+    [Parameter]
+    public int Count { get; set; } = DefaultCount;
+
+    protected override void OnParametersSet()
+    {
+        if (Count < 0)
+        {
+            Count = 0;
+        }
+    }
+}

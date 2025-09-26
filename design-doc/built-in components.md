@@ -27,3 +27,4 @@ Planned additions to the RazorConsole component library.
 | `Text` | Render raw Spectre markup or plain text with optional style preset. | `Value`, `Style`, `IsMarkup`. | If `IsMarkup`, emit markup verbatim; otherwise encode and wrap in `<span data-text>` for converter.
 | `Newline` | Force a line break within parent layout. | `Count`. | Emit `<div data-newline>` with count attribute; converter writes `Environment.NewLine` repeated `Count` times.
 | `Spacer` | Insert vertical padding matching terminal rows. | `Lines`, `FillCharacter`. | Translate to markup that renders blank lines or repeated characters to simulate spacing.
+| `Spinner` | Animated indicator for background work with optional status text. | `Message`, `Style`, `SpinnerType`, `AutoDismiss`. | Wrap Spectre `Spinner` with lifecycle hooks; render inline message and stop once `AutoDismiss` triggers or navigation advances.

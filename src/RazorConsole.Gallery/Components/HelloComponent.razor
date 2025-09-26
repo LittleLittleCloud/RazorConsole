@@ -5,38 +5,52 @@
 @using RazorConsole.Gallery.Models
 @using Spectre.Console
 
-<Border Header="Razor Component Output"
-    HeaderColor=@Color.LightSteelBlue1
-    BorderColor=@Color.Grey93>
-    <div class="greeting">
-        <header>
-            <h2>@(string.IsNullOrWhiteSpace(Model.Name) ? "Friend" : Model.Name)</h2>
-            <p class="date">@Model.Date.ToString("dddd, MMMM d, yyyy")</p>
-            <p class="timestamp">Updated at <time datetime="@Model.Timestamp.ToString("O")">@Model.Timestamp.ToString("HH:mm:ss")</time></p>
-        </header>
+<Border Header="Razor Component Output" HeaderColor=@Color.LightSteelBlue1 BorderColor=@Color.Grey93>
+    <Text Style="mediumspringgreen bold" Value="@GreetingTitle" />
+    <Newline />
+    <Text Style="grey53" Value="@DateLabel" />
+    <Newline />
 
-        <section>
-            <h3>Tips</h3>
-            @if (Model.Tips.Count > 0)
+    <Text Style="bold underline" Value="Tips" />
+    <Newline />
+    @if (HasTips)
+    {
+        <Border BorderColor=@Color.Grey93 Header="Tips">
+            @foreach (var tip in Model.Tips)
             {
-                <ul>
-                    @foreach (var tip in Model.Tips)
-                    {
-                        <li>@tip</li>
-                    }
-                </ul>
+                <RazorConsole.Components.Text Style="grey53 italic" Value="@tip" />
             }
-            else
-            {
-                <p class="empty">No tips available yet.</p>
-            }
-        </section>
+        </Border>
+    }
+    else
+    {
+        <Border BorderColor=@Color.Aqua Header="No Tips">
+            <Text Style="grey53 italic" Value="No tips available yet." />
+            <Newline />
+        </Border>
+    }
 
-        <InputName Model="Model" />
-    </div>
+    <Spacer Lines="1" FillCharacter="-" />
+
+    <Spinner Message="Awaiting your input..." Style="yellow" SpinnerType="Arc" />
+
+    <Spacer Lines="1" />
+
+    <Text Style="italic" Value="Enter a name below to refresh the greeting." />
+    <Newline />
 </Border>
 
 @code {
     [Parameter]
     public required GreetingModel Model { get; set; }
+
+    private string DisplayName => string.IsNullOrWhiteSpace(Model.Name) ? "Friend" : Model.Name;
+
+    private string GreetingTitle => $"Hello, {DisplayName}!";
+
+    private string DateLabel => Model.Date.ToString("dddd, MMMM d, yyyy");
+
+    private string TimestampLabel => Model.Timestamp.ToString("HH:mm:ss");
+
+    private bool HasTips => Model.Tips.Count > 0;
 }

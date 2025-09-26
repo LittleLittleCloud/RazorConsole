@@ -1,0 +1,31 @@
+@namespace RazorConsole.Components
+
+@using Microsoft.AspNetCore.Components
+
+<div data-spinner="true"
+     data-message="@Message"
+     data-style="@Style"
+     data-spinner-type="@SpinnerType"
+     data-auto-dismiss="@AutoDismiss"></div>
+
+@code {
+    [Parameter]
+    public string? Message { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    [Parameter]
+    public string? SpinnerType { get; set; } = "Dots";
+
+    [Parameter]
+    public bool AutoDismiss { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrWhiteSpace(SpinnerType))
+        {
+            SpinnerType = SpinnerType.Trim();
+        }
+    }
+}

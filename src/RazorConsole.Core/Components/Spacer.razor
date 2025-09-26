@@ -1,0 +1,32 @@
+@namespace RazorConsole.Components
+
+@using Microsoft.AspNetCore.Components
+
+<div data-spacer="true"
+     data-lines="@Lines"
+     data-fill="@FillCharacter"></div>
+
+@code {
+    private const int DefaultLines = 1;
+
+    [Parameter]
+    public int Lines { get; set; } = DefaultLines;
+
+    [Parameter]
+    public string? FillCharacter { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Lines < 0)
+        {
+            Lines = 0;
+        }
+
+        if (!string.IsNullOrEmpty(FillCharacter))
+        {
+            FillCharacter = FillCharacter.Length > 1
+                ? FillCharacter.Substring(0, 1)
+                : FillCharacter;
+        }
+    }
+}
