@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using RazorConsole.Components;
-using RazorConsole.Gallery.Models;
+using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
+using RazorConsole.Gallery.Controllers;
+using RazorConsole.Gallery.Services;
 using Spectre.Console;
 
 using var host = Host.CreateDefaultBuilder(args)
@@ -20,67 +21,17 @@ using var host = Host.CreateDefaultBuilder(args)
 			return new HtmlRenderer(sp, loggerFactory);
 		});
 		services.AddSingleton<RazorComponentRenderer>();
+		services.AddSingleton<GreetingService>();
+		services.AddSingleton<HomeController>();
 	})
 	.Build();
 
 await using var scope = host.Services.CreateAsyncScope();
 
-var renderer = scope.ServiceProvider.GetRequiredService<RazorComponentRenderer>();
+var controller = scope.ServiceProvider.GetRequiredService<HomeController>();
+var intent = await controller.ExecuteAsync().ConfigureAwait(false);
 
-var greeting = new GreetingModel
+if (intent.Type == NavigationIntentType.Navigate && intent.Target is { Length: > 0 })
 {
-	Date = DateOnly.FromDateTime(DateTime.Now),
-};
-
-greeting.Tips.AddRange(new[]
-{
-	"Experiment with different Spectre widgets.",
-	"Update the Razor component with your own data.",
-	"Try piping the output through other CLI tools.",
-});
-
-string? lastHtml = null;
-greeting.Timestamp = DateTime.Now;
-
-while (true)
-{
-	var html = await renderer.RenderAsync<HelloComponent>(new { Model = greeting });
-	Panel panel;
-	if (SpectrePanelFactory.TryCreatePanel(html, out var borderPanel) && borderPanel is not null)
-	{
-		panel = borderPanel;
-	}
-	else
-	{
-		var markup = HtmlToSpectreMarkupConverter.Convert(html);
-		panel = new Panel(new Markup(markup))
-			.Expand()
-			.SquareBorder()
-			.BorderColor(Color.Grey93);
-	}
-
-	if (!string.Equals(html, lastHtml, StringComparison.Ordinal))
-	{
-		AnsiConsole.Clear();
-		AnsiConsole.Write(panel);
-
-		lastHtml = html;
-	}
-
-	AnsiConsole.WriteLine();
-	Console.Write("Enter a name (leave blank to keep current): ");
-	var input = Console.ReadLine();
-
-	if (!string.IsNullOrWhiteSpace(input))
-	{
-		greeting.Name = input.Trim();
-		lastHtml = null;
-		greeting.Timestamp = DateTime.Now;
-		continue;
-	}
-
-	break;
+	AnsiConsole.MarkupLine($"[yellow]Navigation to '{intent.Target}' requested, but no router is configured.[/]");
 }
-
-AnsiConsole.Clear();
-AnsiConsole.MarkupLine("[green]Goodbye![/]");
