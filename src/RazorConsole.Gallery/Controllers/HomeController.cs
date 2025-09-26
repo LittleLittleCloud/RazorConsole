@@ -6,7 +6,6 @@ using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Gallery.Models;
 using RazorConsole.Gallery.Services;
-using Spectre.Console;
 
 namespace RazorConsole.Gallery.Controllers;
 
@@ -29,14 +28,11 @@ public sealed class HomeController : ConsoleController
             var model = _greetingService.GetSnapshot();
             var view = await RenderViewAsync<HelloComponent>(new { Model = model }).ConfigureAwait(false);
 
-            if (!string.Equals(view.Html, lastHtml, StringComparison.Ordinal))
-            {
-                AnsiConsole.Clear();
-                view.WriteTo(AnsiConsole.Console);
-                lastHtml = view.Html;
-            }
+            WriteViewIfChanged(view, ref lastHtml);
 
-            var input = CaptureName();
+            WriteLine();
+            var inputContext = ReadLineInput("[grey53]Enter a name (leave blank to keep current / exit): [/]");
+            var input = inputContext.Text;
             if (string.IsNullOrWhiteSpace(input))
             {
                 break;
@@ -45,15 +41,8 @@ public sealed class HomeController : ConsoleController
             _greetingService.UpdateName(input);
         }
 
-        AnsiConsole.Clear();
-        AnsiConsole.MarkupLine("[green]Goodbye![/]");
+        ClearOutput();
+        WriteMarkupLine("[green]Goodbye![/]");
         return NavigationIntent.Exit;
-    }
-
-    private static string? CaptureName()
-    {
-        AnsiConsole.WriteLine();
-        AnsiConsole.Markup("[grey53]Enter a name (leave blank to keep current / exit): [/]");
-        return Console.ReadLine();
     }
 }

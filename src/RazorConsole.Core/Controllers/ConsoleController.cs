@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
 using Spectre.Console;
 
@@ -67,6 +68,77 @@ public abstract class ConsoleController
 
         return ConsoleViewResult.Create(html, markup, fallbackPanel);
     }
+
+    /// <summary>
+    /// Writes the provided view to the console output.
+    /// </summary>
+    /// <param name="view">Rendered view.</param>
+    protected void WriteView(ConsoleViewResult view)
+    {
+        if (view is null)
+        {
+            throw new ArgumentNullException(nameof(view));
+        }
+
+        view.WriteTo(ConsoleOutput);
+    }
+
+    /// <summary>
+    /// Clears the console output.
+    /// </summary>
+    protected virtual void ClearOutput() => AnsiConsole.Clear();
+
+    /// <summary>
+    /// Writes markup to the console.
+    /// </summary>
+    protected void WriteMarkupLine(string markup)
+        => ConsoleOutput.MarkupLine(markup ?? string.Empty);
+
+    /// <summary>
+    /// Writes an empty line to the console.
+    /// </summary>
+    protected void WriteLine()
+        => ConsoleOutput.WriteLine();
+
+    /// <summary>
+    /// Writes the view when the HTML differs from the last rendered HTML.
+    /// </summary>
+    protected bool WriteViewIfChanged(ConsoleViewResult view, ref string? lastHtml)
+    {
+        if (view is null)
+        {
+            throw new ArgumentNullException(nameof(view));
+        }
+
+        if (string.Equals(view.Html, lastHtml, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        ClearOutput();
+        WriteView(view);
+        lastHtml = view.Html;
+        return true;
+    }
+
+    /// <summary>
+    /// Reads a line from the console and returns a normalized <see cref="ConsoleInputContext"/>.
+    /// </summary>
+    protected ConsoleInputContext ReadLineInput(string prompt)
+    {
+        if (!string.IsNullOrEmpty(prompt))
+        {
+            ConsoleOutput.Markup(prompt);
+        }
+
+        var input = System.Console.ReadLine();
+        return ConsoleInputContext.FromText(input).Normalize();
+    }
+
+    /// <summary>
+    /// Returns the Spectre console used for output operations.
+    /// </summary>
+    protected virtual IAnsiConsole ConsoleOutput => AnsiConsole.Console;
 
     /// <summary>
     /// Returns the renderer used for advanced scenarios.
