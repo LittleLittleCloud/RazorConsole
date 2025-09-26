@@ -1,14 +1,15 @@
-using System.Text;
 using System.Xml.Linq;
+using Spectre.Console;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
 internal sealed class TextComponentMarkupConverter : IComponentMarkupConverter
 {
-    public bool TryConvert(XElement element, StringBuilder builder)
+    public bool TryConvert(XElement element, out ComponentRenderable renderable)
     {
         if (!IsTextComponent(element))
         {
+            renderable = default;
             return false;
         }
 
@@ -17,8 +18,7 @@ internal sealed class TextComponentMarkupConverter : IComponentMarkupConverter
         var isMarkup = bool.TryParse(isMarkupValue, out var parsed) && parsed;
 
         var content = element.Value ?? string.Empty;
-        ComponentMarkupUtilities.AppendStyledContent(builder, style, content, requiresEscape: !isMarkup);
-
+        renderable = ComponentMarkupUtilities.CreateStyledRenderable(style, content, requiresEscape: !isMarkup);
         return true;
     }
 

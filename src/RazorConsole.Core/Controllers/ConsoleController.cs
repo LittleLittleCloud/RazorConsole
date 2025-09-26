@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Controllers;
 
@@ -27,7 +28,7 @@ public abstract class ConsoleController
     public abstract Task<NavigationIntent> ExecuteAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Renders a Razor component to HTML and returns a rich view result including Spectre markup and panel.
+    /// Renders a Razor component to HTML and returns a rich view result including Spectre markup and renderable content.
     /// </summary>
     /// <typeparam name="TComponent">Component type.</typeparam>
     /// <param name="parameters">Optional parameters to pass to the component.</param>
@@ -49,10 +50,10 @@ public abstract class ConsoleController
             throw new ArgumentNullException(nameof(html));
         }
 
-        if (SpectrePanelFactory.TryCreatePanel(html, out var panel) && panel is not null)
+        if (SpectreRenderableFactory.TryCreateRenderable(html, out var renderable) && renderable is not null)
         {
             var markupFromPanel = HtmlToSpectreMarkupConverter.Convert(html);
-            return ConsoleViewResult.Create(html, markupFromPanel, panel);
+            return ConsoleViewResult.Create(html, markupFromPanel, renderable);
         }
 
         var markup = HtmlToSpectreMarkupConverter.Convert(html);
@@ -61,12 +62,12 @@ public abstract class ConsoleController
             markup = "[grey53](no content)[/]";
         }
 
-        var fallbackPanel = new Panel(new Markup(markup))
+        var fallbackRenderable = new Panel(new Markup(markup))
             .Expand()
             .SquareBorder()
             .BorderColor(Color.Grey53);
 
-        return ConsoleViewResult.Create(html, markup, fallbackPanel);
+        return ConsoleViewResult.Create(html, markup, fallbackRenderable);
     }
 
     /// <summary>
@@ -80,7 +81,7 @@ public abstract class ConsoleController
             throw new ArgumentNullException(nameof(view));
         }
 
-        view.WriteTo(ConsoleOutput);
+    view.WriteTo(ConsoleOutput);
     }
 
     /// <summary>

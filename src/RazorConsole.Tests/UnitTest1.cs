@@ -1,6 +1,7 @@
 ﻿using System;
 using RazorConsole.Core.Rendering;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 using Xunit;
 
 namespace RazorConsole.Tests;
@@ -15,15 +16,15 @@ public class HtmlRenderingTests
     }
 
     [Fact]
-    public void TryCreatePanel_ReturnsTrue_ForBorderMarkup()
+    public void TryCreateRenderable_ReturnsPanel_ForBorderMarkup()
     {
         const string html = "<div data-border=\"panel\" data-header=\"Header\">Hello</div>";
 
-        var success = SpectrePanelFactory.TryCreatePanel(html, out var panel);
+        var success = SpectreRenderableFactory.TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
-        Assert.NotNull(panel);
-        Assert.Equal("Header", panel!.Header?.Text);
+        var panel = Assert.IsType<Panel>(renderable);
+        Assert.Equal("Header", panel.Header?.Text);
     }
 
     [Fact]
@@ -77,14 +78,12 @@ public class HtmlRenderingTests
     }
 
     [Fact]
-    public void Convert_RendersBorderComponentWithAsciiFrame()
+    public void Convert_ReturnsInnerMarkupForBorderComponent()
     {
         const string html = "<div data-border=\"panel\" data-header=\"Header\" data-border-color=\"steelblue\"><span data-text=\"true\">Inner</span></div>";
 
         var markup = HtmlToSpectreMarkupConverter.Convert(html);
 
-        Assert.Contains("╭", markup);
-        Assert.Contains("Header", markup);
-        Assert.Contains("Inner", markup);
+        Assert.Equal("Inner", markup);
     }
 }

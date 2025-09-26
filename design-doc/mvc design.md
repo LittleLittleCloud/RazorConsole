@@ -30,13 +30,13 @@ Create a common base (e.g., `ConsoleController`) to standardize controller respo
 3. **Input handling**: accept a `ConsoleInputContext` (key strokes, form submissions, command strings) and mutate the domain state before re-rendering.
 4. **Navigation**: emit `NavigationIntent` values (`Stay`, `RouteTo("/users")`, `Exit`) that a higher-level dispatcher can interpret.
 
-Controllers should be thin orchestrators, delegating to services for any stateful or business behavior. They should never directly touch Spectre APIs; rendering stays encapsulated inside `SpectrePanelFactory` and the Razor views.
+Controllers should be thin orchestrators, delegating to services for any stateful or business behavior. They should never directly touch Spectre APIs; rendering stays encapsulated inside `SpectreRenderableFactory` and the Razor views.
 
 ### Library vs. Application Responsibilities
 
 | Area | Provided by `RazorConsole.Core` (library) | Provided by consuming app (e.g., `RazorConsole.Gallery`) |
 | --- | --- | --- |
-| **Infrastructure** | `RazorComponentRenderer`, `SpectrePanelFactory`, `ConsoleNavigationManager`, component activator, base DI registration helpers, base `ConsoleController`, `ConsoleViewResult`, `ConsoleInputContext`, `NavigationIntent`, dispatcher host skeleton. | Application bootstrapping (`Program.cs`), Spectre console loop, controller resolution strategy, wiring of domain services and controllers into DI. |
+| **Infrastructure** | `RazorComponentRenderer`, `SpectreRenderableFactory`, `ConsoleNavigationManager`, component activator, base DI registration helpers, base `ConsoleController`, `ConsoleViewResult`, `ConsoleInputContext`, `NavigationIntent`, dispatcher host skeleton. | Application bootstrapping (`Program.cs`), Spectre console loop, controller resolution strategy, wiring of domain services and controllers into DI. |
 | **Views** | Shared building blocks (`Border.razor`, layout components, form helpers) and reusable UI primitives. | Concrete views per scenario (e.g., `HomeView.razor`, feature-specific components). |
 | **Models** | Optional abstractions or interfaces for common patterns (e.g., `IConsoleModel`, paging filter records). | Concrete models describing app state (`HomeModel`, `OrderSummaryModel`). |
 | **Controllers** | Base classes, contracts, and generic helpers for input handling and rendering orchestration. | Feature controllers implementing behavior (`HomeController`, `OrdersController`), navigation decisions, validation, domain coordination. |
@@ -69,7 +69,7 @@ src/<AppProject>/
 
 1. Entry point resolves a controller via DI and calls `ExecuteAsync`.
 2. Controller gathers data through services, builds a model, and passes it as `RenderParameters` to the Razor component.
-3. `RazorComponentRenderer` produces HTML, which `SpectrePanelFactory` turns into console markup.
+3. `RazorComponentRenderer` produces HTML, which `SpectreRenderableFactory` turns into console markup.
 4. Console shell displays the markup and collects user intent (commands, form inputs).
 5. Controller receives user input, updates domain state, and loops back to step 2 until a navigation intent ends the flow.
 

@@ -1,5 +1,6 @@
 using System;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Controllers;
 
@@ -8,11 +9,11 @@ namespace RazorConsole.Core.Controllers;
 /// </summary>
 public sealed class ConsoleViewResult
 {
-    private ConsoleViewResult(string html, string markup, Panel panel)
+    private ConsoleViewResult(string html, string markup, IRenderable renderable)
     {
         Html = html;
         Markup = markup;
-        Panel = panel;
+        Renderable = renderable;
     }
 
     /// <summary>
@@ -26,12 +27,12 @@ public sealed class ConsoleViewResult
     public string Markup { get; }
 
     /// <summary>
-    /// Gets the Spectre.Console panel representation of the rendered view.
+    /// Gets the Spectre.Console renderable representation of the rendered view.
     /// </summary>
-    public Panel Panel { get; }
+    public IRenderable Renderable { get; }
 
     /// <summary>
-    /// Writes the panel to the provided console.
+    /// Writes the renderable to the provided console.
     /// </summary>
     /// <param name="console">Spectre console instance.</param>
     public void WriteTo(IAnsiConsole console)
@@ -41,11 +42,11 @@ public sealed class ConsoleViewResult
             throw new ArgumentNullException(nameof(console));
         }
 
-        console.Write(Panel);
+        console.Write(Renderable);
     }
 
-    internal static ConsoleViewResult Create(string html, string markup, Panel panel)
-        => new(html, markup, panel);
+    internal static ConsoleViewResult Create(string html, string markup, IRenderable renderable)
+        => new(html, markup, renderable);
 
     internal static ConsoleViewResult Empty { get; } = new(
         string.Empty,

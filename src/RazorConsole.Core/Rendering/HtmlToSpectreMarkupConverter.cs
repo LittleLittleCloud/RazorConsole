@@ -191,14 +191,26 @@ public static class HtmlToSpectreMarkupConverter
         }
     }
 
-    private static bool TryConvertUsingComponentConverters(XElement element, StringBuilder builder)
+    internal static bool TryConvertToRenderable(XElement element, out ComponentRenderable renderable)
     {
         foreach (var converter in ComponentConverters)
         {
-            if (converter.TryConvert(element, builder))
+            if (converter.TryConvert(element, out renderable))
             {
                 return true;
             }
+        }
+
+        renderable = default;
+        return false;
+    }
+
+    private static bool TryConvertUsingComponentConverters(XElement element, StringBuilder builder)
+    {
+        if (TryConvertToRenderable(element, out var renderable))
+        {
+            builder.Append(renderable.Markup);
+            return true;
         }
 
         return false;

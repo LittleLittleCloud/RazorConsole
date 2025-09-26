@@ -1,45 +1,49 @@
 using System;
-using System.Text;
 using System.Xml.Linq;
+using Spectre.Console;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
 internal sealed class SpacerComponentMarkupConverter : IComponentMarkupConverter
 {
-    public bool TryConvert(XElement element, StringBuilder builder)
+    public bool TryConvert(XElement element, out ComponentRenderable renderable)
     {
         if (!IsSpacerComponent(element))
         {
+            renderable = default;
             return false;
         }
 
         var lines = Math.Max(ComponentMarkupUtilities.GetIntAttribute(element, "data-lines", 1), 0);
         if (lines == 0)
         {
+            renderable = new ComponentRenderable(string.Empty, new Markup(string.Empty));
             return true;
         }
 
         var fill = element.Attribute("data-fill")?.Value;
+        var spacerBuilder = new System.Text.StringBuilder();
+
         if (string.IsNullOrEmpty(fill))
         {
             for (var i = 0; i < lines; i++)
             {
-                builder.AppendLine();
+                spacerBuilder.AppendLine();
             }
         }
         else
         {
             var fillChar = fill[0].ToString();
+            var escaped = Markup.Escape(fillChar);
             for (var i = 0; i < lines; i++)
             {
-                ComponentMarkupUtilities.AppendStyledContent(builder, style: null, fillChar, requiresEscape: true);
-                if (i < lines - 1)
-                {
-                    builder.AppendLine();
-                }
+                spacerBuilder.Append(escaped);
+                spacerBuilder.AppendLine();
             }
         }
 
+        var markupText = spacerBuilder.ToString();
+        renderable = new ComponentRenderable(markupText, new Markup(markupText));
         return true;
     }
 

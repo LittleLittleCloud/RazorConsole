@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Xml.Linq;
 using Spectre.Console;
 
@@ -18,7 +17,7 @@ internal static class ComponentMarkupUtilities
             : fallback;
     }
 
-    public static void AppendStyledContent(StringBuilder builder, string? style, string content, bool requiresEscape)
+    public static ComponentRenderable CreateStyledRenderable(string? style, string content, bool requiresEscape)
     {
         if (requiresEscape)
         {
@@ -27,15 +26,11 @@ internal static class ComponentMarkupUtilities
 
         if (string.IsNullOrWhiteSpace(style))
         {
-            builder.Append(content);
-            return;
+            return new ComponentRenderable(content, new Markup(content));
         }
 
-        builder.Append('[');
-        builder.Append(style);
-        builder.Append(']');
-        builder.Append(content);
-        builder.Append("[/]");
+        var markupText = string.Concat("[", style, "]", content, "[/]");
+        return new ComponentRenderable(markupText, new Markup(markupText));
     }
 
     public static string ResolveSpinnerGlyph(string? spinnerType)

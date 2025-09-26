@@ -1,14 +1,14 @@
-using System.Text;
 using System.Xml.Linq;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
 internal sealed class SpinnerComponentMarkupConverter : IComponentMarkupConverter
 {
-    public bool TryConvert(XElement element, StringBuilder builder)
+    public bool TryConvert(XElement element, out ComponentRenderable renderable)
     {
         if (!IsSpinnerComponent(element))
         {
+            renderable = default;
             return false;
         }
 
@@ -21,7 +21,7 @@ internal sealed class SpinnerComponentMarkupConverter : IComponentMarkupConverte
             ? glyph
             : string.Concat(glyph, " ", message);
 
-        ComponentMarkupUtilities.AppendStyledContent(builder, style, content, requiresEscape: true);
+        renderable = ComponentMarkupUtilities.CreateStyledRenderable(style, content, requiresEscape: true);
         return true;
     }
 
