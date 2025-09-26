@@ -1,0 +1,41 @@
+@namespace RazorConsole.Components
+
+@using Microsoft.AspNetCore.Components
+@using RazorConsole.Models
+@using Spectre.Console
+
+<Border Header="Razor Component Output"
+        HeaderColor=@Color.LightSteelBlue1
+        BorderColor=@Color.Grey93>
+    <div class="greeting">
+        <header>
+            <h2>@(string.IsNullOrWhiteSpace(Model.Name) ? "Friend" : Model.Name)</h2>
+            <p class="date">@Model.Date.ToString("dddd, MMMM d, yyyy")</p>
+            <p class="timestamp">Updated at <time datetime="@Model.Timestamp.ToString("O")">@Model.Timestamp.ToString("HH:mm:ss")</time></p>
+        </header>
+
+        <section>
+            <h3>Tips</h3>
+            @if (Model.Tips.Count > 0)
+            {
+                <ul>
+                    @foreach (var tip in Model.Tips)
+                    {
+                        <li>@tip</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="empty">No tips available yet.</p>
+            }
+        </section>
+
+        <InputName Model="Model" />
+    </div>
+</Border>
+
+@code {
+    [Parameter]
+    public required GreetingModel Model { get; set; }
+}

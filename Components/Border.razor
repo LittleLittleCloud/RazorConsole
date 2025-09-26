@@ -1,0 +1,25 @@
+@namespace RazorConsole.Components
+
+@using Microsoft.AspNetCore.Components
+@using Spectre.Console
+
+<div data-border="panel"
+     data-header="@Header"
+     data-header-color="@HeaderColor"
+     data-border-color="@BorderColor">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public string? Header { get; set; }
+
+    [Parameter]
+    public Color? HeaderColor { get; set; }
+
+    [Parameter]
+    public Color? BorderColor { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}
