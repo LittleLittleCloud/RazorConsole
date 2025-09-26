@@ -5,8 +5,7 @@ The project should contains the following files structure:
 design-doc/
   project-overview.md - This document
 src/
-  RazorConsole.Core - Core library with rendering logic
-  RazorConsole.Components - Components for rendering UI
+  RazorConsole.Core - Core library with rendering logic and Razor components
   RazorConsole.Gallery - Sample RazorConsole app
   RazorConsole.Tests - Unit tests for core library
 

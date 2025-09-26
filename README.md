@@ -7,8 +7,7 @@ RazorConsole demonstrates how to render Razor components inside a console applic
 
 ```
 src/
-	RazorConsole.Core/        # Rendering pipeline, Spectre helpers, domain models
-	RazorConsole.Components/  # Razor component library consumable by any host
+	RazorConsole.Core/        # Rendering pipeline, Spectre helpers, domain models, and Razor UI
 	RazorConsole.Gallery/     # Console showcase that renders the components
 	RazorConsole.Tests/       # xUnit tests for the core helpers
 design-doc/                 # Architecture notes and future plans

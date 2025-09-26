@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
-
-  <ItemGroup>
-    <ProjectReference Include="..\RazorConsole.Core\RazorConsole.Core.csproj" />
-    <PackageReference Include="Spectre.Console" />
-  </ItemGroup>
-
-</Project>

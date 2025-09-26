@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RazorConsole.Components\RazorConsole.Components.csproj" />
     <ProjectReference Include="..\RazorConsole.Core\RazorConsole.Core.csproj" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Spectre.Console" />
