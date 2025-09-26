@@ -2,9 +2,9 @@ using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RazorConsole.Rendering;
+namespace RazorConsole.Core.Rendering;
 
-internal sealed class ServiceProviderComponentActivator : IComponentActivator
+public sealed class ServiceProviderComponentActivator : IComponentActivator
 {
     private readonly IServiceProvider _serviceProvider;
 

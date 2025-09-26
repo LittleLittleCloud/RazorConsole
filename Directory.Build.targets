@@ -1,0 +1,5 @@
+<Project>
+  <Target Name="ShowProjectSummary" AfterTargets="Build">
+    <Message Importance="Low" Text="Built $(MSBuildProjectName) ($(Configuration)|$(Platform))" />
+  </Target>
+</Project>

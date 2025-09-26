@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components;
 
-namespace RazorConsole.Rendering;
+namespace RazorConsole.Core.Rendering;
 
-internal sealed class ConsoleNavigationManager : NavigationManager
+public sealed class ConsoleNavigationManager : NavigationManager
 {
     public ConsoleNavigationManager()
     {

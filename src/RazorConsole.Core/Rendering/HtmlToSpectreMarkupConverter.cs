@@ -1,12 +1,13 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using Spectre.Console;
-using System.Linq;
 
-namespace RazorConsole.Rendering;
+namespace RazorConsole.Core.Rendering;
 
-internal static class HtmlToSpectreMarkupConverter
+public static class HtmlToSpectreMarkupConverter
 {
     public static string Convert(string html)
     {
@@ -21,7 +22,7 @@ internal static class HtmlToSpectreMarkupConverter
         return ConvertNodes(document.Root!.Nodes());
     }
 
-    internal static string ConvertNodes(IEnumerable<XNode> nodes)
+    public static string ConvertNodes(IEnumerable<XNode> nodes)
     {
         var builder = new StringBuilder();
         foreach (var node in nodes)
@@ -87,7 +88,6 @@ internal static class HtmlToSpectreMarkupConverter
                 break;
             case "p":
                 string text = element.Value;
-                // in HTML, newline in p is ignored, so we replace with space
                 text = text.Replace(Environment.NewLine, " ").Trim();
                 element.Value = text;
                 AppendChildren(element, builder);

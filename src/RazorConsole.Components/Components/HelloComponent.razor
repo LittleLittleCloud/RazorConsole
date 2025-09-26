@@ -1,12 +1,13 @@
 @namespace RazorConsole.Components
 
 @using Microsoft.AspNetCore.Components
-@using RazorConsole.Models
+@using RazorConsole.Components
+@using RazorConsole.Core.Models
 @using Spectre.Console
 
 <Border Header="Razor Component Output"
-        HeaderColor=@Color.LightSteelBlue1
-        BorderColor=@Color.Grey93>
+    HeaderColor=@Color.LightSteelBlue1
+    BorderColor=@Color.Grey93>
     <div class="greeting">
         <header>
             <h2>@(string.IsNullOrWhiteSpace(Model.Name) ? "Friend" : Model.Name)</h2>

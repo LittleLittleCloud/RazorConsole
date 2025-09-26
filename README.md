@@ -1,20 +1,41 @@
-# Razor Console Demo
+dotnet run
+# RazorConsole
 
-This sample shows how to render a Razor component (`.razor`) inside a .NET console app and display the output using [Spectre.Console](https://spectreconsole.net/). The component is re-rendered once a second so you can see live updates such as the current time.
+RazorConsole demonstrates how to render Razor components inside a console application and translate the resulting HTML into rich [Spectre.Console](https://spectreconsole.net/) output. The repository is organised as a small solution with reusable libraries, a gallery app, and automated tests.
+
+## Project layout
+
+```
+src/
+	RazorConsole.Core/        # Rendering pipeline, Spectre helpers, domain models
+	RazorConsole.Components/  # Razor component library consumable by any host
+	RazorConsole.Gallery/     # Console showcase that renders the components
+	RazorConsole.Tests/       # xUnit tests for the core helpers
+design-doc/                 # Architecture notes and future plans
+.github/workflows/          # GitHub Actions CI definition
+```
+
+Shared MSBuild configuration lives in `Directory.Build.props`, `Directory.Build.targets`, and `Directory.Packages.props`. The SDK version is pinned via `global.json` so the solution behaves consistently across environments.
 
 ## Prerequisites
-- .NET 8 SDK or newer
 
-## Run the demo
+- .NET 8 SDK (the exact version is specified in `global.json`)
+
+## Build and run
+
 ```pwsh
-cd c:\Users\xiaoyuz\source\repos\RazorConsole
-dotnet run
+dotnet build RazorConsole.sln
+dotnet run --project src/RazorConsole.Gallery/RazorConsole.Gallery.csproj
 ```
-Press <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop the loop.
 
-## How it works
-- `Components/HelloComponent.razor` constructs Spectre.Console markup from a `GreetingModel`.
-- `Rendering/RazorComponentRenderer` uses the Blazor `HtmlRenderer` to materialize a component into a markup string.
-- `Program.cs` wires a basic DI container, renders the component once per second, clears the terminal, and writes the markup inside a Spectre panel.
+The gallery app renders `HelloComponent` inside a Spectre panel and lets you interactively update the greeting name. Press <kbd>Ctrl</kbd>+<kbd>C</kbd> or submit an empty name to exit.
 
-Feel free to tweak the component, add more data to `GreetingModel`, or swap in different Spectre widgets for richer layouts.
+## Tests
+
+```pwsh
+dotnet test RazorConsole.sln
+```
+
+## Continuous integration
+
+The workflow under `.github/workflows/ci.yml` builds and tests the solution on every push and pull request targeting `main`.

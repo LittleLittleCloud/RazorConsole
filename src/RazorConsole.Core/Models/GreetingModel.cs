@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-namespace RazorConsole.Models;
+namespace RazorConsole.Core.Models;
 
 public class GreetingModel
 {
-    public string? Name { get; set; } = null;
+    public string? Name { get; set; }
 
     public DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 

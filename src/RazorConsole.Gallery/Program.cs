@@ -1,19 +1,18 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RazorConsole.Components;
-using RazorConsole.Models;
-using RazorConsole.Rendering;
+using RazorConsole.Core.Models;
+using RazorConsole.Core.Rendering;
 using Spectre.Console;
 
 using var host = Host.CreateDefaultBuilder(args)
 	.ConfigureServices(services =>
 	{
-	services.AddLogging();
-	services.AddSingleton<IComponentActivator, ServiceProviderComponentActivator>();
+		services.AddLogging();
+		services.AddSingleton<IComponentActivator, ServiceProviderComponentActivator>();
 		services.AddSingleton<NavigationManager, ConsoleNavigationManager>();
 		services.AddSingleton(sp =>
 		{
@@ -33,12 +32,12 @@ var greeting = new GreetingModel
 	Date = DateOnly.FromDateTime(DateTime.Now),
 };
 
-greeting.Tips.AddRange(
-[
+greeting.Tips.AddRange(new[]
+{
 	"Experiment with different Spectre widgets.",
 	"Update the Razor component with your own data.",
 	"Try piping the output through other CLI tools.",
-]);
+});
 
 string? lastHtml = null;
 greeting.Timestamp = DateTime.Now;
@@ -75,8 +74,8 @@ while (true)
 	if (!string.IsNullOrWhiteSpace(input))
 	{
 		greeting.Name = input.Trim();
-        lastHtml = null;
-        greeting.Timestamp = DateTime.Now;
+		lastHtml = null;
+		greeting.Timestamp = DateTime.Now;
 		continue;
 	}
 

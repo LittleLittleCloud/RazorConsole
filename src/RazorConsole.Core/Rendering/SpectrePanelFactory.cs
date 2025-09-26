@@ -2,9 +2,9 @@ using System;
 using System.Xml.Linq;
 using Spectre.Console;
 
-namespace RazorConsole.Rendering;
+namespace RazorConsole.Core.Rendering;
 
-internal static class SpectrePanelFactory
+public static class SpectrePanelFactory
 {
     public static bool TryCreatePanel(string html, out Panel? panel)
     {

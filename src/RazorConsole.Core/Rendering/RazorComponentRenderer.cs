@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RazorConsole.Rendering;
+namespace RazorConsole.Core.Rendering;
 
 public class RazorComponentRenderer
 {
