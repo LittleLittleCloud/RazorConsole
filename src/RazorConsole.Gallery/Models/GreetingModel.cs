@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RazorConsole.Core.Models;
+namespace RazorConsole.Gallery.Models;
 
 public class GreetingModel
 {
