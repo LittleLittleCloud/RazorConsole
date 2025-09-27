@@ -21,28 +21,68 @@ public sealed class HomeController : ConsoleController
 
     public override async Task<NavigationIntent> ExecuteAsync(CancellationToken cancellationToken = default)
     {
-        string? lastHtml = null;
+        var initialModel = _greetingService.GetSnapshot();
+        initialModel.Timestamp = DateTime.Now;
 
-        while (!cancellationToken.IsCancellationRequested)
+        var initialView = await RenderViewAsync<HelloComponent>(new { Model = initialModel }).ConfigureAwait(false);
+
+        await RunLiveDisplayAsync(initialView, async (displayContext, token) =>
         {
-            var model = _greetingService.GetSnapshot();
-            var view = await RenderViewAsync<HelloComponent>(new { Model = model }).ConfigureAwait(false);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            var tickerTask = RunTimestampTickerAsync(displayContext, linkedCts.Token);
 
-            WriteViewIfChanged(view, ref lastHtml);
-
-            WriteLine();
-            var inputContext = ReadLineInput("[grey53]Enter a name (leave blank to keep current / exit): [/]");
-            var input = inputContext.Text;
-            if (string.IsNullOrWhiteSpace(input))
+            try
             {
-                break;
+                while (!token.IsCancellationRequested)
+                {
+                    await UpdateDisplayAsync(displayContext, token).ConfigureAwait(false);
+                }
             }
-
-            _greetingService.UpdateName(input);
-        }
+            finally
+            {
+                linkedCts.Cancel();
+                try
+                {
+                    await tickerTask.ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                }
+            }
+        }, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         ClearOutput();
-        WriteMarkupLine("[green]Goodbye![/]");
         return NavigationIntent.Exit;
+
+        async Task RunTimestampTickerAsync(ConsoleLiveDisplayContext context, CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+
+                if (!token.IsCancellationRequested)
+                {
+                    await UpdateDisplayAsync(context, token).ConfigureAwait(false);
+                }
+            }
+        }
+
+        async Task UpdateDisplayAsync(ConsoleLiveDisplayContext context, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            var snapshot = _greetingService.GetSnapshot();
+            snapshot.Timestamp = DateTime.Now;
+
+            var view = await RenderViewAsync<HelloComponent>(new { Model = snapshot }).ConfigureAwait(false);
+            context.UpdateView(view);
+        }
     }
 }

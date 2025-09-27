@@ -9,7 +9,7 @@
     <Text Style="mediumspringgreen bold" Value="@GreetingTitle" />
     <Newline />
     <Text Style="grey53" Value="@DateLabel" />
-    <Newline />
+    <Text Style="grey53" Value="@TimestampMessage" />
 
     @if (HasTips)
     {
@@ -50,6 +50,8 @@
     private string DateLabel => Model.Date.ToString("dddd, MMMM d, yyyy");
 
     private string TimestampLabel => Model.Timestamp.ToString("HH:mm:ss");
+
+    private string TimestampMessage => $"Now is {TimestampLabel}.";
 
     private bool HasTips => Model.Tips.Count > 0;
 

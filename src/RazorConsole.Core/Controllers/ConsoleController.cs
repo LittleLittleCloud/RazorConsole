@@ -86,17 +86,6 @@ public abstract class ConsoleController
     /// </summary>
     protected virtual void ClearOutput() => AnsiConsole.Clear();
 
-    /// <summary>
-    /// Writes markup to the console.
-    /// </summary>
-    protected void WriteMarkupLine(string markup)
-        => ConsoleOutput.MarkupLine(markup ?? string.Empty);
-
-    /// <summary>
-    /// Writes an empty line to the console.
-    /// </summary>
-    protected void WriteLine()
-        => ConsoleOutput.WriteLine();
 
     /// <summary>
     /// Writes the view when the HTML differs from the last rendered HTML.
@@ -131,6 +120,65 @@ public abstract class ConsoleController
 
         var input = System.Console.ReadLine();
         return ConsoleInputContext.FromText(input).Normalize();
+    }
+
+    /// <summary>
+    /// Runs a Spectre.Console live display using an initial view and invokes a callback for updates.
+    /// </summary>
+    /// <param name="initialView">The initial view to render.</param>
+    /// <param name="handler">Callback invoked within the live display scope.</param>
+    /// <param name="options">Optional live display configuration.</param>
+    /// <param name="cancellationToken">Cancellation token that is propagated to the handler.</param>
+    protected Task RunLiveDisplayAsync(ConsoleViewResult initialView, Func<ConsoleLiveDisplayContext, CancellationToken, Task> handler, ConsoleLiveDisplayOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        if (handler is null)
+        {
+            throw new ArgumentNullException(nameof(handler));
+        }
+
+        return RunLiveDisplayAsync<object?>(initialView, async (context, token) =>
+        {
+            await handler(context, token).ConfigureAwait(false);
+            return null;
+        }, options, cancellationToken);
+    }
+
+    /// <summary>
+    /// Runs a Spectre.Console live display using an initial view and invokes a callback for updates.
+    /// </summary>
+    /// <typeparam name="TResult">Result type returned by the callback.</typeparam>
+    /// <param name="initialView">The initial view to render.</param>
+    /// <param name="handler">Callback invoked within the live display scope.</param>
+    /// <param name="options">Optional live display configuration.</param>
+    /// <param name="cancellationToken">Cancellation token that is propagated to the handler.</param>
+    protected Task<TResult> RunLiveDisplayAsync<TResult>(ConsoleViewResult initialView, Func<ConsoleLiveDisplayContext, CancellationToken, Task<TResult>> handler, ConsoleLiveDisplayOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        if (initialView is null)
+        {
+            throw new ArgumentNullException(nameof(initialView));
+        }
+
+        if (handler is null)
+        {
+            throw new ArgumentNullException(nameof(handler));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var displayOptions = (options ?? ConsoleLiveDisplayOptions.Default).Clone();
+
+        var liveDisplay = AnsiConsole.Live(initialView.Renderable);
+        liveDisplay.AutoClear = displayOptions.AutoClear;
+        liveDisplay.Overflow = displayOptions.Overflow;
+        liveDisplay.Cropping = displayOptions.Cropping;
+
+        return liveDisplay.StartAsync(async liveContext =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var controllerContext = ConsoleLiveDisplayContext.Create(liveContext, initialView.Html);
+            return await handler(controllerContext, cancellationToken).ConfigureAwait(false);
+        });
     }
 
     /// <summary>
