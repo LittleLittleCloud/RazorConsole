@@ -42,14 +42,13 @@ internal sealed class PanelRenderableConverter : IRenderableConverter
 
     private static Panel CreatePanel(XElement element)
     {
-        var orientation = element.Attribute("data-panel-orientation")?.Value ?? element.Attribute("data-orientation")?.Value;
         var expandValue = element.Attribute("data-panel-expand")?.Value ?? element.Attribute("data-expand")?.Value;
         var expand = string.Equals(expandValue, "true", StringComparison.OrdinalIgnoreCase);
         var borderName = element.Attribute("data-panel-border")?.Value;
         var paddingValue = element.Attribute("data-panel-padding")?.Value;
         var heightValue = element.Attribute("data-panel-height")?.Value;
         var widthValue = element.Attribute("data-panel-width")?.Value;
-        var content = BuildPanelContent(element.Nodes(), orientation);
+        var content = BuildPanelContent(element.Nodes());
         var panel = new Panel(content);
 
         if (expand)
@@ -109,7 +108,7 @@ internal sealed class PanelRenderableConverter : IRenderableConverter
         return panel;
     }
 
-    private static IRenderable BuildPanelContent(IEnumerable<XNode> nodes, string? orientation)
+    private static IRenderable BuildPanelContent(IEnumerable<XNode> nodes, string? orientation = null)
     {
         var renderables = LayoutRenderableUtilities.ConvertChildNodesToRenderables(nodes).ToList();
 
