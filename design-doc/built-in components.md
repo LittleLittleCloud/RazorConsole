@@ -8,9 +8,10 @@ Planned additions to the RazorConsole component library.
 
 | Component | Description | Key parameters | Rendering strategy |
 |-----------|-------------|----------------|--------------------|
-| `StackPanel` | Vertical layout that sequences child fragments with optional separators. | `Gap`, `Separator`, `Alignment`. | Map to Spectre `Rows` with `Justify` on nested panels; support simple Markdown separators.
-| `Grid` | 2–4 column layout with automatic width balancing. | `Columns`, `Spacing`, `ShowHeaders`. | Translate into Spectre `Grid` with column builders; fallback to stacked layout on narrow terminals.
-| `PanelGroup` | Collection of titled panels that render side-by-side when there is room. | `Orientation`, `MinWidth`, `BorderColor`. | Use Spectre `Columns` with nested `Panel` objects.
+| `Rows` | Vertical layout that sequences child fragments with optional gaps. | `Gap`, `Alignment`, `Separator`. | Wrap Spectre `Rows` primitive and provide helper for consistent spacing and simple markdown separators.
+| `Columns` | Horizontal layout that balances child fragments across terminal width. | `Spacing`, `Alignment`, `CollapseOnNarrow`. | Compose Spectre `Columns` with responsive fallback to stacked rows when the console is narrow.
+| `Grid` | Two-to-four column layout with headers and automatic width balancing. | `Columns`, `Spacing`, `ShowHeaders`. | Translate into Spectre `Grid` with column builders; gracefully degrades to `Rows` when constraints are tight.
+| `Panel` | Titled container with optional border and accent styling. | `Title`, `BorderColor`, `Padding`, `Orientation`. | Render Spectre `Panel` with nested layout content; support stacking within `Columns` or `Grid`.
 
 ### Interaction helpers
 

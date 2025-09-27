@@ -36,11 +36,13 @@ internal sealed class PanelRenderableConverter : IRenderableConverter, IMarkupCo
     }
 
     private static bool IsPanelElement(XElement element)
-        => string.Equals(element.Attribute("data-border")?.Value, "panel", StringComparison.OrdinalIgnoreCase);
+        => string.Equals(element.Attribute("data-border")?.Value, "panel", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(element.Attribute("data-panel")?.Value, "true", StringComparison.OrdinalIgnoreCase);
 
     private static Panel CreatePanel(XElement element)
     {
-        var content = BuildPanelContent(element.Nodes());
+        var orientation = element.Attribute("data-panel-orientation")?.Value ?? element.Attribute("data-orientation")?.Value;
+        var content = BuildPanelContent(element.Nodes(), orientation);
         var panel = new Panel(content)
             .Expand()
             .SquareBorder();
@@ -73,9 +75,9 @@ internal sealed class PanelRenderableConverter : IRenderableConverter, IMarkupCo
         return panel;
     }
 
-    private static IRenderable BuildPanelContent(IEnumerable<XNode> nodes)
+    private static IRenderable BuildPanelContent(IEnumerable<XNode> nodes, string? orientation)
     {
-        var renderables = BuildRenderables(nodes).ToList();
+        var renderables = LayoutRenderableUtilities.ConvertChildNodesToRenderables(nodes).ToList();
 
         if (renderables.Count == 0)
         {
@@ -87,57 +89,14 @@ internal sealed class PanelRenderableConverter : IRenderableConverter, IMarkupCo
             return renderables[0];
         }
 
+        var useHorizontal = string.Equals(orientation, "horizontal", StringComparison.OrdinalIgnoreCase);
+
+        if (useHorizontal)
+        {
+            return new Columns(renderables);
+        }
+
         return new Rows(renderables);
-    }
-
-    private static IEnumerable<IRenderable> BuildRenderables(IEnumerable<XNode> nodes)
-    {
-        foreach (var node in nodes)
-        {
-            foreach (var renderable in BuildRenderable(node))
-            {
-                yield return renderable;
-            }
-        }
-    }
-
-    private static IEnumerable<IRenderable> BuildRenderable(XNode node)
-    {
-        switch (node)
-        {
-            case XText text:
-            {
-                var value = text.Value;
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    yield return new Markup(Markup.Escape(value));
-                }
-                yield break;
-            }
-            case XElement element:
-            {
-                if (IsPanelElement(element))
-                {
-                    yield return CreatePanel(element);
-                    yield break;
-                }
-
-                if (HtmlToSpectreRenderableConverter.TryConvertToRenderable(element, out var nestedRenderable))
-                {
-                    yield return nestedRenderable!;
-                    yield break;
-                }
-
-                var markup = HtmlToSpectreRenderableConverter.ConvertNodes(new XNode[] { element });
-                if (!string.IsNullOrWhiteSpace(markup))
-                {
-                    yield return new Markup(markup);
-                }
-                yield break;
-            }
-            default:
-                yield break;
-        }
     }
 
     private static string BuildMarkupFallback(XElement element)

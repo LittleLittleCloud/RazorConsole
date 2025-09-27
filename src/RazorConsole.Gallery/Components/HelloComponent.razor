@@ -5,39 +5,54 @@
 @using RazorConsole.Gallery.Models
 @using Spectre.Console
 
-<Border Header="Razor Component Output" HeaderColor=@Color.LightSteelBlue1 BorderColor=@Color.Grey93>
-    <Text Style="mediumspringgreen bold" Value="@GreetingTitle" />
-    <Newline />
-    <Text Style="grey53" Value="@DateLabel" />
-    <Text Style="grey53" Value="@TimestampMessage" />
+<Rows Gap="1" Alignment="Left" Expand="true">
+    <Panel Title="Razor Component Output" TitleColor=@Color.LightSteelBlue1 BorderColor=@Color.Grey93>
+        <Rows Gap="1">
+            <RazorConsole.Components.Text Style="mediumspringgreen bold" Value="@GreetingTitle" />
+            <RazorConsole.Components.Text Style="grey53" Value="@DateLabel" />
+            <RazorConsole.Components.Text Style="grey53" Value="@TimestampMessage" />
 
-    @if (HasTips)
-    {
-        <Border BorderColor=@Color.BlueViolet Header="Tips">
-            @foreach (var tip in Model.Tips)
-            {
-                <RazorConsole.Components.Text Style="grey53 italic" Value="@tip" />
-                <Newline />
-            }
-        </Border>
-    }
-    else
-    {
-        <Border BorderColor=@Color.Aqua Header="No Tips">
-            <Text Style="grey53 italic" Value="No tips available yet." />
-            <Newline />
-        </Border>
-    }
+            <Columns Spacing="4" Alignment="Center" Collapse="true">
+                @if (HasTips)
+                {
+                    <Panel Title="Helpful Tips" TitleColor=@Color.BlueViolet BorderColor=@Color.BlueViolet Orientation="Vertical">
+                        <Rows Gap="1">
+                            @foreach (var tip in Model.Tips)
+                            {
+                                <RazorConsole.Components.Text Style="grey53 italic" Value="@tip" />
+                            }
+                        </Rows>
+                    </Panel>
+                }
+                else
+                {
+                    <Panel Title="No Tips" TitleColor=@Color.Aqua BorderColor=@Color.Aqua>
+                        <RazorConsole.Components.Text Style="grey53 italic" Value="No tips available yet." />
+                    </Panel>
+                }
 
-    <Spacer Lines="1" FillCharacter="-" />
+                <Panel Title="Session Info" TitleColor=@Color.HotPink BorderColor=@Color.HotPink>
+                    <Grid Columns="2" Spacing="2">
+                        <RazorConsole.Components.Text Style="grey53 bold" Value="Name" />
+                        <RazorConsole.Components.Text Style="grey53" Value="@DisplayName" />
+                        <RazorConsole.Components.Text Style="grey53 bold" Value="Date" />
+                        <RazorConsole.Components.Text Style="grey53" Value="@Model.Date.ToShortDateString()" />
+                        <RazorConsole.Components.Text Style="grey53 bold" Value="Time" />
+                        <RazorConsole.Components.Text Style="grey53" Value="@TimestampLabel" />
+                    </Grid>
+                </Panel>
+            </Columns>
 
-    <Spinner Message="Awaiting your input..." Style="yellow" SpinnerType="@SpinnerType" />
+            <Spacer Lines="1" FillCharacter="-" />
 
-    <Spacer Lines="1" />
-
-    <Text Style="italic" Value="Enter a name below to refresh the greeting." />
-    <Newline />
-</Border>
+            <Panel Title="Live Status" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1 Orientation="Horizontal">
+                <Spinner Message="Awaiting your input..." Style="yellow" SpinnerType="@SpinnerType" />
+                <Spacer Lines="1" />
+                <RazorConsole.Components.Text Style="italic" Value="Enter a name below to refresh the greeting." />
+            </Panel>
+        </Rows>
+    </Panel>
+</Rows>
 
 @code {
     [Parameter]

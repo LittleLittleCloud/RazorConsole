@@ -1,0 +1,43 @@
+@namespace RazorConsole.Components
+
+@using System.Globalization
+@using Microsoft.AspNetCore.Components
+
+<div data-rows="true"
+     data-gap="@GapAttribute"
+     data-separator="@SeparatorAttribute"
+     data-alignment="@AlignmentAttribute"
+     data-expand="@ExpandAttribute">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public int Gap { get; set; }
+
+    [Parameter]
+    public string? Separator { get; set; }
+
+    [Parameter]
+    public string? Alignment { get; set; }
+
+    [Parameter]
+    public bool Expand { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string? GapAttribute => Gap > 0
+        ? Gap.ToString(CultureInfo.InvariantCulture)
+        : null;
+
+    private string? SeparatorAttribute => string.IsNullOrWhiteSpace(Separator)
+        ? null
+        : Separator;
+
+    private string? AlignmentAttribute => string.IsNullOrWhiteSpace(Alignment)
+        ? null
+        : Alignment;
+
+    private string? ExpandAttribute => Expand ? "true" : null;
+}

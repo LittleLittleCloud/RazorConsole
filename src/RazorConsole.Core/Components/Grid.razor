@@ -1,0 +1,46 @@
+@namespace RazorConsole.Components
+
+@using System
+@using System.Globalization
+@using Microsoft.AspNetCore.Components
+
+<div data-grid="true"
+     data-columns="@ColumnAttribute"
+     data-spacing="@SpacingAttribute"
+     data-show-headers="@ShowHeadersAttribute">
+    @ChildContent
+</div>
+
+@code {
+    private const int MinimumColumns = 1;
+    private const int MaximumColumns = 4;
+
+    [Parameter]
+    public int Columns { get; set; } = 2;
+
+    [Parameter]
+    public int Spacing { get; set; } = 1;
+
+    [Parameter]
+    public bool ShowHeaders { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string ColumnAttribute => Columns.ToString(CultureInfo.InvariantCulture);
+
+    private string? SpacingAttribute => Spacing > 0
+        ? Spacing.ToString(CultureInfo.InvariantCulture)
+        : null;
+
+    private string? ShowHeadersAttribute => ShowHeaders ? "true" : null;
+
+    protected override void OnParametersSet()
+    {
+        Columns = Math.Clamp(Columns, MinimumColumns, MaximumColumns);
+        if (Spacing < 0)
+        {
+            Spacing = 0;
+        }
+    }
+}

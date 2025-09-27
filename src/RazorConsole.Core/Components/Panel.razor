@@ -1,0 +1,37 @@
+@namespace RazorConsole.Components
+
+@using Microsoft.AspNetCore.Components
+@using Spectre.Console
+
+<div data-panel="true"
+     data-header="@TitleAttribute"
+     data-header-color="@HeaderColorAttribute"
+     data-border-color="@BorderColorAttribute"
+     data-panel-orientation="@OrientationAttribute">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public Color? TitleColor { get; set; }
+
+    [Parameter]
+    public Color? BorderColor { get; set; }
+
+    [Parameter]
+    public string? Orientation { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string? TitleAttribute => string.IsNullOrWhiteSpace(Title) ? null : Title;
+
+    private string? HeaderColorAttribute => TitleColor?.ToString();
+
+    private string? BorderColorAttribute => BorderColor?.ToString();
+
+    private string? OrientationAttribute => string.IsNullOrWhiteSpace(Orientation) ? null : Orientation;
+}

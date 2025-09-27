@@ -1,0 +1,35 @@
+@namespace RazorConsole.Components
+
+@using System.Globalization
+@using Microsoft.AspNetCore.Components
+
+<div data-columns="true"
+     data-spacing="@SpacingAttribute"
+     data-alignment="@AlignmentAttribute"
+     data-collapse="@CollapseAttribute">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public int Spacing { get; set; } = 2;
+
+    [Parameter]
+    public string? Alignment { get; set; }
+
+    [Parameter]
+    public bool Collapse { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string? SpacingAttribute => Spacing > 0
+        ? Spacing.ToString(CultureInfo.InvariantCulture)
+        : null;
+
+    private string? AlignmentAttribute => string.IsNullOrWhiteSpace(Alignment)
+        ? null
+        : Alignment;
+
+    private string? CollapseAttribute => Collapse ? "true" : null;
+}

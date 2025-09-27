@@ -12,6 +12,9 @@ namespace RazorConsole.Core.Rendering;
 public static class HtmlToSpectreRenderableConverter
 {
     private static readonly PanelRenderableConverter PanelConverter = new();
+    private static readonly RowsRenderableConverter RowsConverter = new();
+    private static readonly ColumnsRenderableConverter ColumnsConverter = new();
+    private static readonly GridRenderableConverter GridConverter = new();
     private static readonly TextRenderableConverter TextConverter = new();
     private static readonly NewlineRenderableConverter NewlineConverter = new();
     private static readonly SpacerRenderableConverter SpacerConverter = new();
@@ -19,7 +22,10 @@ public static class HtmlToSpectreRenderableConverter
 
     private static readonly IReadOnlyList<IRenderableConverter> RenderableConverters = new IRenderableConverter[]
     {
-        PanelConverter,
+    PanelConverter,
+    RowsConverter,
+    ColumnsConverter,
+    GridConverter,
         TextConverter,
         NewlineConverter,
         SpacerConverter,
@@ -28,7 +34,7 @@ public static class HtmlToSpectreRenderableConverter
 
     private static readonly IReadOnlyList<IMarkupConverter> MarkupConverters = new IMarkupConverter[]
     {
-        TextConverter,
+    TextConverter,
         NewlineConverter,
         SpacerConverter,
         SpinnerConverter,
