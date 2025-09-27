@@ -32,11 +32,8 @@ internal static class ComponentMarkupUtilities
         return string.Concat("[", style, "]", content, "[/]");
     }
 
-    public static string ResolveSpinnerGlyph(string? spinnerType)
+    public static Spinner ResolveSpinner(string? spinnerType)
     {
-        static string FirstFrame(Spinner spinner)
-            => spinner.Frames?.FirstOrDefault() ?? "⠋";
-
         if (!string.IsNullOrWhiteSpace(spinnerType))
         {
             var property = typeof(Spinner.Known)
@@ -45,10 +42,19 @@ internal static class ComponentMarkupUtilities
 
             if (property?.GetValue(null) is Spinner spinner)
             {
-                return FirstFrame(spinner);
+                return spinner;
             }
         }
 
-        return FirstFrame(Spinner.Known.Dots);
+        return Spinner.Known.Dots;
+    }
+
+    public static string ResolveSpinnerGlyph(string? spinnerType)
+    {
+        static string FirstFrame(Spinner spinner)
+            => spinner.Frames?.FirstOrDefault() ?? "⠋";
+
+        var spinner = ResolveSpinner(spinnerType);
+        return FirstFrame(spinner);
     }
 }

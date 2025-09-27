@@ -35,7 +35,7 @@ public sealed class HomeController : ConsoleController
             {
                 while (!token.IsCancellationRequested)
                 {
-                    await UpdateDisplayAsync(displayContext, token).ConfigureAwait(false);
+                    await UpdateDisplayAsync(displayContext, token);
                 }
             }
             finally
@@ -43,7 +43,7 @@ public sealed class HomeController : ConsoleController
                 linkedCts.Cancel();
                 try
                 {
-                    await tickerTask.ConfigureAwait(false);
+                    await tickerTask;
                 }
                 catch (OperationCanceledException)
                 {

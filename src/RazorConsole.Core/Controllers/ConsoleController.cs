@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
+using RazorConsole.Core.Rendering.ComponentMarkup;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -50,9 +51,9 @@ public abstract class ConsoleController
             throw new ArgumentNullException(nameof(html));
         }
 
-        if (SpectreRenderableFactory.TryCreateRenderable(html, out var renderable) && renderable is not null)
+        if (SpectreRenderableFactory.TryCreateRenderable(html, out var renderable, out var animatedRenderables) && renderable is not null)
         {
-            return ConsoleViewResult.Create(html, renderable);
+            return ConsoleViewResult.Create(html, renderable, animatedRenderables);
         }
         else
         {
@@ -63,7 +64,7 @@ public abstract class ConsoleController
             .SquareBorder()
             .BorderColor(Color.Grey53);
 
-            return ConsoleViewResult.Create(html, fallbackRenderable);
+            return ConsoleViewResult.Create(html, fallbackRenderable, Array.Empty<IAnimatedConsoleRenderable>());
         }
     }
 
@@ -176,7 +177,7 @@ public abstract class ConsoleController
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var controllerContext = ConsoleLiveDisplayContext.Create(liveContext, initialView.Html);
+            using var controllerContext = ConsoleLiveDisplayContext.Create(liveContext, initialView);
             return await handler(controllerContext, cancellationToken).ConfigureAwait(false);
         });
     }

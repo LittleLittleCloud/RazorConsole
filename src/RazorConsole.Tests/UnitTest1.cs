@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using RazorConsole.Core.Rendering;
+using RazorConsole.Core.Rendering.ComponentMarkup;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 using Xunit;
@@ -85,5 +87,19 @@ public class HtmlRenderingTests
         var markup = HtmlToSpectreRenderableConverter.Convert(html);
 
         Assert.Equal("Inner", markup);
+    }
+
+    [Fact]
+    public void TryCreateRenderable_CapturesAnimatedSpinnerMetadata()
+    {
+        const string html = "<div data-spinner=\"true\" data-message=\"Working\" data-style=\"yellow\" data-spinner-type=\"Dots\"></div>";
+
+        var success = SpectreRenderableFactory.TryCreateRenderable(html, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.NotNull(renderable);
+        var animatedSpinner = Assert.Single(animations);
+        Assert.IsType<AnimatedSpinnerRenderable>(animatedSpinner);
+        Assert.Equal(Spinner.Known.Dots.Interval, animatedSpinner.RefreshInterval);
     }
 }

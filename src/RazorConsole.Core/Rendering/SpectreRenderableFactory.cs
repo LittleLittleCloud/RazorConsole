@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
+using RazorConsole.Core.Rendering.ComponentMarkup;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -8,8 +10,12 @@ namespace RazorConsole.Core.Rendering;
 public static class SpectreRenderableFactory
 {
     public static bool TryCreateRenderable(string html, out IRenderable? renderable)
+        => TryCreateRenderable(html, out renderable, out _);
+
+    internal static bool TryCreateRenderable(string html, out IRenderable? renderable, out IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables)
     {
         renderable = null;
+        animatedRenderables = Array.Empty<IAnimatedConsoleRenderable>();
 
         if (string.IsNullOrWhiteSpace(html))
         {
@@ -25,10 +31,15 @@ public static class SpectreRenderableFactory
                 return false;
             }
 
-            if (HtmlToSpectreRenderableConverter.TryConvertToRenderable(root, out var candidate))
+            var animations = new List<IAnimatedConsoleRenderable>();
+            using (AnimatedRenderableRegistry.PushScope(animations))
             {
-                renderable = candidate;
-                return true;
+                if (HtmlToSpectreRenderableConverter.TryConvertToRenderable(root, out var candidate))
+                {
+                    renderable = candidate;
+                    animatedRenderables = animations;
+                    return true;
+                }
             }
 
             return false;
@@ -36,8 +47,8 @@ public static class SpectreRenderableFactory
         catch
         {
             renderable = null;
+            animatedRenderables = Array.Empty<IAnimatedConsoleRenderable>();
             return false;
         }
     }
-
 }

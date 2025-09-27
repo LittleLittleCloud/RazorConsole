@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using RazorConsole.Core.Rendering.ComponentMarkup;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -9,10 +11,11 @@ namespace RazorConsole.Core.Controllers;
 /// </summary>
 public sealed class ConsoleViewResult
 {
-    private ConsoleViewResult(string html, IRenderable renderable)
+    private ConsoleViewResult(string html, IRenderable renderable, IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables)
     {
         Html = html;
         Renderable = renderable;
+        AnimatedRenderables = animatedRenderables;
     }
 
     /// <summary>
@@ -24,6 +27,11 @@ public sealed class ConsoleViewResult
     /// Gets the Spectre.Console renderable representation of the rendered view.
     /// </summary>
     public IRenderable Renderable { get; }
+
+    /// <summary>
+    /// Gets animated renderables that require live display refreshes.
+    /// </summary>
+    internal IReadOnlyCollection<IAnimatedConsoleRenderable> AnimatedRenderables { get; }
 
     /// <summary>
     /// Writes the renderable to the provided console.
@@ -39,6 +47,6 @@ public sealed class ConsoleViewResult
         console.Write(Renderable);
     }
 
-    internal static ConsoleViewResult Create(string html, IRenderable renderable)
-        => new(html, renderable);
+    internal static ConsoleViewResult Create(string html, IRenderable renderable, IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables)
+        => new(html, renderable, animatedRenderables);
 }

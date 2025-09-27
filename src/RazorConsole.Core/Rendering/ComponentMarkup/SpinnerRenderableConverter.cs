@@ -8,13 +8,16 @@ internal sealed class SpinnerRenderableConverter : IRenderableConverter, IMarkup
 {
     public bool TryConvert(XElement element, out IRenderable renderable)
     {
-        if (!TryGetMarkup(element, out var markup))
+        if (!TryGetSpinnerParameters(element, out var spinner, out var message, out var style, out var autoDismiss))
         {
             renderable = default!;
             return false;
         }
 
-        renderable = new Markup(markup);
+        var animatedRenderable = new AnimatedSpinnerRenderable(spinner, message, style, autoDismiss);
+        AnimatedRenderableRegistry.Register(animatedRenderable);
+
+        renderable = animatedRenderable;
         return true;
     }
 
@@ -39,6 +42,25 @@ internal sealed class SpinnerRenderableConverter : IRenderableConverter, IMarkup
             : string.Concat(glyph, " ", message);
 
         markup = ComponentMarkupUtilities.CreateStyledMarkup(style, content, requiresEscape: true);
+        return true;
+    }
+
+    private static bool TryGetSpinnerParameters(XElement element, out Spinner spinner, out string? message, out string? style, out bool autoDismiss)
+    {
+        if (!IsSpinnerComponent(element))
+        {
+            spinner = Spinner.Known.Dots;
+            message = null;
+            style = null;
+            autoDismiss = false;
+            return false;
+        }
+
+        message = element.Attribute("data-message")?.Value ?? string.Empty;
+        style = element.Attribute("data-style")?.Value;
+        var spinnerType = element.Attribute("data-spinner-type")?.Value;
+        spinner = ComponentMarkupUtilities.ResolveSpinner(spinnerType);
+        autoDismiss = bool.TryParse(element.Attribute("data-auto-dismiss")?.Value, out var parsed) && parsed;
         return true;
     }
 
