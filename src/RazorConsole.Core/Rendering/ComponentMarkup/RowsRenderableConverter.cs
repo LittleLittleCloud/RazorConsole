@@ -6,7 +6,8 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup
 {
-    internal sealed class RowsRenderableConverter : IRenderableConverter
+    [RenderableConverterExport(typeof(RowsRenderableConverter))]
+    public sealed class RowsRenderableConverter : IRenderableConverter
     {
         public bool TryConvert(XElement element, out IRenderable renderable)
         {

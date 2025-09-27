@@ -5,7 +5,8 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class SpacerRenderableConverter : IRenderableConverter, IMarkupConverter
+[RenderableConverterExport(typeof(SpacerRenderableConverter))]
+public sealed class SpacerRenderableConverter : IRenderableConverter, IMarkupConverter
 {
     public bool TryConvert(XElement element, out IRenderable renderable)
     {

@@ -10,7 +10,8 @@ using RazorConsole.Core.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class PanelRenderableConverter : IRenderableConverter
+[RenderableConverterExport(typeof(PanelRenderableConverter))]
+public sealed class PanelRenderableConverter : IRenderableConverter
 {
     private static readonly IReadOnlyDictionary<string, BoxBorder> BorderLookup = new Dictionary<string, BoxBorder>(StringComparer.OrdinalIgnoreCase)
     {

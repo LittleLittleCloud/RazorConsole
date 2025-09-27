@@ -8,7 +8,8 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class GridRenderableConverter : IRenderableConverter
+[RenderableConverterExport(typeof(GridRenderableConverter))]
+public sealed class GridRenderableConverter : IRenderableConverter
 {
     public bool TryConvert(XElement element, out IRenderable renderable)
     {

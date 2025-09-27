@@ -4,7 +4,8 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class TextRenderableConverter : IRenderableConverter, IMarkupConverter
+[RenderableConverterExport(typeof(TextRenderableConverter))]
+public sealed class TextRenderableConverter : IRenderableConverter, IMarkupConverter
 {
     public bool TryConvert(XElement element, out IRenderable renderable)
     {

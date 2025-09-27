@@ -8,7 +8,8 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class ColumnsRenderableConverter : IRenderableConverter
+[RenderableConverterExport(typeof(ColumnsRenderableConverter))]
+public sealed class ColumnsRenderableConverter : IRenderableConverter
 {
     private static readonly char[] PaddingSeparators = [',', ' '];
 

@@ -4,7 +4,8 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class SpinnerRenderableConverter : IRenderableConverter, IMarkupConverter
+[RenderableConverterExport(typeof(SpinnerRenderableConverter))]
+public sealed class SpinnerRenderableConverter : IRenderableConverter, IMarkupConverter
 {
     public bool TryConvert(XElement element, out IRenderable renderable)
     {

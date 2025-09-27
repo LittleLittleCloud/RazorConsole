@@ -9,8 +9,10 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="Spectre.Console" Version="0.51.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+  <PackageVersion Include="System.Composition" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.console" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
   </ItemGroup>

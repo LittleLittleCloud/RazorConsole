@@ -3,9 +3,14 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal interface IRenderableConverter
+public interface IRenderableConverter
 {
     bool TryConvert(XElement element, out IRenderable renderable);
+}
+
+public class RenderableConverterMetadata
+{
+    public string? ConverterType { get; }
 }
 
 internal interface IMarkupConverter
