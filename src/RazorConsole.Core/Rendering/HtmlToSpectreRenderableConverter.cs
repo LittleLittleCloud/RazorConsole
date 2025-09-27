@@ -16,11 +16,6 @@ namespace RazorConsole.Core.Rendering;
 
 public static class HtmlToSpectreRenderableConverter
 {
-    private static readonly TextRenderableConverter TextConverter = new();
-    private static readonly NewlineRenderableConverter NewlineConverter = new();
-    private static readonly SpacerRenderableConverter SpacerConverter = new();
-    private static readonly SpinnerRenderableConverter SpinnerConverter = new();
-
     private static readonly Type[] ConverterOrder =
     {
         typeof(PanelRenderableConverter),
@@ -40,7 +35,6 @@ public static class HtmlToSpectreRenderableConverter
     private static IReadOnlyList<IRenderableConverter> RenderableConverters => ConverterCatalog.Value.Converters;
 
     private static IReadOnlyDictionary<string, IRenderableConverter> ConverterLookup => ConverterCatalog.Value.Lookup;
-
 
     internal static bool TryConvertToRenderable(XElement element, out IRenderable? renderable)
     {
