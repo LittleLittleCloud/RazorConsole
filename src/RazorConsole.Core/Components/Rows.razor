@@ -6,7 +6,6 @@
 <div data-rows="true"
      data-gap="@GapAttribute"
      data-separator="@SeparatorAttribute"
-     data-alignment="@AlignmentAttribute"
      data-expand="@ExpandAttribute">
     @ChildContent
 </div>
@@ -17,9 +16,6 @@
 
     [Parameter]
     public string? Separator { get; set; }
-
-    [Parameter]
-    public string? Alignment { get; set; }
 
     [Parameter]
     public bool Expand { get; set; }
@@ -34,10 +30,6 @@
     private string? SeparatorAttribute => string.IsNullOrWhiteSpace(Separator)
         ? null
         : Separator;
-
-    private string? AlignmentAttribute => string.IsNullOrWhiteSpace(Alignment)
-        ? null
-        : Alignment;
 
     private string? ExpandAttribute => Expand ? "true" : null;
 }

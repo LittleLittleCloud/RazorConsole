@@ -4,9 +4,7 @@
 @using Microsoft.AspNetCore.Components
 
 <div data-columns="true"
-     data-spacing="@SpacingAttribute"
-     data-alignment="@AlignmentAttribute"
-     data-collapse="@CollapseAttribute">
+     data-spacing="@SpacingAttribute">
     @ChildContent
 </div>
 
@@ -15,21 +13,9 @@
     public int Spacing { get; set; } = 2;
 
     [Parameter]
-    public string? Alignment { get; set; }
-
-    [Parameter]
-    public bool Collapse { get; set; }
-
-    [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     private string? SpacingAttribute => Spacing > 0
         ? Spacing.ToString(CultureInfo.InvariantCulture)
         : null;
-
-    private string? AlignmentAttribute => string.IsNullOrWhiteSpace(Alignment)
-        ? null
-        : Alignment;
-
-    private string? CollapseAttribute => Collapse ? "true" : null;
 }

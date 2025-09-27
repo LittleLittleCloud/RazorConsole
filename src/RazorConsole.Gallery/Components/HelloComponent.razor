@@ -22,11 +22,14 @@
         </Rows>
     </Panel>
 
-    <Panel Title="Layout Showcase" TitleColor=@Color.LightSkyBlue1 BorderColor=@Color.CornflowerBlue Orientation="Horizontal">
-        <Columns Spacing="4" Alignment="Center">
-            <Panel Title="Rows" TitleColor=@Color.MediumSpringGreen BorderColor=@Color.MediumSpringGreen Orientation="Vertical">
+    <Panel Title="Layout Showcase" TitleColor=@Color.LightSkyBlue1 BorderColor=@Color.CornflowerBlue
+        Orientation="Horizontal">
+        <Columns Spacing="4">
+            <Panel Title="Rows" TitleColor=@Color.MediumSpringGreen BorderColor=@Color.MediumSpringGreen
+                Orientation="Vertical">
                 <Rows Gap="1">
-                    <RazorConsole.Components.Text Style="grey53" Value="Stack sections vertically with optional spacing." />
+                    <RazorConsole.Components.Text Style="grey53"
+                        Value="Stack sections vertically with optional spacing." />
                     <Rows Gap="0">
                         <RazorConsole.Components.Text Style="chartreuse2" Value="• Greeting" />
                         <RazorConsole.Components.Text Style="chartreuse2" Value="• Status" />
@@ -36,28 +39,22 @@
             </Panel>
 
             <Panel Title="Columns" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1 Orientation="Vertical">
-                <Columns Spacing="4" Alignment="Center">
-                        <Rows Gap="1">
-                            <RazorConsole.Components.Text Style="grey53" Value="Left" />
-                            <RazorConsole.Components.Text Style="grey53" Value="Stay beside peers on wide consoles." />
-                        </Rows>
-                        <Rows Gap="1">
-                            <RazorConsole.Components.Text Style="grey53" Value="Right" />
-                            <RazorConsole.Components.Text Style="grey53" Value="Columns manage spacing automatically." />
-                        </Rows>
+                <Columns Spacing="4">
+                    <RazorConsole.Components.Text Style="grey53" Value="Left" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Right" />
                 </Columns>
             </Panel>
 
             <Panel Title="Grid" TitleColor=@Color.DeepSkyBlue1 BorderColor=@Color.DeepSkyBlue1 Orientation="Vertical">
                 <Grid Columns="2" Spacing="1">
-                    <RazorConsole.Components.Text Style="grey53 bold" Value="Section" />
-                    <RazorConsole.Components.Text Style="grey53 bold" Value="Purpose" />
-                    <RazorConsole.Components.Text Style="grey53" Value="Greeting" />
-                    <RazorConsole.Components.Text Style="grey53" Value="Personal hello" />
-                    <RazorConsole.Components.Text Style="grey53" Value="Layouts" />
-                    <RazorConsole.Components.Text Style="grey53" Value="Component tour" />
-                    <RazorConsole.Components.Text Style="grey53" Value="Status" />
-                    <RazorConsole.Components.Text Style="grey53" Value="Live updates" />
+                    <RazorConsole.Components.Text Style="grey53 bold" Value="Row 1 Column 1" />
+                    <RazorConsole.Components.Text Style="grey53 bold" Value="Row 1 Column 2" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Row 2 Column 1" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Row 2 Column 2" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Row 3 Column 1" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Row 3 Column 2" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Row 4 Column 1" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Row 4 Column 2" />
                 </Grid>
             </Panel>
         </Columns>
@@ -82,23 +79,23 @@
     }
 
     <Panel Title="Live Status" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1 Orientation="Horizontal">
-        <Rows Gap="1">
-            <Columns Spacing="2" Collapse="true">
-                <Panel Title="Activity" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1>
-                    <Rows Gap="1">
-                        <Spinner Message="Awaiting your input..." Style="yellow" SpinnerType="@SpinnerType" />
-                        <RazorConsole.Components.Text Style="italic" Value="Enter a name below to refresh the greeting." />
-                    </Rows>
-                </Panel>
-                <Panel Title="Next Step" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1>
-                    <Rows Gap="1">
-                        <RazorConsole.Components.Text Style="grey53" Value="Use Rows, Columns, and Grid to compose complex layouts quickly." />
-                        <Spacer Lines="1" />
-                        <RazorConsole.Components.Text Style="grey53" Value="This section collapses into a stack on narrow terminals." />
-                    </Rows>
-                </Panel>
-            </Columns>
-        </Rows>
+        <Columns>
+            <Panel Title="Activity" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1>
+                <Rows Gap="1">
+                    <Spinner Message="Awaiting your input..." Style="yellow" SpinnerType="@SpinnerType" />
+                    <RazorConsole.Components.Text Style="italic" Value="Enter a name below to refresh the greeting." />
+                </Rows>
+            </Panel>
+            <Panel Title="Next Step" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1>
+                <Rows Gap="1">
+                    <RazorConsole.Components.Text Style="grey53"
+                        Value="Use Rows, Columns, and Grid to compose complex layouts quickly." />
+                    <Spacer Lines="1" />
+                    <RazorConsole.Components.Text Style="grey53"
+                        Value="This section collapses into a stack on narrow terminals." />
+                </Rows>
+            </Panel>
+        </Columns>
     </Panel>
 </Rows>
 

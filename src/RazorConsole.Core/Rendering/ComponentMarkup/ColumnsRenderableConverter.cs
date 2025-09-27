@@ -17,47 +17,17 @@ internal sealed class ColumnsRenderableConverter : IRenderableConverter
         }
 
         var spacing = Math.Max(ComponentMarkupUtilities.GetIntAttribute(element, "data-spacing", 1), 0);
-        var collapse = string.Equals(element.Attribute("data-collapse")?.Value, "true", StringComparison.OrdinalIgnoreCase);
-        var alignmentValue = element.Attribute("data-alignment")?.Value;
-        var hasAlignment = LayoutRenderableUtilities.TryParseJustify(alignmentValue, out var justify);
 
         var items = new List<IRenderable>(LayoutRenderableUtilities.ConvertChildNodesToRenderables(element.Nodes()));
 
-        if (items.Count == 0)
+        IRenderable columns = new Columns(items);
+
+        if (spacing > 0)
         {
-            renderable = new Rows(Array.Empty<IRenderable>());
-            return true;
+            columns = new Padder(columns, new Padding(spacing, 0, spacing, 0));
         }
 
-        if (collapse)
-        {
-            renderable = new Rows(items);
-            return true;
-        }
-
-        var grid = new Grid();
-        for (var i = 0; i < items.Count; i++)
-        {
-            var column = new GridColumn();
-
-            if (spacing > 0)
-            {
-                var left = spacing / 2;
-                var right = spacing - left;
-                column.PadLeft(left).PadRight(right);
-            }
-
-            if (hasAlignment)
-            {
-                column.Alignment(justify);
-            }
-
-            grid.AddColumn(column);
-        }
-
-        grid.AddRow(items.ToArray());
-
-        renderable = grid;
+        renderable = columns;
         return true;
     }
 
