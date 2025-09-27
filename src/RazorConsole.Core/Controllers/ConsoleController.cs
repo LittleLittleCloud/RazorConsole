@@ -70,37 +70,9 @@ public abstract class ConsoleController
     }
 
     /// <summary>
-    /// Writes the provided view to the console output.
-    /// </summary>
-    /// <param name="view">Rendered view.</param>
-    protected void WriteView(ConsoleViewResult view)
-    {
-        if (view is null)
-        {
-            throw new ArgumentNullException(nameof(view));
-        }
-
-        view.WriteTo(ConsoleOutput);
-    }
-
-    /// <summary>
     /// Clears the console output.
     /// </summary>
     protected virtual void ClearOutput() => AnsiConsole.Clear();
-
-    /// <summary>
-    /// Reads a line from the console and returns a normalized <see cref="ConsoleInputContext"/>.
-    /// </summary>
-    protected ConsoleInputContext ReadLineInput(string prompt)
-    {
-        if (!string.IsNullOrEmpty(prompt))
-        {
-            ConsoleOutput.Markup(prompt);
-        }
-
-        var input = System.Console.ReadLine();
-        return ConsoleInputContext.FromText(input).Normalize();
-    }
 
     /// <summary>
     /// Runs a Spectre.Console live display using an initial view and invokes a callback for updates.
