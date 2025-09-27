@@ -6,7 +6,7 @@ using Spectre.Console.Rendering;
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
 [RenderableConverterExport(typeof(SpacerRenderableConverter))]
-public sealed class SpacerRenderableConverter : IRenderableConverter, IMarkupConverter
+public sealed class SpacerRenderableConverter : IRenderableConverter
 {
     public bool TryConvert(XElement element, out IRenderable renderable)
     {
@@ -20,7 +20,7 @@ public sealed class SpacerRenderableConverter : IRenderableConverter, IMarkupCon
         return true;
     }
 
-    public bool TryConvert(XElement element, out string markup)
+    internal bool TryConvertMarkup(XElement element, out string markup)
         => TryGetMarkup(element, out markup);
 
     private static bool TryGetMarkup(XElement element, out string markup)

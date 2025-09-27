@@ -5,7 +5,7 @@ using Spectre.Console.Rendering;
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
 [RenderableConverterExport(typeof(TextRenderableConverter))]
-public sealed class TextRenderableConverter : IRenderableConverter, IMarkupConverter
+public sealed class TextRenderableConverter : IRenderableConverter
 {
     public bool TryConvert(XElement element, out IRenderable renderable)
     {
@@ -18,7 +18,7 @@ public sealed class TextRenderableConverter : IRenderableConverter, IMarkupConve
         return true;
     }
 
-    public bool TryConvert(XElement element, out string markup)
+    internal bool TryConvertMarkup(XElement element, out string markup)
         => TryGetRenderable(element, out markup, out _);
 
     private static bool TryGetRenderable(XElement element, out string markup, out IRenderable renderable)

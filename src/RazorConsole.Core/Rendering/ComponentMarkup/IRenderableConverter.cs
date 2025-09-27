@@ -12,8 +12,3 @@ public class RenderableConverterMetadata
 {
     public string? ConverterType { get; }
 }
-
-internal interface IMarkupConverter
-{
-    bool TryConvert(XElement element, out string markup);
-}

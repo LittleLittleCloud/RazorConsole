@@ -40,13 +40,7 @@ internal static class LayoutRenderableUtilities
                         yield return renderable;
                         yield break;
                     }
-
-                    var markup = HtmlToSpectreRenderableConverter.ConvertNodes(new[] { element });
-                    if (!string.IsNullOrWhiteSpace(markup))
-                    {
-                        yield return new Markup(markup);
-                    }
-
+                    
                     yield break;
                 }
             default:
