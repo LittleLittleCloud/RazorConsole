@@ -7,4 +7,8 @@
     <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalVisibleTo Include="RazorConsole.Tests" />
+  </ItemGroup>
+
 </Project>
