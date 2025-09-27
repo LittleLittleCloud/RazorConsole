@@ -6,8 +6,9 @@
 
 <div data-grid="true"
      data-columns="@ColumnAttribute"
-     data-spacing="@SpacingAttribute"
-     data-show-headers="@ShowHeadersAttribute">
+     data-show-headers="@ShowHeadersAttribute"
+     data-grid-expand="@ExpandAttribute"
+     data-grid-width="@WidthAttribute">
     @ChildContent
 </div>
 
@@ -19,28 +20,34 @@
     public int Columns { get; set; } = 2;
 
     [Parameter]
-    public int Spacing { get; set; } = 1;
+    public bool ShowHeaders { get; set; }
 
     [Parameter]
-    public bool ShowHeaders { get; set; }
+    public bool Expand { get; set; }
+
+    [Parameter]
+    public int? Width { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     private string ColumnAttribute => Columns.ToString(CultureInfo.InvariantCulture);
 
-    private string? SpacingAttribute => Spacing > 0
-        ? Spacing.ToString(CultureInfo.InvariantCulture)
-        : null;
-
     private string? ShowHeadersAttribute => ShowHeaders ? "true" : null;
+
+    private string? ExpandAttribute => Expand ? "true" : null;
+
+    private string? WidthAttribute => Width.HasValue && Width.Value > 0
+        ? Width.Value.ToString(CultureInfo.InvariantCulture)
+        : null;
 
     protected override void OnParametersSet()
     {
         Columns = Math.Clamp(Columns, MinimumColumns, MaximumColumns);
-        if (Spacing < 0)
+
+        if (Width.HasValue && Width.Value <= 0)
         {
-            Spacing = 0;
+            Width = null;
         }
     }
 }

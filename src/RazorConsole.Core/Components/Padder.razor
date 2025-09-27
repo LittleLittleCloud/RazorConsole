@@ -1,0 +1,43 @@
+@namespace RazorConsole.Components
+
+@using System.Globalization
+@using Microsoft.AspNetCore.Components
+@using Spectre.Console
+
+<div data-padder="true"
+     data-padding="@PaddingAttribute"
+     data-expand="@ExpandAttribute">
+    @ChildContent
+</div>
+
+@code {
+    private static readonly Padding NoPadding = new(0, 0, 0, 0);
+
+    [Parameter]
+    public Padding Padding { get; set; } = new(0, 0, 0, 0);
+
+    [Parameter]
+    public bool Expand { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string? PaddingAttribute
+    {
+        get
+        {
+            if (Padding.Left == 0 && Padding.Top == 0 && Padding.Right == 0 && Padding.Bottom == 0)
+            {
+                return null;
+            }
+
+            return string.Join(",",
+                Padding.Left.ToString(CultureInfo.InvariantCulture),
+                Padding.Top.ToString(CultureInfo.InvariantCulture),
+                Padding.Right.ToString(CultureInfo.InvariantCulture),
+                Padding.Bottom.ToString(CultureInfo.InvariantCulture));
+        }
+    }
+
+    private string? ExpandAttribute => Expand ? "true" : null;
+}

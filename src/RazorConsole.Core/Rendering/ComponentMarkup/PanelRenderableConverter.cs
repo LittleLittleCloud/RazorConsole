@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -9,8 +10,20 @@ using RazorConsole.Core.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class PanelRenderableConverter : IRenderableConverter, IMarkupConverter
+internal sealed class PanelRenderableConverter : IRenderableConverter
 {
+    private static readonly IReadOnlyDictionary<string, BoxBorder> BorderLookup = new Dictionary<string, BoxBorder>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "square", BoxBorder.Square },
+        { "rounded", BoxBorder.Rounded },
+        { "double", BoxBorder.Double },
+        { "heavy", BoxBorder.Heavy },
+        { "ascii", BoxBorder.Ascii },
+        { "none", BoxBorder.None },
+    };
+
+    private static readonly char[] PaddingSeparators = [',', ' '];
+
     public bool TryConvert(XElement element, out IRenderable renderable)
     {
         if (!IsPanelElement(element))
@@ -23,18 +36,6 @@ internal sealed class PanelRenderableConverter : IRenderableConverter, IMarkupCo
         return true;
     }
 
-    public bool TryConvert(XElement element, out string markup)
-    {
-        if (!IsPanelElement(element))
-        {
-            markup = string.Empty;
-            return false;
-        }
-
-        markup = BuildMarkupFallback(element);
-        return true;
-    }
-
     private static bool IsPanelElement(XElement element)
         => string.Equals(element.Attribute("data-border")?.Value, "panel", StringComparison.OrdinalIgnoreCase)
            || string.Equals(element.Attribute("data-panel")?.Value, "true", StringComparison.OrdinalIgnoreCase);
@@ -42,10 +43,43 @@ internal sealed class PanelRenderableConverter : IRenderableConverter, IMarkupCo
     private static Panel CreatePanel(XElement element)
     {
         var orientation = element.Attribute("data-panel-orientation")?.Value ?? element.Attribute("data-orientation")?.Value;
+        var expandValue = element.Attribute("data-panel-expand")?.Value ?? element.Attribute("data-expand")?.Value;
+        var expand = string.Equals(expandValue, "true", StringComparison.OrdinalIgnoreCase);
+        var borderName = element.Attribute("data-panel-border")?.Value;
+        var paddingValue = element.Attribute("data-panel-padding")?.Value;
+        var heightValue = element.Attribute("data-panel-height")?.Value;
+        var widthValue = element.Attribute("data-panel-width")?.Value;
         var content = BuildPanelContent(element.Nodes(), orientation);
-        var panel = new Panel(content)
-            .Expand()
-            .SquareBorder();
+        var panel = new Panel(content);
+
+        if (expand)
+        {
+            panel = panel.Expand();
+        }
+
+        if (TryParseBorder(borderName, out var border))
+        {
+            panel.Border = border;
+        }
+        else
+        {
+            panel.Border = BoxBorder.Square;
+        }
+
+        if (TryParsePadding(paddingValue, out var padding))
+        {
+            panel.Padding = padding;
+        }
+
+        if (TryParsePositiveInt(heightValue, out var height))
+        {
+            panel.Height = height;
+        }
+
+        if (TryParsePositiveInt(widthValue, out var width))
+        {
+            panel.Width = width;
+        }
 
         var header = element.Attribute("data-header")?.Value;
         if (!string.IsNullOrWhiteSpace(header))
@@ -99,24 +133,61 @@ internal sealed class PanelRenderableConverter : IRenderableConverter, IMarkupCo
         return new Rows(renderables);
     }
 
-    private static string BuildMarkupFallback(XElement element)
+    private static bool TryParseBorder(string? value, out BoxBorder border)
     {
-        var builder = new StringBuilder();
-        var header = element.Attribute("data-header")?.Value;
-        if (!string.IsNullOrWhiteSpace(header))
+        if (string.IsNullOrWhiteSpace(value))
         {
-            var headerColor = element.Attribute("data-header-color")?.Value;
-            var headerMarkup = !string.IsNullOrWhiteSpace(headerColor)
-                ? $"[{headerColor}]{Markup.Escape(header)}[/]"
-                : Markup.Escape(header);
-
-            builder.Append(headerMarkup);
-            builder.AppendLine();
+            border = BoxBorder.Square;
+            return false;
         }
 
-        var bodyMarkup = HtmlToSpectreRenderableConverter.ConvertNodes(element.Nodes());
-        builder.Append(bodyMarkup);
+        if (BorderLookup.TryGetValue(value, out var resolved))
+        {
+            border = resolved;
+            return true;
+        }
 
-        return builder.ToString().TrimEnd();
+        border = BoxBorder.Square;
+        return false;
+    }
+
+    private static bool TryParsePadding(string? raw, out Padding padding)
+    {
+        padding = default;
+
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return false;
+        }
+
+        var parts = raw.Split(PaddingSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var values = parts
+            .Select(part => int.TryParse(part, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number) ? Math.Max(number, 0) : 0)
+            .Take(4)
+            .ToArray();
+
+        padding = values.Length switch
+        {
+            0 => new Padding(0, 0, 0, 0),
+            1 => new Padding(values[0], values[0], values[0], values[0]),
+            2 => new Padding(values[0], values[1], values[0], values[1]),
+            3 => new Padding(values[0], values[1], values[2], values[1]),
+            4 => new Padding(values[0], values[1], values[2], values[3]),
+            _ => new Padding(0, 0, 0, 0),
+        };
+
+        return true;
+    }
+
+    private static bool TryParsePositiveInt(string? raw, out int result)
+    {
+        if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value > 0)
+        {
+            result = value;
+            return true;
+        }
+
+        result = default;
+        return false;
     }
 }

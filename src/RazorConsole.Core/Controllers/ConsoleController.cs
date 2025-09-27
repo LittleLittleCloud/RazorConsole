@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using RazorConsole.Core.HotReload;
 using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.ComponentMarkup;
@@ -87,28 +88,6 @@ public abstract class ConsoleController
     /// </summary>
     protected virtual void ClearOutput() => AnsiConsole.Clear();
 
-
-    /// <summary>
-    /// Writes the view when the HTML differs from the last rendered HTML.
-    /// </summary>
-    protected bool WriteViewIfChanged(ConsoleViewResult view, ref string? lastHtml)
-    {
-        if (view is null)
-        {
-            throw new ArgumentNullException(nameof(view));
-        }
-
-        if (string.Equals(view.Html, lastHtml, StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        ClearOutput();
-        WriteView(view);
-        lastHtml = view.Html;
-        return true;
-    }
-
     /// <summary>
     /// Reads a line from the console and returns a normalized <see cref="ConsoleInputContext"/>.
     /// </summary>
@@ -173,11 +152,20 @@ public abstract class ConsoleController
         liveDisplay.Overflow = displayOptions.Overflow;
         liveDisplay.Cropping = displayOptions.Cropping;
 
+
         return liveDisplay.StartAsync(async liveContext =>
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             using var controllerContext = ConsoleLiveDisplayContext.Create(liveContext, initialView);
+#if DEBUG
+            HotReloadService.UpdateApplicationEvent += (_) =>
+            {
+                Console.WriteLine("Hot reload event received, refreshing live display...");
+                controllerContext.Refresh();
+            };
+#endif
+
             return await handler(controllerContext, cancellationToken).ConfigureAwait(false);
         });
     }

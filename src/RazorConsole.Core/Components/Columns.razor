@@ -2,20 +2,40 @@
 
 @using System.Globalization
 @using Microsoft.AspNetCore.Components
+@using Spectre.Console
 
 <div data-columns="true"
-     data-spacing="@SpacingAttribute">
+     data-columns-expand="@ExpandAttribute"
+     data-columns-padding="@PaddingAttribute">
     @ChildContent
 </div>
 
 @code {
     [Parameter]
-    public int Spacing { get; set; } = 2;
+    public bool Expand { get; set; }
+
+    [Parameter]
+    public Padding? Padding { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    private string? SpacingAttribute => Spacing > 0
-        ? Spacing.ToString(CultureInfo.InvariantCulture)
-        : null;
+    private string? ExpandAttribute => Expand ? "true" : null;
+
+    private string? PaddingAttribute
+    {
+        get
+        {
+            if (Padding is not { } padding)
+            {
+                return null;
+            }
+
+            return string.Join(",",
+                padding.Left.ToString(CultureInfo.InvariantCulture),
+                padding.Top.ToString(CultureInfo.InvariantCulture),
+                padding.Right.ToString(CultureInfo.InvariantCulture),
+                padding.Bottom.ToString(CultureInfo.InvariantCulture));
+        }
+    }
 }

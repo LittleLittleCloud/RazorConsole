@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using Spectre.Console;
@@ -18,9 +19,10 @@ internal sealed class GridRenderableConverter : IRenderableConverter
         }
 
         var columnCount = Math.Clamp(ComponentMarkupUtilities.GetIntAttribute(element, "data-columns", 2), 1, 4);
-        var spacing = Math.Max(ComponentMarkupUtilities.GetIntAttribute(element, "data-spacing", 1), 0);
-    var showHeaders = string.Equals(element.Attribute("data-show-headers")?.Value, "true", StringComparison.OrdinalIgnoreCase);
-    _ = showHeaders;
+        var widthValue = element.Attribute("data-grid-width")?.Value ?? element.Attribute("data-width")?.Value;
+        var expand = string.Equals(element.Attribute("data-grid-expand")?.Value ?? element.Attribute("data-expand")?.Value, "true", StringComparison.OrdinalIgnoreCase);
+        var showHeaders = string.Equals(element.Attribute("data-show-headers")?.Value, "true", StringComparison.OrdinalIgnoreCase);
+        _ = showHeaders;
 
         var cells = LayoutRenderableUtilities.ConvertChildNodesToRenderables(element.Nodes()).ToList();
 
@@ -38,15 +40,19 @@ internal sealed class GridRenderableConverter : IRenderableConverter
 
         var rows = ChunkCells(cells, columnCount).ToList();
 
-        for (var index = 0; index < rows.Count; index++)
+        foreach (var row in rows)
         {
-            var row = rows[index];
             grid.AddRow(row.ToArray());
+        }
 
-            if (spacing > 0 && index < rows.Count - 1)
-            {
-                grid.AddRow(CreateSpacerRow(columnCount, spacing));
-            }
+        if (expand)
+        {
+            grid.Expand();
+        }
+
+        if (TryParsePositiveInt(widthValue, out var width))
+        {
+            grid.Width = width;
         }
 
         renderable = grid;
@@ -77,13 +83,18 @@ internal sealed class GridRenderableConverter : IRenderableConverter
         }
     }
 
-    private static IRenderable[] CreateSpacerRow(int columnCount, int spacing)
-    {
-        var spacer = new string(' ', Math.Max(spacing, 1));
-        var markup = new Markup(spacer);
-        return Enumerable.Repeat<IRenderable>(markup, columnCount).ToArray();
-    }
-
     private static bool IsGridElement(XElement element)
         => string.Equals(element.Attribute("data-grid")?.Value, "true", StringComparison.OrdinalIgnoreCase);
+
+    private static bool TryParsePositiveInt(string? raw, out int result)
+    {
+        if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value > 0)
+        {
+            result = value;
+            return true;
+        }
+
+        result = default;
+        return false;
+    }
 }

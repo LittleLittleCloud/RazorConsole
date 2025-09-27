@@ -1,17 +1,33 @@
 @namespace RazorConsole.Components
 
+@using System.Collections.Generic
+@using System.Globalization
 @using Microsoft.AspNetCore.Components
 @using Spectre.Console
 
 <div data-panel="true"
-     data-header="@TitleAttribute"
-     data-header-color="@HeaderColorAttribute"
-     data-border-color="@BorderColorAttribute"
-     data-panel-orientation="@OrientationAttribute">
+    data-header="@TitleAttribute"
+    data-header-color="@HeaderColorAttribute"
+    data-border-color="@BorderColorAttribute"
+     data-panel-expand="@ExpandAttribute"
+     data-panel-border="@BorderAttribute"
+     data-panel-padding="@PaddingAttribute"
+     data-panel-height="@HeightAttribute"
+     data-panel-width="@WidthAttribute">
     @ChildContent
 </div>
 
 @code {
+    private static readonly IReadOnlyDictionary<BoxBorder, string> BorderNames = new Dictionary<BoxBorder, string>
+    {
+        { BoxBorder.Square, "square" },
+        { BoxBorder.Rounded, "rounded" },
+        { BoxBorder.Double, "double" },
+        { BoxBorder.Heavy, "heavy" },
+        { BoxBorder.Ascii, "ascii" },
+        { BoxBorder.None, "none" },
+    };
+
     [Parameter]
     public string? Title { get; set; }
 
@@ -22,7 +38,19 @@
     public Color? BorderColor { get; set; }
 
     [Parameter]
-    public string? Orientation { get; set; }
+    public BoxBorder? Border { get; set; }
+
+    [Parameter]
+    public int? Height { get; set; }
+
+    [Parameter]
+    public Padding? Padding { get; set; }
+
+    [Parameter]
+    public int? Width { get; set; }
+
+    [Parameter]
+    public bool Expand { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -33,5 +61,48 @@
 
     private string? BorderColorAttribute => BorderColor?.ToString();
 
-    private string? OrientationAttribute => string.IsNullOrWhiteSpace(Orientation) ? null : Orientation;
+    private string? BorderAttribute
+    {
+        get
+        {
+            if (Border is null)
+            {
+                return null;
+            }
+
+            if (BorderNames.TryGetValue(Border, out var name))
+            {
+                return name;
+            }
+
+            return Border.GetType().Name.ToLowerInvariant();
+        }
+    }
+
+    private string? ExpandAttribute => Expand ? "true" : null;
+
+    private string? PaddingAttribute
+    {
+        get
+        {
+            if (Padding is not { } padding)
+            {
+                return null;
+            }
+
+            return string.Join(",",
+                padding.Left.ToString(CultureInfo.InvariantCulture),
+                padding.Top.ToString(CultureInfo.InvariantCulture),
+                padding.Right.ToString(CultureInfo.InvariantCulture),
+                padding.Bottom.ToString(CultureInfo.InvariantCulture));
+        }
+    }
+
+    private string? HeightAttribute => Height.HasValue && Height.Value > 0
+        ? Height.Value.ToString(CultureInfo.InvariantCulture)
+        : null;
+
+    private string? WidthAttribute => Width.HasValue && Width.Value > 0
+        ? Width.Value.ToString(CultureInfo.InvariantCulture)
+        : null;
 }
