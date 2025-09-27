@@ -229,13 +229,9 @@ public static class HtmlToSpectreRenderableConverter
             return true;
         }
 
-        foreach (var converter in RenderableConverters)
+        if (TryConvertUsingRegisteredConverters(element, out renderable))
         {
-            if (converter.TryConvert(element, out var candidate))
-            {
-                renderable = candidate;
-                return true;
-            }
+            return true;
         }
 
         renderable = null;
@@ -261,6 +257,21 @@ public static class HtmlToSpectreRenderableConverter
         {
             renderable = candidate;
             return true;
+        }
+
+        renderable = null;
+        return false;
+    }
+
+    private static bool TryConvertUsingRegisteredConverters(XElement element, out IRenderable? renderable)
+    {
+        foreach (var converter in RenderableConverters)
+        {
+            if (converter.TryConvert(element, out var candidate))
+            {
+                renderable = candidate;
+                return true;
+            }
         }
 
         renderable = null;

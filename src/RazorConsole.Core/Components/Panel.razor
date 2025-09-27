@@ -3,7 +3,9 @@
 @using System.Collections.Generic
 @using System.Globalization
 @using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
+@inherits RenderableConverterComponentBase<PanelRenderableConverter>
 
 <div data-panel="true"
     data-header="@TitleAttribute"
@@ -13,7 +15,8 @@
      data-panel-border="@BorderAttribute"
      data-panel-padding="@PaddingAttribute"
      data-panel-height="@HeightAttribute"
-     data-panel-width="@WidthAttribute">
+     data-panel-width="@WidthAttribute"
+     @attributes="RemainingAttributes">
     @ChildContent
 </div>
 
@@ -51,9 +54,6 @@
 
     [Parameter]
     public bool Expand { get; set; }
-
-    [Parameter]
-    public RenderFragment? ChildContent { get; set; }
 
     private string? TitleAttribute => string.IsNullOrWhiteSpace(Title) ? null : Title;
 

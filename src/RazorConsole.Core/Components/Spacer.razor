@@ -1,10 +1,13 @@
 @namespace RazorConsole.Components
 
 @using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.ComponentMarkup
+@inherits RenderableConverterComponentBase<SpacerRenderableConverter>
 
 <div data-spacer="true"
      data-lines="@Lines"
-     data-fill="@FillCharacter"></div>
+    data-fill="@FillCharacter"
+    @attributes="RemainingAttributes"></div>
 
 @code {
     private const int DefaultLines = 1;

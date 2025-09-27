@@ -2,11 +2,14 @@
 
 @using System.Globalization
 @using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
+@inherits RenderableConverterComponentBase<PadderRenderableConverter>
 
 <div data-padder="true"
      data-padding="@PaddingAttribute"
-     data-expand="@ExpandAttribute">
+    data-expand="@ExpandAttribute"
+    @attributes="RemainingAttributes">
     @ChildContent
 </div>
 
@@ -18,9 +21,6 @@
 
     [Parameter]
     public bool Expand { get; set; }
-
-    [Parameter]
-    public RenderFragment? ChildContent { get; set; }
 
     private string? PaddingAttribute
     {

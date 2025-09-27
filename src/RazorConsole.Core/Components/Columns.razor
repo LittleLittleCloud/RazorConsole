@@ -2,11 +2,14 @@
 
 @using System.Globalization
 @using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
+@inherits RenderableConverterComponentBase<ColumnsRenderableConverter>
 
 <div data-columns="true"
-     data-columns-expand="@ExpandAttribute"
-     data-columns-padding="@PaddingAttribute">
+    data-columns-expand="@ExpandAttribute"
+    data-columns-padding="@PaddingAttribute"
+    @attributes="RemainingAttributes">
     @ChildContent
 </div>
 
@@ -16,9 +19,6 @@
 
     [Parameter]
     public Padding? Padding { get; set; }
-
-    [Parameter]
-    public RenderFragment? ChildContent { get; set; }
 
     private string? ExpandAttribute => Expand ? "true" : null;
 

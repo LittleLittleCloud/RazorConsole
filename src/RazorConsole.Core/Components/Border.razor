@@ -1,12 +1,15 @@
 @namespace RazorConsole.Components
 
 @using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
+@inherits RenderableConverterComponentBase<PanelRenderableConverter>
 
 <div data-border="panel"
      data-header="@Header"
      data-header-color="@HeaderColor"
-     data-border-color="@BorderColor">
+    data-border-color="@BorderColor"
+    @attributes="RemainingAttributes">
     @ChildContent
 </div>
 
@@ -19,7 +22,4 @@
 
     [Parameter]
     public Color? BorderColor { get; set; }
-
-    [Parameter]
-    public RenderFragment? ChildContent { get; set; }
 }

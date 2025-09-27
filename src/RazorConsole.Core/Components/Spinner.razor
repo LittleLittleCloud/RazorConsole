@@ -1,12 +1,15 @@
 @namespace RazorConsole.Components
 
 @using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.ComponentMarkup
+@inherits RenderableConverterComponentBase<SpinnerRenderableConverter>
 
 <div data-spinner="true"
      data-message="@Message"
      data-style="@Style"
      data-spinner-type="@SpinnerType"
-     data-auto-dismiss="@AutoDismiss"></div>
+    data-auto-dismiss="@AutoDismiss"
+    @attributes="RemainingAttributes"></div>
 
 @code {
     [Parameter]

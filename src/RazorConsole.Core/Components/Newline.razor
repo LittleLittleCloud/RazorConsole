@@ -1,9 +1,12 @@
 @namespace RazorConsole.Components
 
 @using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.ComponentMarkup
+@inherits RenderableConverterComponentBase<NewlineRenderableConverter>
 
 <div data-newline="true"
-     data-count="@Count"></div>
+    data-count="@Count"
+    @attributes="RemainingAttributes"></div>
 
 @code {
     private const int DefaultCount = 1;

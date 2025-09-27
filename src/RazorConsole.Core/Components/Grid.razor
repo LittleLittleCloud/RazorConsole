@@ -3,12 +3,15 @@
 @using System
 @using System.Globalization
 @using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.ComponentMarkup
+@inherits RenderableConverterComponentBase<GridRenderableConverter>
 
 <div data-grid="true"
      data-columns="@ColumnAttribute"
      data-show-headers="@ShowHeadersAttribute"
-     data-grid-expand="@ExpandAttribute"
-     data-grid-width="@WidthAttribute">
+    data-grid-expand="@ExpandAttribute"
+    data-grid-width="@WidthAttribute"
+    @attributes="RemainingAttributes">
     @ChildContent
 </div>
 
@@ -27,9 +30,6 @@
 
     [Parameter]
     public int? Width { get; set; }
-
-    [Parameter]
-    public RenderFragment? ChildContent { get; set; }
 
     private string ColumnAttribute => Columns.ToString(CultureInfo.InvariantCulture);
 

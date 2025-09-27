@@ -8,13 +8,14 @@
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
 @using Spectre.Console.Rendering
+@inherits RenderableConverterComponentBase<Align.RenderableConverter>
 
 <div data-align="true"
      data-horizontal="@HorizontalAttribute"
      data-vertical="@VerticalAttribute"
      data-width="@WidthAttribute"
-     data-height="@HeightAttribute"
-     data-converter="@ConverterTypeAttribute">
+    data-height="@HeightAttribute"
+    @attributes="RemainingAttributes">
     @ChildContent
 </div>
 
@@ -31,12 +32,6 @@
     [Parameter]
     public int? Height { get; set; }
 
-    [Parameter]
-    public RenderFragment? ChildContent { get; set; }
-
-    [Parameter]
-    public IRenderableConverter? Converter { get; set; } = new RenderableConverter();
-
     private string HorizontalAttribute => Horizontal.ToString().ToLowerInvariant();
 
     private string VerticalAttribute => Vertical.ToString().ToLowerInvariant();
@@ -48,8 +43,6 @@
     private string? HeightAttribute => Height.HasValue && Height.Value > 0
         ? Height.Value.ToString(CultureInfo.InvariantCulture)
         : null;
-
-    private string? ConverterTypeAttribute => Converter?.GetType().FullName;
 
     [RenderableConverterExport(typeof(RenderableConverter))]
     public sealed class RenderableConverter : IRenderableConverter

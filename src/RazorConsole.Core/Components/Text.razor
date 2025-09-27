@@ -1,8 +1,12 @@
 @namespace RazorConsole.Components
 
 @using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.ComponentMarkup
+@inherits RenderableConverterComponentBase<TextRenderableConverter>
 
-<span data-text="true" data-style="@Style">@Value</span>
+<span data-text="true"
+    data-style="@Style"
+    @attributes="RemainingAttributes">@Value</span>
 
 @code {
     [Parameter]
