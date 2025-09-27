@@ -16,16 +16,8 @@
     public string? Style { get; set; }
 
     [Parameter]
-    public string? SpinnerType { get; set; } = "Dots";
+    public global::Spectre.Console.Spinner SpinnerType { get; set; } = global::Spectre.Console.Spinner.Known.Dots;
 
     [Parameter]
     public bool AutoDismiss { get; set; }
-
-    protected override void OnParametersSet()
-    {
-        if (!string.IsNullOrWhiteSpace(SpinnerType))
-        {
-            SpinnerType = SpinnerType.Trim();
-        }
-    }
 }

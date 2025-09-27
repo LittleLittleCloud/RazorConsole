@@ -31,7 +31,7 @@
 
     <Spacer Lines="1" FillCharacter="-" />
 
-    <Spinner Message="Awaiting your input..." Style="yellow" SpinnerType="Arc" />
+    <Spinner Message="Awaiting your input..." Style="yellow" SpinnerType="@SpinnerType" />
 
     <Spacer Lines="1" />
 
@@ -52,4 +52,6 @@
     private string TimestampLabel => Model.Timestamp.ToString("HH:mm:ss");
 
     private bool HasTips => Model.Tips.Count > 0;
+
+    private Spectre.Console.Spinner SpinnerType => Spectre.Console.Spinner.Known.Arc;
 }
