@@ -52,11 +52,11 @@ public abstract class ConsoleController
 
         if (SpectreRenderableFactory.TryCreateRenderable(html, out var renderable) && renderable is not null)
         {
-            var markupFromPanel = HtmlToSpectreMarkupConverter.Convert(html);
+            var markupFromPanel = HtmlToSpectreRenderableConverter.Convert(html);
             return ConsoleViewResult.Create(html, markupFromPanel, renderable);
         }
 
-        var markup = HtmlToSpectreMarkupConverter.Convert(html);
+        var markup = HtmlToSpectreRenderableConverter.Convert(html);
         if (string.IsNullOrWhiteSpace(markup))
         {
             markup = "[grey53](no content)[/]";
