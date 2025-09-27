@@ -28,34 +28,6 @@ public sealed class HomeController : ConsoleController
 
         await RunLiveDisplayAsync(initialView, async (displayContext, token) =>
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token);
-            var tickerTask = RunTimestampTickerAsync(displayContext, linkedCts.Token);
-
-            try
-            {
-                while (!token.IsCancellationRequested)
-                {
-                    await UpdateDisplayAsync(displayContext, token);
-                }
-            }
-            finally
-            {
-                linkedCts.Cancel();
-                try
-                {
-                    await tickerTask;
-                }
-                catch (OperationCanceledException)
-                {
-                }
-            }
-        }, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        ClearOutput();
-        return NavigationIntent.Exit;
-
-        async Task RunTimestampTickerAsync(ConsoleLiveDisplayContext context, CancellationToken token)
-        {
             while (!token.IsCancellationRequested)
             {
                 try
@@ -67,12 +39,17 @@ public sealed class HomeController : ConsoleController
                     break;
                 }
 
-                if (!token.IsCancellationRequested)
+                if (token.IsCancellationRequested)
                 {
-                    await UpdateDisplayAsync(context, token).ConfigureAwait(false);
+                    break;
                 }
+
+                await UpdateDisplayAsync(displayContext, token).ConfigureAwait(false);
             }
-        }
+        }, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        ClearOutput();
+        return NavigationIntent.Exit;
 
         async Task UpdateDisplayAsync(ConsoleLiveDisplayContext context, CancellationToken token)
         {
