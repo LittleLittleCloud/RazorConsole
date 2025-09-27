@@ -5,51 +5,99 @@
 @using RazorConsole.Gallery.Models
 @using Spectre.Console
 
-<Rows Gap="1" Alignment="Left" Expand="true">
-    <Panel Title="Razor Component Output" TitleColor=@Color.LightSteelBlue1 BorderColor=@Color.Grey93>
+<Rows Gap="1" Expand="true">
+    <Panel Title="Greeting" TitleColor=@Color.LightSteelBlue1 BorderColor=@Color.Grey93>
         <Rows Gap="1">
             <RazorConsole.Components.Text Style="mediumspringgreen bold" Value="@GreetingTitle" />
-            <RazorConsole.Components.Text Style="grey53" Value="@DateLabel" />
             <RazorConsole.Components.Text Style="grey53" Value="@TimestampMessage" />
 
-            <Columns Spacing="4" Alignment="Center" Collapse="true">
-                @if (HasTips)
-                {
-                    <Panel Title="Helpful Tips" TitleColor=@Color.BlueViolet BorderColor=@Color.BlueViolet Orientation="Vertical">
-                        <Rows Gap="1">
-                            @foreach (var tip in Model.Tips)
-                            {
-                                <RazorConsole.Components.Text Style="grey53 italic" Value="@tip" />
-                            }
-                        </Rows>
-                    </Panel>
-                }
-                else
-                {
-                    <Panel Title="No Tips" TitleColor=@Color.Aqua BorderColor=@Color.Aqua>
-                        <RazorConsole.Components.Text Style="grey53 italic" Value="No tips available yet." />
-                    </Panel>
-                }
+            <Grid Columns="2" Spacing="2">
+                <RazorConsole.Components.Text Style="grey53 bold" Value="Recipient" />
+                <RazorConsole.Components.Text Style="grey53" Value="@DisplayName" />
+                <RazorConsole.Components.Text Style="grey53 bold" Value="Date" />
+                <RazorConsole.Components.Text Style="grey53" Value="@DateLabel" />
+                <RazorConsole.Components.Text Style="grey53 bold" Value="Time" />
+                <RazorConsole.Components.Text Style="grey53" Value="@TimestampLabel" />
+            </Grid>
+        </Rows>
+    </Panel>
 
-                <Panel Title="Session Info" TitleColor=@Color.HotPink BorderColor=@Color.HotPink>
-                    <Grid Columns="2" Spacing="2">
-                        <RazorConsole.Components.Text Style="grey53 bold" Value="Name" />
-                        <RazorConsole.Components.Text Style="grey53" Value="@DisplayName" />
-                        <RazorConsole.Components.Text Style="grey53 bold" Value="Date" />
-                        <RazorConsole.Components.Text Style="grey53" Value="@Model.Date.ToShortDateString()" />
-                        <RazorConsole.Components.Text Style="grey53 bold" Value="Time" />
-                        <RazorConsole.Components.Text Style="grey53" Value="@TimestampLabel" />
-                    </Grid>
+    <Panel Title="Layout Showcase" TitleColor=@Color.LightSkyBlue1 BorderColor=@Color.CornflowerBlue Orientation="Horizontal">
+        <Columns Spacing="4" Alignment="Center">
+            <Panel Title="Rows" TitleColor=@Color.MediumSpringGreen BorderColor=@Color.MediumSpringGreen Orientation="Vertical">
+                <Rows Gap="1">
+                    <RazorConsole.Components.Text Style="grey53" Value="Stack sections vertically with optional spacing." />
+                    <Rows Gap="0">
+                        <RazorConsole.Components.Text Style="chartreuse2" Value="• Greeting" />
+                        <RazorConsole.Components.Text Style="chartreuse2" Value="• Status" />
+                        <RazorConsole.Components.Text Style="chartreuse2" Value="• Tips" />
+                    </Rows>
+                </Rows>
+            </Panel>
+
+            <Panel Title="Columns" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1 Orientation="Vertical">
+                <Columns Spacing="4" Alignment="Center">
+                        <Rows Gap="1">
+                            <RazorConsole.Components.Text Style="grey53" Value="Left" />
+                            <RazorConsole.Components.Text Style="grey53" Value="Stay beside peers on wide consoles." />
+                        </Rows>
+                        <Rows Gap="1">
+                            <RazorConsole.Components.Text Style="grey53" Value="Right" />
+                            <RazorConsole.Components.Text Style="grey53" Value="Columns manage spacing automatically." />
+                        </Rows>
+                </Columns>
+            </Panel>
+
+            <Panel Title="Grid" TitleColor=@Color.DeepSkyBlue1 BorderColor=@Color.DeepSkyBlue1 Orientation="Vertical">
+                <Grid Columns="2" Spacing="1">
+                    <RazorConsole.Components.Text Style="grey53 bold" Value="Section" />
+                    <RazorConsole.Components.Text Style="grey53 bold" Value="Purpose" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Greeting" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Personal hello" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Layouts" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Component tour" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Status" />
+                    <RazorConsole.Components.Text Style="grey53" Value="Live updates" />
+                </Grid>
+            </Panel>
+        </Columns>
+    </Panel>
+
+    @if (HasTips)
+    {
+        <Panel Title="Tips" TitleColor=@Color.BlueViolet BorderColor=@Color.BlueViolet>
+            <Rows Gap="1">
+                @foreach (var tip in Model.Tips)
+                {
+                    <RazorConsole.Components.Text Style="grey53 italic" Value="@tip" />
+                }
+            </Rows>
+        </Panel>
+    }
+    else
+    {
+        <Panel Title="Tips" TitleColor=@Color.Aqua BorderColor=@Color.Aqua>
+            <RazorConsole.Components.Text Style="grey53 italic" Value="No tips available yet." />
+        </Panel>
+    }
+
+    <Panel Title="Live Status" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1 Orientation="Horizontal">
+        <Rows Gap="1">
+            <Columns Spacing="2" Collapse="true">
+                <Panel Title="Activity" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1>
+                    <Rows Gap="1">
+                        <Spinner Message="Awaiting your input..." Style="yellow" SpinnerType="@SpinnerType" />
+                        <RazorConsole.Components.Text Style="italic" Value="Enter a name below to refresh the greeting." />
+                    </Rows>
+                </Panel>
+                <Panel Title="Next Step" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1>
+                    <Rows Gap="1">
+                        <RazorConsole.Components.Text Style="grey53" Value="Use Rows, Columns, and Grid to compose complex layouts quickly." />
+                        <Spacer Lines="1" />
+                        <RazorConsole.Components.Text Style="grey53" Value="This section collapses into a stack on narrow terminals." />
+                    </Rows>
                 </Panel>
             </Columns>
-
-            <Spacer Lines="1" FillCharacter="-" />
-
-            <Panel Title="Live Status" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1 Orientation="Horizontal">
-                <Spinner Message="Awaiting your input..." Style="yellow" SpinnerType="@SpinnerType" />
-                <Spacer Lines="1" />
-                <RazorConsole.Components.Text Style="italic" Value="Enter a name below to refresh the greeting." />
-            </Panel>
         </Rows>
     </Panel>
 </Rows>
