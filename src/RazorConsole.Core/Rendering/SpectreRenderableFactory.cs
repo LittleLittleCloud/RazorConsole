@@ -31,14 +31,7 @@ public static class SpectreRenderableFactory
                 return true;
             }
 
-            var markup = HtmlToSpectreRenderableConverter.Convert(html);
-            if (string.IsNullOrWhiteSpace(markup))
-            {
-                return false;
-            }
-
-            renderable = new Markup(markup);
-            return true;
+            return false;
         }
         catch
         {

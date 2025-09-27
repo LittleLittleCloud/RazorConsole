@@ -9,10 +9,9 @@ namespace RazorConsole.Core.Controllers;
 /// </summary>
 public sealed class ConsoleViewResult
 {
-    private ConsoleViewResult(string html, string markup, IRenderable renderable)
+    private ConsoleViewResult(string html, IRenderable renderable)
     {
         Html = html;
-        Markup = markup;
         Renderable = renderable;
     }
 
@@ -20,11 +19,6 @@ public sealed class ConsoleViewResult
     /// Gets the raw HTML produced by the Razor renderer.
     /// </summary>
     public string Html { get; }
-
-    /// <summary>
-    /// Gets the Spectre.Console markup equivalent of the rendered HTML.
-    /// </summary>
-    public string Markup { get; }
 
     /// <summary>
     /// Gets the Spectre.Console renderable representation of the rendered view.
@@ -45,13 +39,6 @@ public sealed class ConsoleViewResult
         console.Write(Renderable);
     }
 
-    internal static ConsoleViewResult Create(string html, string markup, IRenderable renderable)
-        => new(html, markup, renderable);
-
-    internal static ConsoleViewResult Empty { get; } = new(
-        string.Empty,
-        string.Empty,
-        new Panel(new Markup(string.Empty))
-            .Border(BoxBorder.None)
-            .Expand());
+    internal static ConsoleViewResult Create(string html, IRenderable renderable)
+        => new(html, renderable);
 }

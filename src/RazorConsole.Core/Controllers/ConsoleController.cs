@@ -52,22 +52,19 @@ public abstract class ConsoleController
 
         if (SpectreRenderableFactory.TryCreateRenderable(html, out var renderable) && renderable is not null)
         {
-            var markupFromPanel = HtmlToSpectreRenderableConverter.Convert(html);
-            return ConsoleViewResult.Create(html, markupFromPanel, renderable);
+            return ConsoleViewResult.Create(html, renderable);
         }
-
-        var markup = HtmlToSpectreRenderableConverter.Convert(html);
-        if (string.IsNullOrWhiteSpace(markup))
+        else
         {
-            markup = "[grey53](no content)[/]";
-        }
-
-        var fallbackRenderable = new Panel(new Markup(markup))
+            // Fallback to show a html fragment and let users know rendering failed.
+            var fallbackRenderable = new Panel(new Markup(html))
             .Expand()
+            .Header(" [red]Rendering Error[/] ")
             .SquareBorder()
             .BorderColor(Color.Grey53);
 
-        return ConsoleViewResult.Create(html, markup, fallbackRenderable);
+            return ConsoleViewResult.Create(html, fallbackRenderable);
+        }
     }
 
     /// <summary>
