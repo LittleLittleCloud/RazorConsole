@@ -5,6 +5,7 @@ using System.Text;
 using System.Xml.Linq;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering;
 
@@ -25,7 +26,7 @@ public static class HtmlToSpectreRenderableConverter
         SpinnerConverter,
     };
 
-    private static readonly IReadOnlyList<IRenderableConverter> MarkupConverters = new IRenderableConverter[]
+    private static readonly IReadOnlyList<IMarkupConverter> MarkupConverters = new IMarkupConverter[]
     {
         TextConverter,
         NewlineConverter,
@@ -206,17 +207,18 @@ public static class HtmlToSpectreRenderableConverter
         }
     }
 
-    internal static bool TryConvertToRenderable(XElement element, out ComponentRenderable renderable)
+    internal static bool TryConvertToRenderable(XElement element, out IRenderable? renderable)
     {
         foreach (var converter in RenderableConverters)
         {
-            if (converter.TryConvert(element, out renderable))
+            if (converter.TryConvert(element, out var candidate))
             {
+                renderable = candidate;
                 return true;
             }
         }
 
-        renderable = default;
+        renderable = null;
         return false;
     }
 
@@ -224,9 +226,9 @@ public static class HtmlToSpectreRenderableConverter
     {
         foreach (var converter in MarkupConverters)
         {
-            if (converter.TryConvert(element, out var renderable))
+            if (converter.TryConvert(element, out var markup))
             {
-                builder.Append(renderable.Markup);
+                builder.Append(markup);
                 return true;
             }
         }

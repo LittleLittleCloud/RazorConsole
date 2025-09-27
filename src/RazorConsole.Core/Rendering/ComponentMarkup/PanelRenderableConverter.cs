@@ -3,25 +3,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using RazorConsole.Core.Rendering;
 using Spectre.Console;
 using Spectre.Console.Rendering;
+using RazorConsole.Core.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class PanelRenderableConverter : IRenderableConverter
+internal sealed class PanelRenderableConverter : IRenderableConverter, IMarkupConverter
 {
-    public bool TryConvert(XElement element, out ComponentRenderable renderable)
+    public bool TryConvert(XElement element, out IRenderable renderable)
     {
         if (!IsPanelElement(element))
         {
-            renderable = default;
+            renderable = default!;
             return false;
         }
 
-        var panel = CreatePanel(element);
-        var markup = BuildMarkupFallback(element);
-        renderable = new ComponentRenderable(markup, panel);
+        renderable = CreatePanel(element);
+        return true;
+    }
+
+    public bool TryConvert(XElement element, out string markup)
+    {
+        if (!IsPanelElement(element))
+        {
+            markup = string.Empty;
+            return false;
+        }
+
+        markup = BuildMarkupFallback(element);
         return true;
     }
 
@@ -112,9 +122,9 @@ internal sealed class PanelRenderableConverter : IRenderableConverter
                     yield break;
                 }
 
-                if (HtmlToSpectreRenderableConverter.TryConvertToRenderable(element, out var componentRenderable))
+                if (HtmlToSpectreRenderableConverter.TryConvertToRenderable(element, out var nestedRenderable))
                 {
-                    yield return componentRenderable.Renderable;
+                    yield return nestedRenderable!;
                     yield break;
                 }
 

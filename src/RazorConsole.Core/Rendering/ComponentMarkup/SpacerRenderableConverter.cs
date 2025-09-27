@@ -1,23 +1,39 @@
 using System;
 using System.Xml.Linq;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class SpacerRenderableConverter : IRenderableConverter
+internal sealed class SpacerRenderableConverter : IRenderableConverter, IMarkupConverter
 {
-    public bool TryConvert(XElement element, out ComponentRenderable renderable)
+    public bool TryConvert(XElement element, out IRenderable renderable)
+    {
+        if (!TryGetMarkup(element, out var markup))
+        {
+            renderable = default!;
+            return false;
+        }
+
+        renderable = new Markup(markup);
+        return true;
+    }
+
+    public bool TryConvert(XElement element, out string markup)
+        => TryGetMarkup(element, out markup);
+
+    private static bool TryGetMarkup(XElement element, out string markup)
     {
         if (!IsSpacerComponent(element))
         {
-            renderable = default;
+            markup = string.Empty;
             return false;
         }
 
         var lines = Math.Max(ComponentMarkupUtilities.GetIntAttribute(element, "data-lines", 1), 0);
         if (lines == 0)
         {
-            renderable = new ComponentRenderable(string.Empty, new Markup(string.Empty));
+            markup = string.Empty;
             return true;
         }
 
@@ -42,8 +58,7 @@ internal sealed class SpacerRenderableConverter : IRenderableConverter
             }
         }
 
-        var markupText = spacerBuilder.ToString();
-        renderable = new ComponentRenderable(markupText, new Markup(markupText));
+        markup = spacerBuilder.ToString();
         return true;
     }
 

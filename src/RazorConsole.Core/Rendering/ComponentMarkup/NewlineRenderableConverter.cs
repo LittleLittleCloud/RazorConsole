@@ -1,16 +1,32 @@
 using System;
 using System.Xml.Linq;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class NewlineRenderableConverter : IRenderableConverter
+internal sealed class NewlineRenderableConverter : IRenderableConverter, IMarkupConverter
 {
-    public bool TryConvert(XElement element, out ComponentRenderable renderable)
+    public bool TryConvert(XElement element, out IRenderable renderable)
+    {
+        if (!TryGetMarkup(element, out var markup))
+        {
+            renderable = default!;
+            return false;
+        }
+
+        renderable = new Markup(markup);
+        return true;
+    }
+
+    public bool TryConvert(XElement element, out string markup)
+        => TryGetMarkup(element, out markup);
+
+    private static bool TryGetMarkup(XElement element, out string markup)
     {
         if (!IsNewlineComponent(element))
         {
-            renderable = default;
+            markup = string.Empty;
             return false;
         }
 
@@ -21,8 +37,7 @@ internal sealed class NewlineRenderableConverter : IRenderableConverter
             newlineBuilder.AppendLine();
         }
 
-        var markupText = newlineBuilder.ToString();
-        renderable = new ComponentRenderable(markupText, new Markup(markupText));
+        markup = newlineBuilder.ToString();
         return true;
     }
 

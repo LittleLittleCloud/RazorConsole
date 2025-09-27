@@ -1,14 +1,31 @@
 using System.Xml.Linq;
+using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class SpinnerRenderableConverter : IRenderableConverter
+internal sealed class SpinnerRenderableConverter : IRenderableConverter, IMarkupConverter
 {
-    public bool TryConvert(XElement element, out ComponentRenderable renderable)
+    public bool TryConvert(XElement element, out IRenderable renderable)
+    {
+        if (!TryGetMarkup(element, out var markup))
+        {
+            renderable = default!;
+            return false;
+        }
+
+        renderable = new Markup(markup);
+        return true;
+    }
+
+    public bool TryConvert(XElement element, out string markup)
+        => TryGetMarkup(element, out markup);
+
+    private static bool TryGetMarkup(XElement element, out string markup)
     {
         if (!IsSpinnerComponent(element))
         {
-            renderable = default;
+            markup = string.Empty;
             return false;
         }
 
@@ -21,7 +38,7 @@ internal sealed class SpinnerRenderableConverter : IRenderableConverter
             ? glyph
             : string.Concat(glyph, " ", message);
 
-        renderable = ComponentMarkupUtilities.CreateStyledRenderable(style, content, requiresEscape: true);
+        markup = ComponentMarkupUtilities.CreateStyledMarkup(style, content, requiresEscape: true);
         return true;
     }
 

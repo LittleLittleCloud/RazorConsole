@@ -78,7 +78,7 @@ public abstract class ConsoleController
             throw new ArgumentNullException(nameof(view));
         }
 
-    view.WriteTo(ConsoleOutput);
+        view.WriteTo(ConsoleOutput);
     }
 
     /// <summary>

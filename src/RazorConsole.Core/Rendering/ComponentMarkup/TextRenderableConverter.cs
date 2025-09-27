@@ -1,15 +1,31 @@
 using System.Xml.Linq;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
-internal sealed class TextRenderableConverter : IRenderableConverter
+internal sealed class TextRenderableConverter : IRenderableConverter, IMarkupConverter
 {
-    public bool TryConvert(XElement element, out ComponentRenderable renderable)
+    public bool TryConvert(XElement element, out IRenderable renderable)
+    {
+        if (!TryGetRenderable(element, out var markup, out renderable))
+        {
+            renderable = default!;
+            return false;
+        }
+
+        return true;
+    }
+
+    public bool TryConvert(XElement element, out string markup)
+        => TryGetRenderable(element, out markup, out _);
+
+    private static bool TryGetRenderable(XElement element, out string markup, out IRenderable renderable)
     {
         if (!IsTextComponent(element))
         {
-            renderable = default;
+            markup = string.Empty;
+            renderable = default!;
             return false;
         }
 
@@ -18,7 +34,8 @@ internal sealed class TextRenderableConverter : IRenderableConverter
         var isMarkup = bool.TryParse(isMarkupValue, out var parsed) && parsed;
 
         var content = element.Value ?? string.Empty;
-        renderable = ComponentMarkupUtilities.CreateStyledRenderable(style, content, requiresEscape: !isMarkup);
+        markup = ComponentMarkupUtilities.CreateStyledMarkup(style, content, requiresEscape: !isMarkup);
+        renderable = new Markup(markup);
         return true;
     }
 

@@ -17,7 +17,7 @@ internal static class ComponentMarkupUtilities
             : fallback;
     }
 
-    public static ComponentRenderable CreateStyledRenderable(string? style, string content, bool requiresEscape)
+    public static string CreateStyledMarkup(string? style, string content, bool requiresEscape)
     {
         if (requiresEscape)
         {
@@ -26,11 +26,10 @@ internal static class ComponentMarkupUtilities
 
         if (string.IsNullOrWhiteSpace(style))
         {
-            return new ComponentRenderable(content, new Markup(content));
+            return content;
         }
 
-        var markupText = string.Concat("[", style, "]", content, "[/]");
-        return new ComponentRenderable(markupText, new Markup(markupText));
+        return string.Concat("[", style, "]", content, "[/]");
     }
 
     public static string ResolveSpinnerGlyph(string? spinnerType)

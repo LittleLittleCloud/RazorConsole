@@ -25,9 +25,9 @@ public static class SpectreRenderableFactory
                 return false;
             }
 
-            if (HtmlToSpectreRenderableConverter.TryConvertToRenderable(root, out var componentRenderable))
+            if (HtmlToSpectreRenderableConverter.TryConvertToRenderable(root, out var candidate))
             {
-                renderable = componentRenderable.Renderable;
+                renderable = candidate;
                 return true;
             }
 
