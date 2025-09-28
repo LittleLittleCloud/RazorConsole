@@ -2,7 +2,9 @@
 
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Core.Rendering.ComponentMarkup
+@using System.Composition
 @inherits RenderableConverterComponentBase<SpacerRenderableConverter>
+@attribute [Export(typeof(RenderableConverterComponentBase<SpacerRenderableConverter>))]
 
 <div data-spacer="true"
      data-lines="@Lines"

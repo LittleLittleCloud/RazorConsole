@@ -3,7 +3,9 @@
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
+@using System.Composition
 @inherits RenderableConverterComponentBase<PanelRenderableConverter>
+@attribute [Export(typeof(RenderableConverterComponentBase<PanelRenderableConverter>))]
 
 <div data-border="panel"
      data-header="@Header"

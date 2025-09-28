@@ -2,7 +2,9 @@
 
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Core.Rendering.ComponentMarkup
+@using System.Composition
 @inherits RenderableConverterComponentBase<RowsRenderableConverter>
+@attribute [Export(typeof(RenderableConverterComponentBase<RowsRenderableConverter>))]
 
 <div data-rows="true"
     data-expand="@ExpandAttribute"

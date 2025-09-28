@@ -4,7 +4,9 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Core.Rendering.ComponentMarkup
+@using System.Composition
 @inherits RenderableConverterComponentBase<GridRenderableConverter>
+@attribute [Export(typeof(RenderableConverterComponentBase<GridRenderableConverter>))]
 
 <div data-grid="true"
      data-columns="@ColumnAttribute"

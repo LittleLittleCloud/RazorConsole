@@ -2,7 +2,9 @@
 
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Core.Rendering.ComponentMarkup
+@using System.Composition
 @inherits RenderableConverterComponentBase<NewlineRenderableConverter>
+@attribute [Export(typeof(RenderableConverterComponentBase<NewlineRenderableConverter>))]
 
 <div data-newline="true"
     data-count="@Count"

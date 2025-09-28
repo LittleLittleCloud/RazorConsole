@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using RazorConsole.Core.Controllers;
+using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using Spectre.Console.Rendering;
 using Xunit;
@@ -62,6 +64,31 @@ public class ConsoleLiveDisplayContextTests
         Assert.True(canvas.RefreshCount > 0);
     }
 
+    [Fact]
+    public async Task UpdateModelAsync_ReRendersUsingCallback()
+    {
+        var canvas = new TestCanvas();
+        var renderCalls = 0;
+
+        using var context = ConsoleLiveDisplayContext.CreateForTesting(
+            canvas,
+            "<p/>",
+            Array.Empty<IAnimatedConsoleRenderable>(),
+            (parameters, _) =>
+            {
+                renderCalls++;
+                var value = parameters is DummyModel dummy ? dummy.Value : 0;
+                return Task.FromResult(ConsoleViewResult.Create($"<div>{value}</div>", new FakeRenderable(), Array.Empty<IAnimatedConsoleRenderable>()));
+            },
+            new DummyModel { Value = 0 });
+
+        var updated = await context.UpdateModelAsync(new DummyModel { Value = 42 });
+
+        Assert.True(updated);
+        Assert.True(canvas.WasUpdated);
+        Assert.Equal(1, renderCalls);
+    }
+
     private sealed class TestCanvas : ConsoleLiveDisplayContext.ILiveDisplayCanvas
     {
         public bool WasUpdated { get; private set; }
@@ -109,5 +136,10 @@ public class ConsoleLiveDisplayContextTests
         }
 
         public TimeSpan RefreshInterval { get; }
+    }
+
+    private sealed class DummyModel
+    {
+        public int Value { get; set; }
     }
 }

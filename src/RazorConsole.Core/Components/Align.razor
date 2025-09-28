@@ -8,7 +8,9 @@
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
 @using Spectre.Console.Rendering
+@using System.Composition
 @inherits RenderableConverterComponentBase<Align.RenderableConverter>
+@attribute [Export(typeof(RenderableConverterComponentBase<Align.RenderableConverter>))]
 
 <div data-align="true"
      data-horizontal="@HorizontalAttribute"

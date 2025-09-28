@@ -4,7 +4,9 @@
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
+@using System.Composition
 @inherits RenderableConverterComponentBase<PadderRenderableConverter>
+@attribute [Export(typeof(RenderableConverterComponentBase<PadderRenderableConverter>))]
 
 <div data-padder="true"
      data-padding="@PaddingAttribute"

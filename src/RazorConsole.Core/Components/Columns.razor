@@ -4,7 +4,9 @@
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
+@using System.Composition
 @inherits RenderableConverterComponentBase<ColumnsRenderableConverter>
+@attribute [Export(typeof(RenderableConverterComponentBase<ColumnsRenderableConverter>))]
 
 <div data-columns="true"
     data-columns-expand="@ExpandAttribute"
