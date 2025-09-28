@@ -14,31 +14,20 @@
 @implements IDisposable
 
 <Rows Expand="true">
-    <Panel
-        data-focusable="true"
-        data-focus-key="greeting"
-        Title="Greeting"
+    <Panel data-focusable="true" data-focus-key="greeting" Title="Greeting"
         TitleColor="@(GetTitleColor("greeting", Color.LightSteelBlue1))"
-        BorderColor="@(GetBorderColor("greeting", Color.Grey93))"
-        Expand="@GreetingPanelExpanded">
+        BorderColor="@(GetBorderColor("greeting", Color.Grey93))" Expand="@GreetingPanelExpanded">
         <RazorConsole.Components.Text Style="mediumspringgreen bold" Value="@GreetingTitle" />
         <RazorConsole.Components.Text Style="grey53" Value="@TimestampMessage" />
         <Grid Columns="2">
-            <RazorConsole.Components.Text
-                Value="Recipient" />
-            <RazorConsole.Components.Text
-                Value="@DisplayName" />
-            <RazorConsole.Components.Text
-                Value="Date" />
-            <RazorConsole.Components.Text
-                Value="@DateLabel" />
+            <RazorConsole.Components.Text Value="Recipient" />
+            <RazorConsole.Components.Text Value="@DisplayName" />
+            <RazorConsole.Components.Text Value="Date" />
+            <RazorConsole.Components.Text Value="@DateLabel" />
         </Grid>
     </Panel>
 
-    <Panel
-        data-focusable="true"
-        data-focus-key="rows"
-        Title="Rows"
+    <Panel data-focusable="true" data-focus-key="rows" Title="Rows"
         TitleColor="@(GetTitleColor("rows", Color.MediumSpringGreen))"
         BorderColor="@(GetBorderColor("rows", Color.MediumSpringGreen))">
         <Rows>
@@ -59,30 +48,19 @@
     </Panel>
 
     <Panel Title="Grid" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1>
-        <Grid
-            Columns="3" ShowHeaders="true" Expand="true">
-            <RazorConsole.Components.Text
-                Value="Feature" />
-            <RazorConsole.Components.Text
-                Value="Description" />
-            <RazorConsole.Components.Text
-                Value="Example" />
-            <RazorConsole.Components.Text
-                Value="Rows" />
-            <RazorConsole.Components.Text
-                Value="Stack sections vertically with optional spacing." />
-            <RazorConsole.Components.Text
-                Value="Columns" />
-            <RazorConsole.Components.Text
-                Value="Arrange sections horizontally with balanced widths." />
-            <RazorConsole.Components.Text
-                Value="Grid" />
+        <Grid Columns="3" ShowHeaders="true" Expand="true">
+            <RazorConsole.Components.Text Value="Feature" />
+            <RazorConsole.Components.Text Value="Description" />
+            <RazorConsole.Components.Text Value="Example" />
+            <RazorConsole.Components.Text Value="Rows" />
+            <RazorConsole.Components.Text Value="Stack sections vertically with optional spacing." />
+            <RazorConsole.Components.Text Value="Columns" />
+            <RazorConsole.Components.Text Value="Arrange sections horizontally with balanced widths." />
+            <RazorConsole.Components.Text Value="Grid" />
             <RazorConsole.Components.Text
                 Value="Two-to-four column layout with headers and automatic width balancing." />
-            <RazorConsole.Components.Text
-                Value="Panel" />
-            <RazorConsole.Components.Text
-                Value="Titled container with optional border and accent styling." />
+            <RazorConsole.Components.Text Value="Panel" />
+            <RazorConsole.Components.Text Value="Titled container with optional border and accent styling." />
         </Grid>
     </Panel>
 
@@ -137,21 +115,16 @@
 
     <Panel Title="Buttons" TitleColor=@Color.Plum1 BorderColor=@Color.Plum1>
         <Columns>
-            <Button
-                FocusKey="button-neutral"
-                Label="@GetFocusedButtonLabel("button-neutral", "Neutral")" Variant="@ButtonVariant.Neutral" />
-            <Button
-                FocusKey="button-primary"
-                Label="@GetFocusedButtonLabel("button-primary", "Primary")" Variant="@ButtonVariant.Primary" />
-            <Button
-                FocusKey="button-success"
-                Label="@GetFocusedButtonLabel("button-success", "Success")" Variant="@ButtonVariant.Success" />
-            <Button
-                FocusKey="button-warning"
-                Label="@GetFocusedButtonLabel("button-warning", "Warning")" Variant="@ButtonVariant.Warning" />
-            <Button
-                FocusKey="button-danger"
-                Label="@GetFocusedButtonLabel("button-danger", "Danger")" Variant="@ButtonVariant.Danger" />
+            <Button FocusKey="button-neutral" Label="@GetFocusedButtonLabel("button-neutral", "Neutral")"
+                Variant="@ButtonVariant.Neutral" />
+            <Button FocusKey="button-primary" Label="@GetFocusedButtonLabel("button-primary", "Primary")"
+                Variant="@ButtonVariant.Primary" />
+            <Button FocusKey="button-success" Label="@GetFocusedButtonLabel("button-success", "Success")"
+                Variant="@ButtonVariant.Success" />
+            <Button FocusKey="button-warning" Label="@GetFocusedButtonLabel("button-warning", "Warning")"
+                Variant="@ButtonVariant.Warning" />
+            <Button FocusKey="button-danger" Label="@GetFocusedButtonLabel("button-danger", "Danger")"
+                Variant="@ButtonVariant.Danger" />
         </Columns>
     </Panel>
 </Rows>
@@ -195,13 +168,13 @@
     }
 
     private Color GetTitleColor(string key, Color defaultColor)
-        => FocusManager.IsFocused(key) ? Color.Yellow1 : defaultColor;
+    => FocusManager.IsFocused(key) ? Color.Yellow1 : defaultColor;
 
     private Color GetBorderColor(string key, Color defaultColor)
-        => FocusManager.IsFocused(key) ? Color.Yellow1 : defaultColor;
+    => FocusManager.IsFocused(key) ? Color.Yellow1 : defaultColor;
 
     private string GetFocusedButtonLabel(string key, string defaultLabel)
-        => FocusManager.IsFocused(key) ? $">{defaultLabel}<" : $" {defaultLabel} ";
+    => FocusManager.IsFocused(key) ? $">{defaultLabel}<" : $" {defaultLabel} ";
 
     private string GetGridTextStyle(string key, string defaultStyle)
     {
@@ -216,8 +189,8 @@
         }
 
         return defaultStyle.Contains("underline", StringComparison.OrdinalIgnoreCase)
-            ? defaultStyle
-            : $"{defaultStyle} underline";
+        ? defaultStyle
+        : $"{defaultStyle} underline";
     }
 
     private async Task OnGreetingPanelEntered()

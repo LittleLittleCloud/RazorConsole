@@ -213,7 +213,7 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
         var newParameters = parameterFactory();
         var effectiveParameters = newParameters ?? GetCurrentParameters();
 
-    var view = await _renderAsync(effectiveParameters, cancellationToken).ConfigureAwait(false);
+        var view = await _renderAsync(effectiveParameters, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
 
         if (newParameters is not null)
