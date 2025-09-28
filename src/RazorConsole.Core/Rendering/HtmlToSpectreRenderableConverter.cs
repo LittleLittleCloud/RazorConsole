@@ -23,6 +23,7 @@ public static class HtmlToSpectreRenderableConverter
         typeof(ColumnsRenderableConverter),
         typeof(GridRenderableConverter),
         typeof(PadderRenderableConverter),
+    typeof(ButtonRenderableConverter),
         typeof(RazorConsole.Components.Align.RenderableConverter),
         typeof(TextRenderableConverter),
         typeof(NewlineRenderableConverter),

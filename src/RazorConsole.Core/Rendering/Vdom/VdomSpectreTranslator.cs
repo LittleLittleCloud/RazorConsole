@@ -83,6 +83,7 @@ internal sealed class VdomSpectreTranslator
             new SpacerElementTranslator(),
             new NewlineElementTranslator(),
             new SpinnerElementTranslator(),
+            new ButtonElementTranslator(),
             new PanelElementTranslator(),
             new RowsElementTranslator(),
             new ColumnsElementTranslator(),
@@ -637,6 +638,34 @@ internal sealed class VdomSpectreTranslator
             AnimatedRenderableRegistry.Register(animated);
 
             renderable = animated;
+            return true;
+        }
+    }
+
+    private sealed class ButtonElementTranslator : IVdomElementTranslator
+    {
+        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
+        {
+            renderable = null;
+
+            if (!string.Equals(node.TagName, "div", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(node.TagName, "button", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!node.Attributes.TryGetValue("data-button", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!TryConvertChildrenToRenderables(node.Children, context, out var children))
+            {
+                return false;
+            }
+
+            var descriptor = ButtonRenderableDescriptorFactory.Create(name => GetAttribute(node, name));
+            renderable = ButtonRenderableBuilder.Build(descriptor, children);
             return true;
         }
     }

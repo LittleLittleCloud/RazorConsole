@@ -75,6 +75,16 @@ Key parameters:
 - `Fields`: Configuration for each prompt displayed.
 - `OnComplete`: Handler executed when the form submits successfully.
 
+**Button**
+Clickable action surface with variant styling and focus support.
+Key parameters:
+- `Label`: Text rendered inside the button when no child content is provided.
+- `Variant`: Visual preset (Neutral, Primary, Success, Warning, Danger).
+- `IsActive`: Highlights the button to reflect hover/focus/pressed states.
+- `IsDefault`: Marks the button as the default action and surfaces the Enter shortcut.
+- `Disabled`: Applies dimmed styling and removes focusability.
+- `FocusKey`: Optional key used with the focus manager for navigation ordering.
+
 ### Utility primitives
 
 **Text**

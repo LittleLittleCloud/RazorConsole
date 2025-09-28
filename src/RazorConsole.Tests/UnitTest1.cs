@@ -40,6 +40,38 @@ public class HtmlRenderingTests
     }
 
     [Fact]
+    public void TryCreateRenderable_ReturnsButtonPanelWithVariantStyling()
+    {
+        const string html = "<div data-button=\"true\" data-button-label=\"Run\" data-button-variant=\"primary\" data-button-active=\"true\" data-button-width=\"20\"></div>";
+
+    var success = TryCreateRenderable(html, out var renderable);
+
+        Assert.True(success);
+
+        var panel = Assert.IsType<Panel>(renderable);
+        Assert.Equal(BoxBorder.Double, panel.Border);
+        Assert.Equal(20, panel.Width);
+        Assert.Equal(new Padding(1, 0, 1, 0), panel.Padding);
+
+    var widthProperty = panel.GetType().GetProperty("Width", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+    Assert.NotNull(widthProperty);
+    }
+
+    [Fact]
+    public void TryCreateRenderable_ButtonUsesChildContentWhenProvided()
+    {
+        const string html = "<div data-button=\"true\"><span data-text=\"true\" data-style=\"green\">Custom</span></div>";
+
+    var success = TryCreateRenderable(html, out var renderable);
+
+        Assert.True(success);
+
+        var panel = Assert.IsType<Panel>(renderable);
+        Assert.Equal(BoxBorder.Rounded, panel.Border);
+        Assert.Equal(new Padding(1, 0, 1, 0), panel.Padding);
+    }
+
+    [Fact]
     public void TryCreateRenderable_ReturnsPadderWithConfiguredPadding()
     {
         const string html = "<div data-padder=\"true\" data-padding=\"2,1,2,1\"><span data-text=\"true\">Content</span></div>";

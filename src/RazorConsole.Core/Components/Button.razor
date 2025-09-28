@@ -1,0 +1,139 @@
+@namespace RazorConsole.Components
+
+@using System.Globalization
+@using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.ComponentMarkup
+@using Spectre.Console
+@using System.Composition
+@inherits RenderableConverterComponentBase<ButtonRenderableConverter>
+@attribute [Export(typeof(RenderableConverterComponentBase<ButtonRenderableConverter>))]
+
+<div data-button="true"
+     data-button-label="@LabelAttribute"
+     data-button-icon="@IconAttribute"
+     data-button-hotkey="@HotKeyAttribute"
+     data-button-variant="@VariantAttribute"
+     data-button-style="@StyleAttribute"
+     data-button-active-style="@ActiveStyleAttribute"
+     data-button-disabled-style="@DisabledStyleAttribute"
+     data-button-border-style="@BorderStyleAttribute"
+     data-button-active-border-style="@ActiveBorderStyleAttribute"
+    data-button-disabled-border-style="@DisabledBorderStyleAttribute"
+     data-button-active="@ActiveAttribute"
+    data-button-disabled="@DisabledAttribute"
+     data-button-expand="@ExpandAttribute"
+     data-button-width="@WidthAttribute"
+     data-button-padding="@PaddingAttribute"
+     data-button-default="@DefaultAttribute"
+     data-focusable="@FocusableAttribute"
+     data-focus-key="@FocusKeyAttribute"
+     data-focus-order="@FocusOrderAttribute"
+     @attributes="RemainingAttributes">
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public string? Icon { get; set; }
+
+    [Parameter]
+    public string? HotKey { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    [Parameter]
+    public string? ActiveStyle { get; set; }
+
+    [Parameter]
+    public string? DisabledStyle { get; set; }
+
+    [Parameter]
+    public string? BorderStyle { get; set; }
+
+    [Parameter]
+    public string? ActiveBorderStyle { get; set; }
+
+    [Parameter]
+    public string? DisabledBorderStyle { get; set; }
+
+    [Parameter]
+    public bool IsActive { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool Focusable { get; set; } = true;
+
+    [Parameter]
+    public string? FocusKey { get; set; }
+
+    [Parameter]
+    public int? FocusOrder { get; set; }
+
+    [Parameter]
+    public bool Expand { get; set; }
+
+    [Parameter]
+    public int? Width { get; set; }
+
+    [Parameter]
+    public Padding? Padding { get; set; }
+
+    [Parameter]
+    public ButtonVariant Variant { get; set; } = ButtonVariant.Neutral;
+
+    [Parameter]
+    public bool IsDefault { get; set; }
+
+    private string? LabelAttribute => string.IsNullOrWhiteSpace(Label) ? null : Label;
+
+    private string? IconAttribute => string.IsNullOrWhiteSpace(Icon) ? null : Icon;
+
+    private string? HotKeyAttribute => string.IsNullOrWhiteSpace(HotKey) ? null : HotKey;
+
+    private string? StyleAttribute => string.IsNullOrWhiteSpace(Style) ? null : Style;
+
+    private string? ActiveStyleAttribute => string.IsNullOrWhiteSpace(ActiveStyle) ? null : ActiveStyle;
+
+    private string? DisabledStyleAttribute => string.IsNullOrWhiteSpace(DisabledStyle) ? null : DisabledStyle;
+
+    private string? BorderStyleAttribute => string.IsNullOrWhiteSpace(BorderStyle) ? null : BorderStyle;
+
+    private string? ActiveBorderStyleAttribute => string.IsNullOrWhiteSpace(ActiveBorderStyle) ? null : ActiveBorderStyle;
+
+    private string? DisabledBorderStyleAttribute => string.IsNullOrWhiteSpace(DisabledBorderStyle) ? null : DisabledBorderStyle;
+
+    private string? VariantAttribute => Variant != ButtonVariant.Neutral ? Variant.ToString().ToLowerInvariant() : null;
+
+    private string? ActiveAttribute => IsActive ? "true" : null;
+
+    private string? DisabledAttribute => Disabled ? "true" : null;
+
+    private string? ExpandAttribute => Expand ? "true" : null;
+
+    private string? DefaultAttribute => IsDefault ? "true" : null;
+
+    private string? FocusableAttribute => (!Disabled && Focusable) ? "true" : null;
+
+    private string? FocusKeyAttribute => string.IsNullOrWhiteSpace(FocusKey) ? null : FocusKey;
+
+    private string? FocusOrderAttribute => FocusOrder.HasValue ? FocusOrder.Value.ToString(CultureInfo.InvariantCulture) : null;
+
+    private string? WidthAttribute => Width.HasValue && Width.Value > 0 ? Width.Value.ToString(CultureInfo.InvariantCulture) : null;
+
+    private string? PaddingAttribute => Padding is null
+        ? null
+        : string.Join(",",
+            Padding.Value.Left.ToString(CultureInfo.InvariantCulture),
+            Padding.Value.Top.ToString(CultureInfo.InvariantCulture),
+            Padding.Value.Right.ToString(CultureInfo.InvariantCulture),
+            Padding.Value.Bottom.ToString(CultureInfo.InvariantCulture));
+}
