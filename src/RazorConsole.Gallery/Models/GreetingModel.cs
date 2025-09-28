@@ -12,4 +12,6 @@ public class GreetingModel
     public DateTime Timestamp { get; set; } = DateTime.Now;
 
     public List<string> Tips { get; } = new();
+
+    public int RefreshCount { get; set; } = 0;
 }

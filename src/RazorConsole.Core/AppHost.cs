@@ -112,7 +112,7 @@ public sealed class ConsoleAppBuilder
 
     private static void RegisterDefaults(IServiceCollection services)
     {
-        services.TryAddSingleton<IComponentActivator, ServiceProviderComponentActivator>();
+        // services.TryAddSingleton<IComponentActivator, ServiceProviderComponentActivator>();
         services.TryAddSingleton<ConsoleNavigationManager>();
         services.TryAddSingleton<NavigationManager>(sp => sp.GetRequiredService<ConsoleNavigationManager>());
         services.TryAddSingleton<ILoggerFactory>(_ => NullLoggerFactory.Instance);

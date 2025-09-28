@@ -6,7 +6,7 @@ using RazorConsole.Core.Rendering.ComponentMarkup;
 
 namespace RazorConsole.Components;
 
-public abstract class RenderableConverterComponentBase<TConverter> : ComponentBase
+public abstract class RenderableConverterComponentBase<TConverter> : ConsoleComponentBase
     where TConverter : class, IRenderableConverter, new()
 {
     private const string ConverterAttributeName = "data-converter";
