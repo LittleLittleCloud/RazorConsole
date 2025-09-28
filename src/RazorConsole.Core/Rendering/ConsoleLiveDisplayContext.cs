@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering.ComponentMarkup;
+using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering;
@@ -13,26 +14,34 @@ namespace RazorConsole.Core.Rendering;
 public sealed class ConsoleLiveDisplayContext : IDisposable
 {
     private readonly ILiveDisplayCanvas _canvas;
+    private readonly VdomDiffService _diffService;
     private readonly List<AnimationSubscription> _animations = new();
+    private readonly VdomSpectreTranslator _translator = new();
     private readonly object _sync = new();
     private readonly object _parameterSync = new();
     private string? _lastHtml;
+    private VNode? _lastVdom;
     private readonly Func<object?, CancellationToken, Task<ConsoleViewResult>>? _renderAsync;
     private object? _currentParameters;
     private bool _disposed;
 
     internal ConsoleLiveDisplayContext(
         ILiveDisplayCanvas canvas,
-        string? initialHtml,
-        IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables,
+        ConsoleViewResult? initialView,
+        VdomDiffService diffService,
         Func<object?, CancellationToken, Task<ConsoleViewResult>>? renderAsync = null,
         object? initialParameters = null)
     {
         _canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
-        _lastHtml = initialHtml;
+        _diffService = diffService ?? throw new ArgumentNullException(nameof(diffService));
+        if (initialView is not null)
+        {
+            _lastHtml = initialView.Html;
+            _lastVdom = initialView.VdomRoot;
+            ApplyAnimations(initialView.AnimatedRenderables);
+        }
         _renderAsync = renderAsync;
         _currentParameters = initialParameters;
-        ApplyAnimations(animatedRenderables);
     }
 
     /// <summary>
@@ -47,13 +56,33 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
             throw new ArgumentNullException(nameof(view));
         }
 
-        if (string.Equals(view.Html, _lastHtml, StringComparison.Ordinal))
+        if (view.VdomRoot is not null && _lastVdom is not null)
         {
+            var diff = _diffService.Diff(_lastVdom, view.VdomRoot);
+            if (!diff.HasChanges)
+            {
+                _lastVdom = diff.Current ?? view.VdomRoot;
+                _lastHtml = view.Html;
+                return false;
+            }
+
+            if (TryApplyMutations(diff))
+            {
+                _lastVdom = diff.Current;
+                _lastHtml = view.Html;
+                ApplyAnimations(view.AnimatedRenderables);
+                return true;
+            }
+        }
+        else if (string.Equals(view.Html, _lastHtml, StringComparison.Ordinal))
+        {
+            _lastHtml = view.Html;
             return false;
         }
 
         _canvas.UpdateTarget(view.Renderable);
         _lastHtml = view.Html;
+        _lastVdom = view.VdomRoot;
         ApplyAnimations(view.AnimatedRenderables);
         return true;
     }
@@ -66,6 +95,7 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
     {
         _canvas.UpdateTarget(renderable);
         _lastHtml = null;
+        _lastVdom = null;
         ResetAnimations();
     }
 
@@ -113,17 +143,18 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
     internal static ConsoleLiveDisplayContext Create(
         Spectre.Console.LiveDisplayContext context,
         ConsoleViewResult initialView,
+        VdomDiffService diffService,
         Func<object?, CancellationToken, Task<ConsoleViewResult>>? renderAsync = null,
         object? initialParameters = null)
-        => new(new LiveDisplayCanvasAdapter(context), initialView.Html, initialView.AnimatedRenderables, renderAsync, initialParameters);
+        => new(new LiveDisplayCanvasAdapter(context), initialView, diffService, renderAsync, initialParameters);
 
     internal static ConsoleLiveDisplayContext CreateForTesting(
         ILiveDisplayCanvas canvas,
-        string? initialHtml,
-        IReadOnlyCollection<IAnimatedConsoleRenderable>? animatedRenderables = null,
+        ConsoleViewResult? initialView = null,
+        VdomDiffService? diffService = null,
         Func<object?, CancellationToken, Task<ConsoleViewResult>>? renderAsync = null,
         object? initialParameters = null)
-        => new(canvas, initialHtml, animatedRenderables ?? Array.Empty<IAnimatedConsoleRenderable>(), renderAsync, initialParameters);
+        => new(canvas, initialView, diffService ?? new VdomDiffService(), renderAsync, initialParameters);
 
     private async Task<bool> UpdateModelInternalAsync(Func<object?> parameterFactory, CancellationToken cancellationToken)
     {
@@ -200,9 +231,111 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
         }
     }
 
+    private bool TryApplyMutations(VdomDiffResult diff)
+    {
+        if (diff.Current is null)
+        {
+            return false;
+        }
+
+        foreach (var mutation in diff.Mutations)
+        {
+            if (!TryApplyMutation(diff.Current, mutation))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool TryApplyMutation(VNode root, VdomMutation mutation)
+        => mutation.Kind switch
+        {
+            VdomMutationKind.ReplaceNode => TryApplyReplace(root, mutation),
+            VdomMutationKind.UpdateText => TryApplyUpdateText(root, mutation),
+            VdomMutationKind.UpdateAttributes => TryApplyUpdateAttributes(root, mutation),
+            _ => false,
+        };
+
+    private bool TryApplyReplace(VNode root, VdomMutation mutation)
+    {
+        if (mutation.Path.Count == 0)
+        {
+            return false;
+        }
+
+        var node = FindNode(root, mutation.Path);
+        if (node is null)
+        {
+            return false;
+        }
+
+        if (!_translator.TryTranslate(node, out var renderable, out var _animated) || renderable is null)
+        {
+            return false;
+        }
+
+        if (!_canvas.TryReplaceNode(mutation.Path, renderable))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool TryApplyUpdateText(VNode root, VdomMutation mutation)
+    {
+        var text = mutation.Text ?? string.Empty;
+        if (_canvas.TryUpdateText(mutation.Path, text))
+        {
+            return true;
+        }
+
+        return TryApplyReplace(root, mutation);
+    }
+
+    private bool TryApplyUpdateAttributes(VNode root, VdomMutation mutation)
+    {
+        var attributes = mutation.Attributes ?? new Dictionary<string, string?>(StringComparer.Ordinal);
+        if (_canvas.TryUpdateAttributes(mutation.Path, attributes))
+        {
+            return true;
+        }
+
+        return TryApplyReplace(root, mutation);
+    }
+
+    private static VNode? FindNode(VNode root, IReadOnlyList<int> path)
+    {
+        if (path.Count == 0)
+        {
+            return root;
+        }
+
+        VNode current = root;
+        foreach (var index in path)
+        {
+            if (current is not VElementNode element || index < 0 || index >= element.Children.Count)
+            {
+                return null;
+            }
+
+            current = element.Children[index];
+        }
+
+        return current;
+    }
+
     internal interface ILiveDisplayCanvas
     {
         void UpdateTarget(IRenderable? renderable);
+
+        bool TryReplaceNode(IReadOnlyList<int> path, IRenderable renderable);
+
+        bool TryUpdateText(IReadOnlyList<int> path, string? text);
+
+        bool TryUpdateAttributes(IReadOnlyList<int> path, IReadOnlyDictionary<string, string?> attributes);
 
         void Refresh();
     }
@@ -243,6 +376,15 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
 
         public void UpdateTarget(IRenderable? renderable)
             => _context.UpdateTarget(renderable);
+
+        public bool TryReplaceNode(IReadOnlyList<int> path, IRenderable renderable)
+            => false;
+
+        public bool TryUpdateText(IReadOnlyList<int> path, string? text)
+            => false;
+
+        public bool TryUpdateAttributes(IReadOnlyList<int> path, IReadOnlyDictionary<string, string?> attributes)
+            => false;
 
         public void Refresh()
             => _context.Refresh();

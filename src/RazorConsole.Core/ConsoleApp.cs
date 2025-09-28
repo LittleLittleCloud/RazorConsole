@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
+using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -115,6 +116,7 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<ILoggerFactory>(_ => NullLoggerFactory.Instance);
         services.TryAddSingleton(sp => new HtmlRenderer(sp, sp.GetRequiredService<ILoggerFactory>()));
         services.TryAddSingleton<RazorComponentRenderer>();
+        services.TryAddSingleton<VdomDiffService>();
     }
 }
 
@@ -154,6 +156,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 {
     private readonly ServiceProvider _serviceProvider;
     private readonly ConsoleAppOptions _options;
+    private readonly VdomDiffService _diffService;
     private bool _disposed;
 
     internal ConsoleApp(ConsoleAppBuilder builder)
@@ -165,6 +168,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 
         _serviceProvider = builder.BuildServiceProvider();
         _options = builder.BuildOptions();
+        _diffService = _serviceProvider.GetRequiredService<VdomDiffService>();
     }
 
     /// <summary>
@@ -195,12 +199,14 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         var html = await renderer.RenderAsync<TComponent>(parameters).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (!SpectreRenderableFactory.TryCreateRenderable(html, out var renderable, out var animatedRenderables) || renderable is null)
+        HtmlVdomConverter.TryConvert(html, out var vdomRoot);
+
+        if (!SpectreRenderableFactory.TryCreateRenderable(vdomRoot, out var renderable, out var animatedRenderables) || renderable is null)
         {
             throw new InvalidOperationException($"Unable to create a Spectre.Console renderable for '{typeof(TComponent).FullName}'.");
         }
 
-        return ConsoleViewResult.Create(html, renderable, animatedRenderables);
+        return ConsoleViewResult.Create(html, vdomRoot, renderable, animatedRenderables);
     }
 
     /// <summary>
@@ -237,7 +243,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 {
                     shutdownToken.ThrowIfCancellationRequested();
 
-                    using var context = ConsoleLiveDisplayContext.Create(liveContext, view, RenderAsync, currentParameters);
+                    using var context = ConsoleLiveDisplayContext.Create(liveContext, view, _diffService, RenderAsync, currentParameters);
                     await callback(context, view, shutdownToken).ConfigureAwait(false);
                     await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
                 }).ConfigureAwait(false);
@@ -250,7 +256,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 AnsiConsole.Clear();
             }
 
-            using var fallbackContext = ConsoleLiveDisplayContext.CreateForTesting(new FallbackLiveDisplayCanvas(), view.Html, view.AnimatedRenderables, RenderAsync, currentParameters);
+            using var fallbackContext = ConsoleLiveDisplayContext.CreateForTesting(new FallbackLiveDisplayCanvas(), view, _diffService, RenderAsync, currentParameters);
             fallbackContext.UpdateRenderable(view.Renderable);
             await callback(fallbackContext, view, shutdownToken).ConfigureAwait(false);
             await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
@@ -380,5 +386,14 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 AnsiConsole.Write(_current);
             }
         }
+
+        public bool TryReplaceNode(IReadOnlyList<int> path, IRenderable renderable)
+            => false;
+
+        public bool TryUpdateText(IReadOnlyList<int> path, string? text)
+            => false;
+
+        public bool TryUpdateAttributes(IReadOnlyList<int> path, IReadOnlyDictionary<string, string?> attributes)
+            => false;
     }
 }

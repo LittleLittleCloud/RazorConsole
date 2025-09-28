@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.ComponentMarkup;
+using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 using Xunit;
@@ -16,7 +18,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-border=\"panel\" data-header=\"Header\">Hello</div>";
 
-        var success = SpectreRenderableFactory.TryCreateRenderable(html, out var renderable);
+    var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
         var panel = Assert.IsType<Panel>(renderable);
@@ -28,7 +30,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-spinner=\"true\" data-message=\"Working\" data-style=\"yellow\" data-spinner-type=\"Dots\"></div>";
 
-        var success = SpectreRenderableFactory.TryCreateRenderable(html, out var renderable, out var animations);
+    var success = TryCreateRenderable(html, out var renderable, out var animations);
 
         Assert.True(success);
         Assert.NotNull(renderable);
@@ -42,7 +44,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-padder=\"true\" data-padding=\"2,1,2,1\"><span data-text=\"true\">Content</span></div>";
 
-        var success = SpectreRenderableFactory.TryCreateRenderable(html, out var renderable);
+    var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
         var padder = Assert.IsType<Padder>(renderable);
@@ -58,7 +60,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-align=\"true\" data-horizontal=\"center\" data-vertical=\"middle\" data-width=\"40\" data-height=\"5\"><span data-text=\"true\">Inner</span></div>";
 
-        var success = SpectreRenderableFactory.TryCreateRenderable(html, out var renderable);
+    var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
         var align = Assert.IsType<Align>(renderable);
@@ -90,8 +92,8 @@ public class HtmlRenderingTests
         const string expandedHtml = "<div data-panel=\"true\" data-panel-expand=\"true\">Content</div>";
         const string collapsedHtml = "<div data-panel=\"true\">Content</div>";
 
-        var expandedSuccess = SpectreRenderableFactory.TryCreateRenderable(expandedHtml, out var expandedRenderable);
-        var collapsedSuccess = SpectreRenderableFactory.TryCreateRenderable(collapsedHtml, out var collapsedRenderable);
+    var expandedSuccess = TryCreateRenderable(expandedHtml, out var expandedRenderable);
+    var collapsedSuccess = TryCreateRenderable(collapsedHtml, out var collapsedRenderable);
 
         Assert.True(expandedSuccess);
         Assert.True(collapsedSuccess);
@@ -114,7 +116,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-panel=\"true\" data-panel-border=\"rounded\" data-panel-padding=\"1,2,3,4\" data-panel-height=\"10\" data-panel-width=\"40\">Content</div>";
 
-        var success = SpectreRenderableFactory.TryCreateRenderable(html, out var renderable);
+    var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
 
@@ -130,7 +132,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-columns=\"true\" data-columns-expand=\"true\" data-columns-padding=\"1,2,3,4\"><span data-text=\"true\">One</span></div>";
 
-        var success = SpectreRenderableFactory.TryCreateRenderable(html, out var renderable);
+    var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
 
@@ -179,7 +181,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-rows=\"true\" data-expand=\"true\"><span data-text=\"true\">Row1</span><span data-text=\"true\">Row2</span></div>";
 
-        var success = SpectreRenderableFactory.TryCreateRenderable(html, out var renderable);
+    var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
 
@@ -195,7 +197,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-grid=\"true\" data-columns=\"2\" data-grid-expand=\"true\" data-grid-width=\"80\"><span data-text=\"true\">Cell1</span><span data-text=\"true\">Cell2</span></div>";
 
-        var success = SpectreRenderableFactory.TryCreateRenderable(html, out var renderable);
+    var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
 
@@ -205,5 +207,16 @@ public class HtmlRenderingTests
         var expandValue = expandProperty!.GetValue(grid) as bool?;
         Assert.True(expandValue);
         Assert.Equal(80, grid.Width);
+    }
+
+    private static bool TryCreateRenderable(string html, out IRenderable? renderable)
+        => TryCreateRenderable(html, out renderable, out _);
+
+    private static bool TryCreateRenderable(string html, out IRenderable? renderable, out IReadOnlyCollection<IAnimatedConsoleRenderable> animations)
+    {
+        var parsed = HtmlVdomConverter.TryConvert(html, out var root);
+        Assert.True(parsed, "Expected HTML to parse to VDOM.");
+        Assert.NotNull(root);
+        return SpectreRenderableFactory.TryCreateRenderable(root, out renderable, out animations);
     }
 }

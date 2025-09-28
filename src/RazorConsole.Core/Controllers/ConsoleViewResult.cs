@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RazorConsole.Core.Rendering.ComponentMarkup;
+using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -11,11 +12,12 @@ namespace RazorConsole.Core.Controllers;
 /// </summary>
 public sealed class ConsoleViewResult
 {
-    private ConsoleViewResult(string html, IRenderable renderable, IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables)
+    private ConsoleViewResult(string html, IRenderable renderable, IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables, VNode? vdomRoot)
     {
         Html = html;
         Renderable = renderable;
         AnimatedRenderables = animatedRenderables;
+        VdomRoot = vdomRoot;
     }
 
     /// <summary>
@@ -34,6 +36,11 @@ public sealed class ConsoleViewResult
     internal IReadOnlyCollection<IAnimatedConsoleRenderable> AnimatedRenderables { get; }
 
     /// <summary>
+    /// Gets the virtual DOM representation of the rendered view.
+    /// </summary>
+    internal VNode? VdomRoot { get; }
+
+    /// <summary>
     /// Writes the renderable to the provided console.
     /// </summary>
     /// <param name="console">Spectre console instance.</param>
@@ -48,5 +55,15 @@ public sealed class ConsoleViewResult
     }
 
     internal static ConsoleViewResult Create(string html, IRenderable renderable, IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables)
-        => new(html, renderable, animatedRenderables);
+    {
+        HtmlVdomConverter.TryConvert(html, out var root);
+        return Create(html, root, renderable, animatedRenderables);
+    }
+
+    internal static ConsoleViewResult Create(
+        string html,
+        VNode? vdomRoot,
+        IRenderable renderable,
+        IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables)
+        => new(html, renderable, animatedRenderables, vdomRoot);
 }
