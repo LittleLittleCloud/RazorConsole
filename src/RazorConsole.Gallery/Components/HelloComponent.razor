@@ -1,23 +1,56 @@
 @namespace RazorConsole.Components
 
+@using System
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Components
 @using RazorConsole.Gallery.Models
+@using RazorConsole.Core.Rendering.Focus
 @using Spectre.Console
 
+@inject FocusManager FocusManager
+
+@implements IDisposable
+
 <Rows Expand="true">
-    <Panel Title="Greeting" TitleColor=@Color.LightSteelBlue1 BorderColor=@Color.Grey93 Expand="true">
+    <Panel
+        data-focusable="true"
+        data-focus-key="greeting"
+        Title="Greeting"
+        TitleColor="@(GetTitleColor("greeting", Color.LightSteelBlue1))"
+        BorderColor="@(GetBorderColor("greeting", Color.Grey93))"
+        Expand="true">
         <RazorConsole.Components.Text Style="mediumspringgreen bold" Value="@GreetingTitle" />
         <RazorConsole.Components.Text Style="grey53" Value="@TimestampMessage" />
         <Grid Columns="2">
-            <RazorConsole.Components.Text Style="grey53 bold" Value="Recipient" />
-            <RazorConsole.Components.Text Style="grey53" Value="@DisplayName" />
-            <RazorConsole.Components.Text Style="grey53 bold" Value="Date" />
-            <RazorConsole.Components.Text Style="grey53" Value="@DateLabel" />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-greeting-recipient-label"
+                Style="@GetGridTextStyle("grid-greeting-recipient-label", "grey53 bold")"
+                Value="Recipient" />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-greeting-recipient-value"
+                Style="@GetGridTextStyle("grid-greeting-recipient-value", "grey53")"
+                Value="@DisplayName" />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-greeting-date-label"
+                Style="@GetGridTextStyle("grid-greeting-date-label", "grey53 bold")"
+                Value="Date" />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-greeting-date-value"
+                Style="@GetGridTextStyle("grid-greeting-date-value", "grey53")"
+                Value="@DateLabel" />
         </Grid>
     </Panel>
 
-    <Panel Title="Rows" TitleColor=@Color.MediumSpringGreen BorderColor=@Color.MediumSpringGreen>
+    <Panel
+        data-focusable="true"
+        data-focus-key="rows"
+        Title="Rows"
+        TitleColor="@(GetTitleColor("rows", Color.MediumSpringGreen))"
+        BorderColor="@(GetBorderColor("rows", Color.MediumSpringGreen))">
         <Rows>
             <RazorConsole.Components.Text Style="grey53" Value="Stack sections vertically with optional spacing." />
             <Rows>
@@ -36,19 +69,62 @@
     </Panel>
 
     <Panel Title="Grid" TitleColor=@Color.Gold1 BorderColor=@Color.Gold1>
-        <Grid Columns="3" ShowHeaders="true" Expand="true">
-            <RazorConsole.Components.Text Style="grey53 bold" Value="Feature" />
-            <RazorConsole.Components.Text Style="grey53 bold" Value="Description" />
-            <RazorConsole.Components.Text Style="grey53 bold" Value="Example" />
-            <RazorConsole.Components.Text Style="grey53" Value="Rows" />
-            <RazorConsole.Components.Text Style="grey53" Value="Stack sections vertically with optional spacing." />
-            <RazorConsole.Components.Text Style="grey53" Value="Columns" />
-            <RazorConsole.Components.Text Style="grey53" Value="Arrange sections horizontally with balanced widths." />
-            <RazorConsole.Components.Text Style="grey53" Value="Grid" />
-            <RazorConsole.Components.Text Style="grey53"
+        <Grid
+            Columns="3" ShowHeaders="true" Expand="true">
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-features-header-feature"
+                Style="@GetGridTextStyle("grid-features-header-feature", "grey53 bold")"
+                Value="Feature" />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-features-header-description"
+                Style="@GetGridTextStyle("grid-features-header-description", "grey53 bold")"
+                Value="Description" />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-features-header-example"
+                Style="@GetGridTextStyle("grid-features-header-example", "grey53 bold")"
+                Value="Example" />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-features-rows-feature"
+                Style="@GetGridTextStyle("grid-features-rows-feature", "grey53")"
+                Value="Rows" />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-features-rows-description"
+                Style="@GetGridTextStyle("grid-features-rows-description", "grey53")"
+                Value="Stack sections vertically with optional spacing." />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-features-columns-feature"
+                Style="@GetGridTextStyle("grid-features-columns-feature", "grey53")"
+                Value="Columns" />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-features-columns-description"
+                Style="@GetGridTextStyle("grid-features-columns-description", "grey53")"
+                Value="Arrange sections horizontally with balanced widths." />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-features-grid-feature"
+                Style="@GetGridTextStyle("grid-features-grid-feature", "grey53")"
+                Value="Grid" />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-features-grid-description"
+                Style="@GetGridTextStyle("grid-features-grid-description", "grey53")"
                 Value="Two-to-four column layout with headers and automatic width balancing." />
-            <RazorConsole.Components.Text Style="grey53" Value="Panel" />
-            <RazorConsole.Components.Text Style="grey53"
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-features-panel-feature"
+                Style="@GetGridTextStyle("grid-features-panel-feature", "grey53")"
+                Value="Panel" />
+            <RazorConsole.Components.Text
+                data-focusable="true"
+                data-focus-key="grid-features-panel-description"
+                Style="@GetGridTextStyle("grid-features-panel-description", "grey53")"
                 Value="Titled container with optional border and accent styling." />
         </Grid>
     </Panel>
@@ -120,4 +196,42 @@
     private bool HasTips => Model.Tips.Count > 0;
 
     private Spectre.Console.Spinner SpinnerType => Spectre.Console.Spinner.Known.Arc;
+
+    protected override void OnInitialized()
+    {
+        FocusManager.FocusChanged += OnFocusChanged;
+    }
+
+    private void OnFocusChanged(object? sender, FocusChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private Color GetTitleColor(string key, Color defaultColor)
+        => FocusManager.IsFocused(key) ? Color.Yellow1 : defaultColor;
+
+    private Color GetBorderColor(string key, Color defaultColor)
+        => FocusManager.IsFocused(key) ? Color.Yellow1 : defaultColor;
+
+    private string GetGridTextStyle(string key, string defaultStyle)
+    {
+        if (!FocusManager.IsFocused(key))
+        {
+            return defaultStyle;
+        }
+
+        if (string.IsNullOrWhiteSpace(defaultStyle))
+        {
+            return "underline";
+        }
+
+        return defaultStyle.Contains("underline", StringComparison.OrdinalIgnoreCase)
+            ? defaultStyle
+            : $"{defaultStyle} underline";
+    }
+
+    public void Dispose()
+    {
+        FocusManager.FocusChanged -= OnFocusChanged;
+    }
 }

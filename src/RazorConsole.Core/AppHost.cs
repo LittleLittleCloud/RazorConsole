@@ -4,12 +4,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
+using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
+using RazorConsole.Core.Rendering.Focus;
 using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -19,7 +21,7 @@ namespace RazorConsole.Core;
 /// <summary>
 /// Convenience helpers for rendering Razor components directly to the console.
 /// </summary>
-public static class ConsoleApp
+public static class AppHost
 {
     /// <summary>
     /// Creates a <see cref="ConsoleApp{TComponent}"/> instance for the specified component type.
@@ -117,6 +119,7 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton(sp => new HtmlRenderer(sp, sp.GetRequiredService<ILoggerFactory>()));
         services.TryAddSingleton<RazorComponentRenderer>();
         services.TryAddSingleton<VdomDiffService>();
+        services.TryAddSingleton<FocusManager>();
     }
 }
 
@@ -232,6 +235,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         {
             var view = await RenderAsync(parameters, shutdownToken).ConfigureAwait(false);
             var currentParameters = parameters;
+            var focusManager = _serviceProvider.GetService<FocusManager>();
 
             var callback = _options.AfterRenderAsync ?? ConsoleAppOptions.DefaultAfterRenderAsync;
 
@@ -244,8 +248,40 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                     shutdownToken.ThrowIfCancellationRequested();
 
                     using var context = ConsoleLiveDisplayContext.Create(liveContext, view, _diffService, RenderAsync, currentParameters);
-                    await callback(context, view, shutdownToken).ConfigureAwait(false);
-                    await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
+                    FocusManager.FocusSession? session = null;
+                    Task? keyListener = null;
+
+                    try
+                    {
+                        if (focusManager is not null)
+                        {
+                            session = focusManager.BeginSession(context, view, shutdownToken);
+                            await session.InitializationTask.ConfigureAwait(false);
+
+                            if (!Console.IsInputRedirected)
+                            {
+                                keyListener = ListenForFocusKeysAsync(focusManager, session.Token);
+                            }
+                        }
+
+                        await callback(context, view, shutdownToken).ConfigureAwait(false);
+                        await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
+
+                        if (keyListener is not null)
+                        {
+                            try
+                            {
+                                await keyListener.ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        session?.Dispose();
+                    }
                 }).ConfigureAwait(false);
 
                 return;
@@ -258,8 +294,41 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 
             using var fallbackContext = ConsoleLiveDisplayContext.CreateForTesting(new FallbackLiveDisplayCanvas(), view, _diffService, RenderAsync, currentParameters);
             fallbackContext.UpdateRenderable(view.Renderable);
-            await callback(fallbackContext, view, shutdownToken).ConfigureAwait(false);
-            await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
+
+            FocusManager.FocusSession? fallbackSession = null;
+            Task? fallbackKeyListener = null;
+
+            try
+            {
+                if (focusManager is not null)
+                {
+                    fallbackSession = focusManager.BeginSession(fallbackContext, view, shutdownToken);
+                    await fallbackSession.InitializationTask.ConfigureAwait(false);
+
+                    if (!Console.IsInputRedirected)
+                    {
+                        fallbackKeyListener = ListenForFocusKeysAsync(focusManager, fallbackSession.Token);
+                    }
+                }
+
+                await callback(fallbackContext, view, shutdownToken).ConfigureAwait(false);
+                await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
+
+                if (fallbackKeyListener is not null)
+                {
+                    try
+                    {
+                        await fallbackKeyListener.ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                }
+            }
+            finally
+            {
+                fallbackSession?.Dispose();
+            }
         }
         finally
         {
@@ -351,6 +420,68 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         catch
         {
             return null;
+        }
+    }
+
+    private static async Task ListenForFocusKeysAsync(FocusManager focusManager, CancellationToken token)
+    {
+        if (focusManager is null)
+        {
+            throw new ArgumentNullException(nameof(focusManager));
+        }
+
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                if (!Console.KeyAvailable)
+                {
+                    await Task.Delay(50, token).ConfigureAwait(false);
+                    continue;
+                }
+
+                var keyInfo = Console.ReadKey(intercept: true);
+
+                if (keyInfo.Key != ConsoleKey.Tab)
+                {
+                    continue;
+                }
+
+                if ((keyInfo.Modifiers & ConsoleModifiers.Shift) != 0)
+                {
+                    await focusManager.FocusPreviousAsync(token).ConfigureAwait(false);
+                }
+                else
+                {
+                    await focusManager.FocusNextAsync(token).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (InvalidOperationException)
+            {
+                // Console input is not available (e.g., redirected). Stop listening.
+                break;
+            }
+            catch (IOException)
+            {
+                // Console input is not available. Stop listening.
+                break;
+            }
+            catch
+            {
+                // Minor glitches retrieving input should not terminate the loop immediately.
+                try
+                {
+                    await Task.Delay(200, token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
         }
     }
 

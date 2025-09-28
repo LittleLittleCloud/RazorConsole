@@ -7,7 +7,7 @@ var model = new GreetingModel
     Timestamp = DateTime.Now,
 };
 
-await ConsoleApp.RunAsync<HelloComponent>(
+await AppHost.RunAsync<HelloComponent>(
     new { Model = model },
     builder =>
     {

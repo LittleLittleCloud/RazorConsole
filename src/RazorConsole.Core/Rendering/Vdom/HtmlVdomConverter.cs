@@ -24,7 +24,7 @@ internal static class HtmlVdomConverter
                 return false;
             }
 
-            root = ConvertElement(element);
+            root = ConvertElement(element, new[] { 0 });
             return true;
         }
         catch
@@ -34,15 +34,7 @@ internal static class HtmlVdomConverter
         }
     }
 
-    private static VNode? ConvertNode(XNode node)
-        => node switch
-        {
-            XElement element => ConvertElement(element),
-            XText text => new VTextNode(text.Value),
-            _ => null,
-        };
-
-    private static VElementNode ConvertElement(XElement element)
+    private static VElementNode ConvertElement(XElement element, IReadOnlyList<int> path)
     {
         var tagName = element.Name.LocalName.ToLowerInvariant();
         var attributes = new Dictionary<string, string?>(StringComparer.Ordinal);
@@ -53,22 +45,44 @@ internal static class HtmlVdomConverter
         }
 
         var children = new List<VNode>();
+        var childElementIndex = 0;
         foreach (var node in element.Nodes())
         {
-            if (node is XText text && string.IsNullOrEmpty(text.Value))
+            switch (node)
             {
-                continue;
-            }
-
-            var converted = ConvertNode(node);
-            if (converted is not null)
-            {
-                children.Add(converted);
+                case XText text when string.IsNullOrEmpty(text.Value):
+                    break;
+                case XText text:
+                    children.Add(new VTextNode(text.Value));
+                    break;
+                case XElement childElement:
+                {
+                    var childPath = new List<int>(path) { childElementIndex };
+                    children.Add(ConvertElement(childElement, childPath));
+                    childElementIndex++;
+                    break;
+                }
             }
         }
 
-        var key = element.Attribute("data-key")?.Value ?? element.Attribute("key")?.Value;
+        var key = ResolveKey(element, path);
 
         return new VElementNode(tagName, attributes, children, key);
+    }
+
+    private static string ResolveKey(XElement element, IReadOnlyList<int> path)
+    {
+        var explicitKey = element.Attribute("data-key")?.Value ?? element.Attribute("key")?.Value;
+        if (!string.IsNullOrWhiteSpace(explicitKey))
+        {
+            return explicitKey;
+        }
+
+        if (path.Count == 0)
+        {
+            return "0";
+        }
+
+        return string.Join('.', path);
     }
 }

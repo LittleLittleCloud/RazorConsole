@@ -13,7 +13,7 @@ public sealed class ConsoleAppTests
     [Fact]
     public async Task RenderAsync_ReturnsConsoleViewResult()
     {
-        await using var app = ConsoleApp.Create<TestComponent>();
+        await using var app = AppHost.Create<TestComponent>();
 
     var view = await app.RenderAsync(new { Message = "Hello" });
 
@@ -34,7 +34,7 @@ public sealed class ConsoleAppTests
 
         using var cts = new CancellationTokenSource();
 
-        var runTask = ConsoleApp.RunAsync<TestComponent>(new { Message = "Callback" }, builder =>
+        var runTask = AppHost.RunAsync<TestComponent>(new { Message = "Callback" }, builder =>
         {
             builder.Configure(options =>
             {

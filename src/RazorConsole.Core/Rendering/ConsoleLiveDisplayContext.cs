@@ -24,6 +24,7 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
     private readonly Func<object?, CancellationToken, Task<ConsoleViewResult>>? _renderAsync;
     private object? _currentParameters;
     private bool _disposed;
+    private ConsoleViewResult? _currentView;
 
     internal ConsoleLiveDisplayContext(
         ILiveDisplayCanvas canvas,
@@ -39,9 +40,26 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
             _lastHtml = initialView.Html;
             _lastVdom = initialView.VdomRoot;
             ApplyAnimations(initialView.AnimatedRenderables);
+            _currentView = initialView;
         }
         _renderAsync = renderAsync;
         _currentParameters = initialParameters;
+    }
+
+    /// <summary>
+    /// Occurs when the live display successfully applies a new view.
+    /// </summary>
+    public event EventHandler<ConsoleViewResult>? ViewUpdated;
+
+    internal ConsoleViewResult? CurrentView
+    {
+        get
+        {
+            lock (_sync)
+            {
+                return _currentView;
+            }
+        }
     }
 
     /// <summary>
@@ -55,6 +73,8 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
         {
             throw new ArgumentNullException(nameof(view));
         }
+
+        var updated = false;
 
         if (view.VdomRoot is not null && _lastVdom is not null)
         {
@@ -71,7 +91,7 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
                 _lastVdom = diff.Current;
                 _lastHtml = view.Html;
                 ApplyAnimations(view.AnimatedRenderables);
-                return true;
+                updated = true;
             }
         }
         else if (string.Equals(view.Html, _lastHtml, StringComparison.Ordinal))
@@ -80,11 +100,26 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
             return false;
         }
 
-        _canvas.UpdateTarget(view.Renderable);
-        _lastHtml = view.Html;
-        _lastVdom = view.VdomRoot;
-        ApplyAnimations(view.AnimatedRenderables);
-        return true;
+        if (!updated)
+        {
+            _canvas.UpdateTarget(view.Renderable);
+            _lastHtml = view.Html;
+            _lastVdom = view.VdomRoot;
+            ApplyAnimations(view.AnimatedRenderables);
+            updated = true;
+        }
+
+        if (updated)
+        {
+            lock (_sync)
+            {
+                _currentView = view;
+            }
+
+            ViewUpdated?.Invoke(this, view);
+        }
+
+        return updated;
     }
 
     /// <summary>
@@ -96,6 +131,10 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
         _canvas.UpdateTarget(renderable);
         _lastHtml = null;
         _lastVdom = null;
+        lock (_sync)
+        {
+            _currentView = null;
+        }
         ResetAnimations();
     }
 
