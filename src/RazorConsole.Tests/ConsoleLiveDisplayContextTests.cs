@@ -79,11 +79,11 @@ public class ConsoleLiveDisplayContextTests
         var initial = ConsoleViewResult.Create("<p/>", new FakeRenderable(), Array.Empty<IAnimatedConsoleRenderable>());
         var renderer = new FakeRenderer(() => renderCalls++);
 
-        using var context = ConsoleLiveDisplayContext.CreateForTesting(
+        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
             canvas,
             initial,
-            renderer: renderer,
-            componentType: typeof(FakeComponent),
+            new VdomDiffService(),
+            renderer,
             initialParameters: new DummyModel { Value = 0 });
 
         var updated = await context.UpdateModelAsync(new DummyModel { Value = 42 });

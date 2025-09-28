@@ -227,7 +227,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 {
                     shutdownToken.ThrowIfCancellationRequested();
 
-                    using var context = ConsoleLiveDisplayContext.Create(liveContext, view, _diffService, _renderer, typeof(TComponent), currentParameters);
+                    using var context = ConsoleLiveDisplayContext.Create<TComponent>(liveContext, view, _diffService, _renderer, currentParameters);
                     _liveContextAccessor?.Attach(context);
                     FocusManager.FocusSession? session = null;
                     Task? keyListener = null;
@@ -274,7 +274,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 AnsiConsole.Clear();
             }
 
-            using var fallbackContext = ConsoleLiveDisplayContext.CreateForTesting(new FallbackLiveDisplayCanvas(), view, _diffService, _renderer, typeof(TComponent), currentParameters);
+            using var fallbackContext = ConsoleLiveDisplayContext.CreateForTesting<TComponent>(new FallbackLiveDisplayCanvas(), view, _diffService, _renderer, currentParameters);
             _liveContextAccessor?.Attach(fallbackContext);
             fallbackContext.UpdateRenderable(view.Renderable);
 

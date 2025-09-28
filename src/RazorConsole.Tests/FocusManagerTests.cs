@@ -23,12 +23,11 @@ public sealed class FocusManagerTests
 
         var renderer = new FakeRenderer(_ => CreateView(keys, manager.CurrentFocusKey));
 
-        using var context = ConsoleLiveDisplayContext.CreateForTesting(
+        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
             new TestCanvas(),
             initial,
             new VdomDiffService(),
-            renderer,
-            typeof(FakeComponent));
+            renderer);
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 
@@ -50,12 +49,11 @@ public sealed class FocusManagerTests
             return CreateView(keys, manager.CurrentFocusKey);
         });
 
-        using var context = ConsoleLiveDisplayContext.CreateForTesting(
+        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
             new TestCanvas(),
             initial,
             new VdomDiffService(),
-            renderer,
-            typeof(FakeComponent));
+            renderer);
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 
@@ -76,12 +74,11 @@ public sealed class FocusManagerTests
 
         var renderer = new FakeRenderer(_ => CreateView(keys, manager.CurrentFocusKey));
 
-        using var context = ConsoleLiveDisplayContext.CreateForTesting(
+        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
             new TestCanvas(),
             initial,
             new VdomDiffService(),
-            renderer,
-            typeof(FakeComponent));
+            renderer);
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 

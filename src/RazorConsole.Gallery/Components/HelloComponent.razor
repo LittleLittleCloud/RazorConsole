@@ -180,7 +180,7 @@
 
     private Task? _refreshLoopTask = null;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _refreshLoopCts = new CancellationTokenSource();
         _refreshLoopTask = Task.Run(async () =>
