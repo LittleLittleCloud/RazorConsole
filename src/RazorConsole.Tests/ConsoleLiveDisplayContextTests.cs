@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.ComponentMarkup;
@@ -76,15 +77,13 @@ public class ConsoleLiveDisplayContextTests
         var renderCalls = 0;
 
         var initial = ConsoleViewResult.Create("<p/>", new FakeRenderable(), Array.Empty<IAnimatedConsoleRenderable>());
+        var renderer = new FakeRenderer(() => renderCalls++);
+
         using var context = ConsoleLiveDisplayContext.CreateForTesting(
             canvas,
             initial,
-            renderAsync: (parameters, _) =>
-            {
-                renderCalls++;
-                var value = parameters is DummyModel dummy ? dummy.Value : 0;
-                return Task.FromResult(ConsoleViewResult.Create($"<div>{value}</div>", new FakeRenderable(), Array.Empty<IAnimatedConsoleRenderable>()));
-            },
+            renderer: renderer,
+            componentType: typeof(FakeComponent),
             initialParameters: new DummyModel { Value = 0 });
 
         var updated = await context.UpdateModelAsync(new DummyModel { Value = 42 });
@@ -330,6 +329,35 @@ public class ConsoleLiveDisplayContextTests
         }
 
         public TimeSpan RefreshInterval { get; }
+    }
+
+    private sealed class FakeRenderer : IRazorComponentRenderer
+    {
+        private readonly Action _onRender;
+
+        public FakeRenderer(Action onRender)
+        {
+            _onRender = onRender;
+        }
+
+        public Task<ConsoleViewResult> RenderAsync<TComponent>(object? parameters = null, CancellationToken cancellationToken = default)
+            where TComponent : IComponent
+        {
+            _onRender();
+            var value = parameters is DummyModel dummy ? dummy.Value : 0;
+            var view = ConsoleViewResult.Create($"<div>{value}</div>", new FakeRenderable(), Array.Empty<IAnimatedConsoleRenderable>());
+            return Task.FromResult(view);
+        }
+    }
+
+    private sealed class FakeComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+            => Task.CompletedTask;
     }
 
     private sealed class DummyModel

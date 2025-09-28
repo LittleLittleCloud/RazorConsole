@@ -3,27 +3,28 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 using RazorConsole.Core;
 using RazorConsole.Core.Controllers;
+using RazorConsole.Core.Rendering;
 
 namespace RazorConsole.Tests;
 
 public sealed class ConsoleAppTests
 {
     [Fact]
-    public async Task RenderAsync_ReturnsConsoleViewResult()
+    public async Task Renderer_ReturnsConsoleViewResult()
     {
         await using var app = AppHost.Create<TestComponent>();
 
-    var view = await app.RenderAsync(new { Message = "Hello" });
+        var renderer = app.Services.GetRequiredService<IRazorComponentRenderer>();
+
+        var view = await renderer.RenderAsync<TestComponent>(new { Message = "Hello" });
 
         Assert.NotNull(view);
         Assert.IsType<ConsoleViewResult>(view);
         Assert.Contains("Hello", view.Html, StringComparison.Ordinal);
         Assert.NotNull(view.Renderable);
-
-        var renderer = app.Services.GetService(typeof(RazorConsole.Core.Rendering.RazorComponentRenderer));
-        Assert.NotNull(renderer);
     }
 
     [Fact]

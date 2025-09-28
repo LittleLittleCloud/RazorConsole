@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Vdom;
@@ -30,7 +34,8 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
         ILiveDisplayCanvas canvas,
         ConsoleViewResult? initialView,
         VdomDiffService diffService,
-        Func<object?, CancellationToken, Task<ConsoleViewResult>>? renderAsync = null,
+        IRazorComponentRenderer? componentRenderer = null,
+        Type? componentType = null,
         object? initialParameters = null)
     {
         _canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
@@ -42,7 +47,15 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
             ApplyAnimations(initialView.AnimatedRenderables);
             _currentView = initialView;
         }
-        _renderAsync = renderAsync;
+        if ((componentRenderer is null) != (componentType is null))
+        {
+            throw new ArgumentException("componentRenderer and componentType must be provided together.");
+        }
+
+        if (componentRenderer is not null && componentType is not null)
+        {
+            _renderAsync = CreateRenderInvoker(componentRenderer, componentType);
+        }
         _currentParameters = initialParameters;
     }
 
@@ -167,17 +180,19 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
         Spectre.Console.LiveDisplayContext context,
         ConsoleViewResult initialView,
         VdomDiffService diffService,
-        Func<object?, CancellationToken, Task<ConsoleViewResult>>? renderAsync = null,
+        IRazorComponentRenderer renderer,
+        Type componentType,
         object? initialParameters = null)
-        => new(new LiveDisplayCanvasAdapter(context), initialView, diffService, renderAsync, initialParameters);
+        => new(new LiveDisplayCanvasAdapter(context), initialView, diffService, renderer, componentType, initialParameters);
 
     internal static ConsoleLiveDisplayContext CreateForTesting(
         ILiveDisplayCanvas canvas,
         ConsoleViewResult? initialView = null,
         VdomDiffService? diffService = null,
-        Func<object?, CancellationToken, Task<ConsoleViewResult>>? renderAsync = null,
+        IRazorComponentRenderer? renderer = null,
+        Type? componentType = null,
         object? initialParameters = null)
-        => new(canvas, initialView, diffService ?? new VdomDiffService(), renderAsync, initialParameters);
+        => new(canvas, initialView, diffService ?? new VdomDiffService(), renderer, componentType, initialParameters);
 
     private async Task<bool> UpdateModelInternalAsync(Func<object?> parameterFactory, CancellationToken cancellationToken)
     {
@@ -191,7 +206,7 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
         var newParameters = parameterFactory();
         var effectiveParameters = newParameters ?? GetCurrentParameters();
 
-        var view = await _renderAsync(effectiveParameters, cancellationToken).ConfigureAwait(false);
+    var view = await _renderAsync(effectiveParameters, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
 
         if (newParameters is not null)
@@ -200,6 +215,46 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
         }
 
         return UpdateView(view);
+    }
+
+    private static Func<object?, CancellationToken, Task<ConsoleViewResult>> CreateRenderInvoker(IRazorComponentRenderer renderer, Type componentType)
+    {
+        if (renderer is null)
+        {
+            throw new ArgumentNullException(nameof(renderer));
+        }
+
+        if (componentType is null)
+        {
+            throw new ArgumentNullException(nameof(componentType));
+        }
+
+        if (!typeof(IComponent).IsAssignableFrom(componentType))
+        {
+            throw new ArgumentException($"Type '{componentType.FullName}' is not a Razor component.", nameof(componentType));
+        }
+
+        var method = typeof(IRazorComponentRenderer)
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .FirstOrDefault(m => string.Equals(m.Name, nameof(IRazorComponentRenderer.RenderAsync), StringComparison.Ordinal) && m.IsGenericMethodDefinition);
+
+        if (method is null)
+        {
+            throw new InvalidOperationException("Unable to locate RenderAsync method on Razor component renderer.");
+        }
+
+        var closedMethod = method.MakeGenericMethod(componentType);
+
+        return (parameters, token) =>
+        {
+            var result = closedMethod.Invoke(renderer, new object?[] { parameters, token });
+            if (result is Task<ConsoleViewResult> task)
+            {
+                return task;
+            }
+
+            throw new InvalidOperationException("Renderer returned an unexpected result.");
+        };
     }
 
     private object? GetCurrentParameters()

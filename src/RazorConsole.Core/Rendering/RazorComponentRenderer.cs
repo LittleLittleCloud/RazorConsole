@@ -1,33 +1,66 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.Extensions.DependencyInjection;
+using RazorConsole.Core.Controllers;
+using RazorConsole.Core.Rendering.ComponentMarkup;
+using RazorConsole.Core.Rendering.Vdom;
+using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering;
 
-public class RazorComponentRenderer
+public interface IRazorComponentRenderer
 {
-    private readonly HtmlRenderer _renderer;
+    Task<ConsoleViewResult> RenderAsync<TComponent>(object? parameters = null, CancellationToken cancellationToken = default)
+        where TComponent : IComponent;
+}
 
-    public RazorComponentRenderer(IServiceProvider serviceProvider)
-    {
-        _renderer = serviceProvider.GetRequiredService<HtmlRenderer>();
-    }
+public class RazorComponentRenderer : IRazorComponentRenderer
+{
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public Task<string> RenderAsync<TComponent>(object? parameters = null)
+    public RazorComponentRenderer(IServiceScopeFactory scopeFactory)
+        => _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
+
+    public async Task<ConsoleViewResult> RenderAsync<TComponent>(object? parameters = null, CancellationToken cancellationToken = default)
         where TComponent : IComponent
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var renderer = scope.ServiceProvider.GetRequiredService<HtmlRenderer>();
         var parameterView = CreateParameterView(parameters);
 
-        return _renderer.Dispatcher.InvokeAsync(async () =>
+        var html = await renderer.Dispatcher.InvokeAsync(async () =>
         {
-            var rootComponent = await _renderer.RenderComponentAsync<TComponent>(parameterView);
+            cancellationToken.ThrowIfCancellationRequested();
+            var rootComponent = await renderer.RenderComponentAsync<TComponent>(parameterView).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
             return rootComponent.ToHtmlString();
-        });
+        }).ConfigureAwait(false);
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        return CreateViewResult(typeof(TComponent), html);
+    }
+
+    private static ConsoleViewResult CreateViewResult(Type componentType, string html)
+    {
+        HtmlVdomConverter.TryConvert(html, out var vdomRoot);
+
+        if (!SpectreRenderableFactory.TryCreateRenderable(vdomRoot, out var renderable, out var animatedRenderables) || renderable is null)
+        {
+            throw new InvalidOperationException($"Unable to create a Spectre.Console renderable for '{componentType.FullName}'.");
+        }
+
+        return ConsoleViewResult.Create(html, vdomRoot, renderable, animatedRenderables);
     }
 
     private static ParameterView CreateParameterView(object? parameters)

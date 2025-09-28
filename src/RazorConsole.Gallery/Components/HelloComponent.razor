@@ -178,25 +178,20 @@
 
     private CancellationTokenSource? _refreshLoopCts;
 
+    private Task? _refreshLoopTask = null;
+
     protected override void OnInitialized()
     {
-        FocusManager.FocusChanged += OnFocusChanged;
-
-        // update model's timestamp every second
-        _ = Task.Run(async () =>
+        _refreshLoopCts = new CancellationTokenSource();
+        _refreshLoopTask = Task.Run(async () =>
         {
-            while (true)
+            while (!_refreshLoopCts!.IsCancellationRequested)
             {
-                await Task.Delay(1000);
+                await Task.Delay(1000).ConfigureAwait(false);
                 Model.Timestamp = DateTime.Now;
-                var updated = await LiveDisplayContextAccessor.UpdateModelAsync((object?)null, CancellationToken.None).ConfigureAwait(false);
+                await LiveDisplayContextAccessor.UpdateModelAsync((object?)null, CancellationToken.None).ConfigureAwait(false);
             }
         });
-    }
-
-    private void OnFocusChanged(object? sender, FocusChangedEventArgs e)
-    {
-        InvokeAsync(StateHasChanged);
     }
 
     private Color GetTitleColor(string key, Color defaultColor)
@@ -232,6 +227,10 @@
 
     public void Dispose()
     {
-        FocusManager.FocusChanged -= OnFocusChanged;
+        _refreshLoopCts?.Cancel();
+        _refreshLoopCts?.Dispose();
+        _refreshLoopCts = null;
+
+        _refreshLoopTask = null;
     }
 }

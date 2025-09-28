@@ -116,8 +116,9 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<ConsoleNavigationManager>();
         services.TryAddSingleton<NavigationManager>(sp => sp.GetRequiredService<ConsoleNavigationManager>());
         services.TryAddSingleton<ILoggerFactory>(_ => NullLoggerFactory.Instance);
-        services.TryAddSingleton(sp => new HtmlRenderer(sp, sp.GetRequiredService<ILoggerFactory>()));
+        services.TryAddScoped(sp => new HtmlRenderer(sp, sp.GetRequiredService<ILoggerFactory>()));
         services.TryAddSingleton<RazorComponentRenderer>();
+        services.TryAddSingleton<IRazorComponentRenderer>(sp => sp.GetRequiredService<RazorComponentRenderer>());
         services.TryAddSingleton<VdomDiffService>();
         services.TryAddSingleton<FocusManager>();
         services.TryAddSingleton<LiveDisplayContextAccessor>();
@@ -162,6 +163,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
     private readonly ConsoleAppOptions _options;
     private readonly VdomDiffService _diffService;
     private readonly LiveDisplayContextAccessor? _liveContextAccessor;
+    private readonly IRazorComponentRenderer _renderer;
     private bool _disposed;
 
     internal ConsoleApp(ConsoleAppBuilder builder)
@@ -175,6 +177,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         _options = builder.BuildOptions();
         _diffService = _serviceProvider.GetRequiredService<VdomDiffService>();
         _liveContextAccessor = _serviceProvider.GetService<LiveDisplayContextAccessor>();
+        _renderer = _serviceProvider.GetRequiredService<IRazorComponentRenderer>();
     }
 
     /// <summary>
@@ -187,32 +190,6 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
             ThrowIfDisposed();
             return _serviceProvider;
         }
-    }
-
-    /// <summary>
-    /// Renders the component to a <see cref="ConsoleViewResult"/> without writing output.
-    /// </summary>
-    /// <param name="parameters">Optional component parameters.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    public async Task<ConsoleViewResult> RenderAsync(object? parameters = null, CancellationToken cancellationToken = default)
-    {
-        ThrowIfDisposed();
-        cancellationToken.ThrowIfCancellationRequested();
-
-        await using var scope = _serviceProvider.CreateAsyncScope();
-        var renderer = scope.ServiceProvider.GetRequiredService<RazorComponentRenderer>();
-
-        var html = await renderer.RenderAsync<TComponent>(parameters).ConfigureAwait(false);
-        cancellationToken.ThrowIfCancellationRequested();
-
-        HtmlVdomConverter.TryConvert(html, out var vdomRoot);
-
-        if (!SpectreRenderableFactory.TryCreateRenderable(vdomRoot, out var renderable, out var animatedRenderables) || renderable is null)
-        {
-            throw new InvalidOperationException($"Unable to create a Spectre.Console renderable for '{typeof(TComponent).FullName}'.");
-        }
-
-        return ConsoleViewResult.Create(html, vdomRoot, renderable, animatedRenderables);
     }
 
     /// <summary>
@@ -236,7 +213,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 
         try
         {
-            var view = await RenderAsync(parameters, shutdownToken).ConfigureAwait(false);
+            var view = await _renderer.RenderAsync<TComponent>(parameters, shutdownToken).ConfigureAwait(false);
             var currentParameters = parameters;
             var focusManager = _serviceProvider.GetService<FocusManager>();
 
@@ -250,7 +227,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 {
                     shutdownToken.ThrowIfCancellationRequested();
 
-                    using var context = ConsoleLiveDisplayContext.Create(liveContext, view, _diffService, RenderAsync, currentParameters);
+                    using var context = ConsoleLiveDisplayContext.Create(liveContext, view, _diffService, _renderer, typeof(TComponent), currentParameters);
                     _liveContextAccessor?.Attach(context);
                     FocusManager.FocusSession? session = null;
                     Task? keyListener = null;
@@ -297,7 +274,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 AnsiConsole.Clear();
             }
 
-            using var fallbackContext = ConsoleLiveDisplayContext.CreateForTesting(new FallbackLiveDisplayCanvas(), view, _diffService, RenderAsync, currentParameters);
+            using var fallbackContext = ConsoleLiveDisplayContext.CreateForTesting(new FallbackLiveDisplayCanvas(), view, _diffService, _renderer, typeof(TComponent), currentParameters);
             _liveContextAccessor?.Attach(fallbackContext);
             fallbackContext.UpdateRenderable(view.Renderable);
 
