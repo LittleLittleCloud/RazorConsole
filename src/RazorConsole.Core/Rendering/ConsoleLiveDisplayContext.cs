@@ -144,22 +144,6 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
     public void Refresh() => _canvas.Refresh();
 
     /// <summary>
-    /// Re-renders the underlying component using the provided parameter factory and updates the live display.
-    /// </summary>
-    /// <param name="parameterFactory">Factory that produces the parameter object passed to the component. Returning <see langword="null"/> reuses the previous parameters.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns><see langword="true"/> when the view was updated; otherwise <see langword="false"/>.</returns>
-    public Task<bool> UpdateModelAsync(Func<object?> parameterFactory, CancellationToken cancellationToken = default)
-    {
-        if (parameterFactory is null)
-        {
-            throw new ArgumentNullException(nameof(parameterFactory));
-        }
-
-        return UpdateModelInternalAsync(parameterFactory, cancellationToken);
-    }
-
-    /// <summary>
     /// Re-renders the underlying component using the provided parameters and updates the live display.
     /// </summary>
     /// <param name="parameters">Parameter object passed to the component. Passing <see langword="null"/> reuses the previous parameters.</param>

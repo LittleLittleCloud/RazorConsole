@@ -120,6 +120,7 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<RazorComponentRenderer>();
         services.TryAddSingleton<VdomDiffService>();
         services.TryAddSingleton<FocusManager>();
+        services.TryAddSingleton<LiveDisplayContextAccessor>();
     }
 }
 
@@ -160,6 +161,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
     private readonly ServiceProvider _serviceProvider;
     private readonly ConsoleAppOptions _options;
     private readonly VdomDiffService _diffService;
+    private readonly LiveDisplayContextAccessor? _liveContextAccessor;
     private bool _disposed;
 
     internal ConsoleApp(ConsoleAppBuilder builder)
@@ -172,6 +174,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         _serviceProvider = builder.BuildServiceProvider();
         _options = builder.BuildOptions();
         _diffService = _serviceProvider.GetRequiredService<VdomDiffService>();
+        _liveContextAccessor = _serviceProvider.GetService<LiveDisplayContextAccessor>();
     }
 
     /// <summary>
@@ -248,6 +251,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                     shutdownToken.ThrowIfCancellationRequested();
 
                     using var context = ConsoleLiveDisplayContext.Create(liveContext, view, _diffService, RenderAsync, currentParameters);
+                    _liveContextAccessor?.Attach(context);
                     FocusManager.FocusSession? session = null;
                     Task? keyListener = null;
 
@@ -281,6 +285,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                     finally
                     {
                         session?.Dispose();
+                        _liveContextAccessor?.Detach(context);
                     }
                 }).ConfigureAwait(false);
 
@@ -293,6 +298,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
             }
 
             using var fallbackContext = ConsoleLiveDisplayContext.CreateForTesting(new FallbackLiveDisplayCanvas(), view, _diffService, RenderAsync, currentParameters);
+            _liveContextAccessor?.Attach(fallbackContext);
             fallbackContext.UpdateRenderable(view.Renderable);
 
             FocusManager.FocusSession? fallbackSession = null;
@@ -328,6 +334,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
             finally
             {
                 fallbackSession?.Dispose();
+                _liveContextAccessor?.Detach(fallbackContext);
             }
         }
         finally

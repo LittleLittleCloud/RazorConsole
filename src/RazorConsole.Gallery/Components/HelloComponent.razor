@@ -4,11 +4,13 @@
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Components
 @using RazorConsole.Core
+@using RazorConsole.Core.Rendering
 @using RazorConsole.Gallery.Models
 @using RazorConsole.Core.Rendering.Focus
 @using Spectre.Console
 
 @inject FocusManager FocusManager
+@inject LiveDisplayContextAccessor LiveDisplayContextAccessor
 @implements IDisposable
 
 <Rows Expand="true">
@@ -174,6 +176,8 @@
 
     private Spectre.Console.Spinner SpinnerType => Spectre.Console.Spinner.Known.Arc;
 
+    private CancellationTokenSource? _refreshLoopCts;
+
     protected override void OnInitialized()
     {
         FocusManager.FocusChanged += OnFocusChanged;
@@ -185,7 +189,7 @@
             {
                 await Task.Delay(1000);
                 Model.Timestamp = DateTime.Now;
-                await InvokeAsync(StateHasChanged);
+                var updated = await LiveDisplayContextAccessor.UpdateModelAsync((object?)null, CancellationToken.None).ConfigureAwait(false);
             }
         });
     }
