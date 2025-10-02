@@ -1,40 +1,44 @@
-dotnet run
+<div align="center">
+
 # RazorConsole
+</div>
 
-RazorConsole demonstrates how to render Razor components inside a console application and translate the resulting HTML into rich [Spectre.Console](https://spectreconsole.net/) output. The repository is organised as a small solution with reusable libraries, a gallery app, and automated tests.
+> Build interactive console applications with .NET Razor components.
 
-## Project layout
+## Install
 
-```
-src/
-	RazorConsole.Core/        # Rendering pipeline, Spectre helpers, domain models, and Razor UI
-	RazorConsole.Gallery/     # Console showcase that renders the components
-	RazorConsole.Tests/       # xUnit tests for the core helpers
-design-doc/                 # Architecture notes and future plans
-.github/workflows/          # GitHub Actions CI definition
+```bash
+dotnet add package RazorConsole
 ```
 
-Shared MSBuild configuration lives in `Directory.Build.props`, `Directory.Build.targets`, and `Directory.Packages.props`. The SDK version is pinned via `global.json` so the solution behaves consistently across environments.
+## Usage
+```csharp
+// Counter.razor
+<p>Current count: @currentCount</p>
+<button data-focusable="true" @onclick="IncrementCount">Click me</button>
 
-## Prerequisites
+@code {
+    private int currentCount = 0;
 
-- .NET 8 SDK (the exact version is specified in `global.json`)
+    private void IncrementCount()
+    {
+        currentCount++;
+        
+        StateHasChanged();
+    }
+}
 
-## Build and run
-
-```pwsh
-dotnet build RazorConsole.sln
-dotnet run --project src/RazorConsole.Gallery/RazorConsole.Gallery.csproj
+// Program.cs
+await AppHost.RunAsync<Counter>();
 ```
+<img src="./assets/counter.gif" alt="Counter component demonstration" style="width: 100%; height: auto;" />
 
-The gallery app renders `HelloComponent` inside a Spectre panel and lets you interactively update the greeting name. Press <kbd>Ctrl</kbd>+<kbd>C</kbd> or submit an empty name to exit.
+## Community & support
 
-## Tests
+- File issues using the GitHub **Issues** tab.
+- Use GitHub Discussions (if enabled) for open-ended questions.
+- Follow the guidance in `.github/copilot-instructions.md` for project-specific GitHub Copilot prompts and context.
 
-```pwsh
-dotnet test RazorConsole.sln
-```
+## License
 
-## Continuous integration
-
-The workflow under `.github/workflows/ci.yml` builds and tests the solution on every push and pull request targeting `main`.
+This project is distributed under the MIT License. See [`LICENSE`](LICENSE) for details.

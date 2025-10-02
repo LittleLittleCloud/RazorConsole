@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  package:
+    name: Build, test, and pack
+    runs-on: ubuntu-latest
+    outputs:
+      package-path: ${{ steps.pack.outputs.package-path }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore RazorConsole.sln
+
+      - name: Build
+        run: dotnet build RazorConsole.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test RazorConsole.sln --configuration Release --no-build --verbosity normal
+
+      - name: Pack libraries
+        id: pack
+        run: |
+          dotnet pack RazorConsole.sln \
+            --configuration Release \
+            --no-build \
+            --output artifacts/packages
+          echo "package-path=artifacts/packages" >> "$GITHUB_OUTPUT"
+
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: artifacts/packages/*.nupkg
+          if-no-files-found: warn
+          retention-days: 7
+
+  publish-gallery:
+    name: Publish gallery binaries
+    needs: package
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rid: [win-x64, linux-x64, osx-arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore RazorConsole.sln
+
+      - name: Publish gallery
+        run: |
+          dotnet publish src/RazorConsole.Gallery/RazorConsole.Gallery.csproj \
+            --configuration Release \
+            --runtime ${{ matrix.rid }} \
+            --self-contained true \
+            /p:PublishSingleFile=true \
+            /p:IncludeNativeLibrariesForSelfExtract=true \
+            /p:DebugType=None \
+            /p:DebugSymbols=false \
+            --output artifacts/publish/${{ matrix.rid }}
+
+      - name: Create archive
+        run: |
+          pushd artifacts/publish/${{ matrix.rid }}
+          zip -r ../gallery-${{ matrix.rid }}.zip .
+          popd
+
+      - name: Upload archive asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/publish/gallery-${{ matrix.rid }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

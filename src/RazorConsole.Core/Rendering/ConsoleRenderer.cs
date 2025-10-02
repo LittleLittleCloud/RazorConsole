@@ -1,13 +1,13 @@
 #nullable enable
 #pragma warning disable BL0006 // RenderTree types are "internal-ish"; acceptable for console renderer.
+using System.Globalization;
+using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console.Rendering;
-using System.Globalization;
-using System.Text;
 
 namespace RazorConsole.Core.Rendering;
 
@@ -723,7 +723,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
             throw new ArgumentNullException(nameof(eventArgs));
         }
 
-    return base.DispatchEventAsync(handlerId, default, eventArgs);
+        return base.DispatchEventAsync(handlerId, default, eventArgs);
     }
 
     private void CompleteObservers()

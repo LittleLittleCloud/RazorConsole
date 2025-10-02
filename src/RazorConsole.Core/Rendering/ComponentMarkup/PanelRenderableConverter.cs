@@ -4,9 +4,9 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using RazorConsole.Core.Rendering;
 using Spectre.Console;
 using Spectre.Console.Rendering;
-using RazorConsole.Core.Rendering;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
