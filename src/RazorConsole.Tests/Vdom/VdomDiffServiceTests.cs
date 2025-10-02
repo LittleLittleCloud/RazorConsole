@@ -17,7 +17,7 @@ public class VdomDiffServiceTests
         var diff = _service.Diff(previous, current);
 
         Assert.True(diff.HasChanges);
-    var insert = Assert.Single(diff.Mutations, mutation => mutation.Kind == VdomMutationKind.InsertNode);
+        var insert = Assert.Single(diff.Mutations, mutation => mutation.Kind == VdomMutationKind.InsertNode);
         Assert.Equal(new[] { 1 }, insert.Path);
     }
 

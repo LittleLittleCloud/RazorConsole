@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Composition;
+using System.Composition.Hosting;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using Spectre.Console;
@@ -9,8 +12,29 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.Vdom;
 
-internal sealed class VdomSpectreTranslator
+internal sealed partial class VdomSpectreTranslator
 {
+    private static readonly Type[] TranslatorOrder =
+    {
+        typeof(TextElementTranslator),
+        typeof(ParagraphElementTranslator),
+        typeof(SpacerElementTranslator),
+        typeof(NewlineElementTranslator),
+        typeof(SpinnerElementTranslator),
+        typeof(ButtonElementTranslator),
+        typeof(HtmlButtonElementTranslator),
+        typeof(PanelElementTranslator),
+        typeof(RowsElementTranslator),
+        typeof(ColumnsElementTranslator),
+        typeof(GridElementTranslator),
+        typeof(PadderElementTranslator),
+        typeof(AlignElementTranslator),
+        typeof(HtmlDivElementTranslator),
+        typeof(FailToRenderElementTranslator),
+    };
+
+    private static readonly Lazy<TranslatorCatalogData> TranslatorCatalog = new(DiscoverTranslators);
+
     private readonly IReadOnlyList<IVdomElementTranslator> _elementTranslators;
 
     public VdomSpectreTranslator()
@@ -48,20 +72,30 @@ internal sealed class VdomSpectreTranslator
 
     private bool TryTranslateInternal(VNode node, TranslationContext context, out IRenderable? renderable)
     {
-        switch (node)
+        switch (node.Kind)
         {
-            case VTextNode textNode:
-                renderable = new Text(textNode.Text ?? string.Empty);
+            case VNodeKind.Text:
+                renderable = new Text(node.Text ?? string.Empty);
                 return true;
-            case VElementNode elementNode:
-                return TryTranslateElement(elementNode, context, out renderable);
+            case VNodeKind.Element:
+                return TryTranslateElement(node, context, out renderable);
+            case VNodeKind.Component:
+            case VNodeKind.Region:
+                if (TryConvertChildrenToRenderables(node.Children, context, out var children))
+                {
+                    renderable = ComposeChildContent(children);
+                    return true;
+                }
+
+                renderable = null;
+                return false;
             default:
                 renderable = null;
                 return false;
         }
     }
 
-    private bool TryTranslateElement(VElementNode node, TranslationContext context, out IRenderable? renderable)
+    private bool TryTranslateElement(VNode node, TranslationContext context, out IRenderable? renderable)
     {
         foreach (var translator in _elementTranslators)
         {
@@ -77,414 +111,11 @@ internal sealed class VdomSpectreTranslator
     }
 
     private static IReadOnlyList<IVdomElementTranslator> CreateDefaultTranslators()
-        => new IVdomElementTranslator[]
-        {
-            new TextElementTranslator(),
-            new SpacerElementTranslator(),
-            new NewlineElementTranslator(),
-            new SpinnerElementTranslator(),
-            new ButtonElementTranslator(),
-            new PanelElementTranslator(),
-            new RowsElementTranslator(),
-            new ColumnsElementTranslator(),
-            new GridElementTranslator(),
-            new PadderElementTranslator(),
-            new AlignElementTranslator(),
-        };
-    private sealed class PanelElementTranslator : IVdomElementTranslator
-    {
-        private static readonly IReadOnlyDictionary<string, BoxBorder> BorderLookup = new Dictionary<string, BoxBorder>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "square", BoxBorder.Square },
-            { "rounded", BoxBorder.Rounded },
-            { "double", BoxBorder.Double },
-            { "heavy", BoxBorder.Heavy },
-            { "ascii", BoxBorder.Ascii },
-            { "none", BoxBorder.None },
-        };
-
-        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
-        {
-            renderable = null;
-
-            if (!IsPanelNode(node))
-            {
-                return false;
-            }
-
-            if (!TryConvertChildrenToRenderables(node.Children, context, out var children))
-            {
-                return false;
-            }
-
-            var content = ComposeChildContent(children);
-            var panel = new Panel(content);
-
-            if (ShouldExpand(node))
-            {
-                panel = panel.Expand();
-            }
-
-            panel.Border = ResolveBorder(GetAttribute(node, "data-panel-border"));
-
-            if (TryParsePadding(GetAttribute(node, "data-panel-padding"), out var padding))
-            {
-                panel.Padding = padding;
-            }
-
-            if (TryParsePositiveInt(GetAttribute(node, "data-panel-height"), out var height))
-            {
-                panel.Height = height;
-            }
-
-            if (TryParsePositiveInt(GetAttribute(node, "data-panel-width"), out var width))
-            {
-                panel.Width = width;
-            }
-
-            ApplyHeader(node, panel);
-            ApplyBorderColor(node, panel);
-
-            renderable = panel;
-            return true;
-        }
-
-        private static bool IsPanelNode(VElementNode node)
-        {
-            if (node.Attributes.TryGetValue("data-panel", out var value) && string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (node.Attributes.TryGetValue("data-border", out var borderValue) && string.Equals(borderValue, "panel", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private static bool ShouldExpand(VElementNode node)
-        {
-            var value = GetAttribute(node, "data-panel-expand") ?? GetAttribute(node, "data-expand");
-            return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static BoxBorder ResolveBorder(string? value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return BoxBorder.Square;
-            }
-
-            return BorderLookup.TryGetValue(value, out var border) ? border : BoxBorder.Square;
-        }
-
-        private static void ApplyHeader(VElementNode node, Panel panel)
-        {
-            var header = GetAttribute(node, "data-header");
-            if (string.IsNullOrWhiteSpace(header))
-            {
-                return;
-            }
-
-            var headerColor = GetAttribute(node, "data-header-color");
-            var markup = string.IsNullOrWhiteSpace(headerColor)
-                ? Markup.Escape(header)
-                : ComponentMarkupUtilities.CreateStyledMarkup(headerColor, header, requiresEscape: true);
-
-            panel.Header = new PanelHeader(markup);
-        }
-
-        private static void ApplyBorderColor(VElementNode node, Panel panel)
-        {
-            var borderColorValue = GetAttribute(node, "data-border-color");
-            if (string.IsNullOrWhiteSpace(borderColorValue))
-            {
-                return;
-            }
-
-            try
-            {
-                var style = Style.Parse(borderColorValue);
-                panel.BorderStyle(style);
-            }
-            catch (Exception)
-            {
-                // Ignore invalid style specifications.
-            }
-        }
-    }
-
-    private sealed class RowsElementTranslator : IVdomElementTranslator
-    {
-        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
-        {
-            renderable = null;
-
-            if (!node.Attributes.TryGetValue("data-rows", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!TryConvertChildrenToRenderables(node.Children, context, out var children))
-            {
-                return false;
-            }
-
-            var rows = new Rows(children);
-
-            if (string.Equals(GetAttribute(node, "data-expand"), "true", StringComparison.OrdinalIgnoreCase))
-            {
-                rows.Expand();
-            }
-
-            renderable = rows;
-            return true;
-        }
-    }
-
-    private sealed class ColumnsElementTranslator : IVdomElementTranslator
-    {
-        private static readonly char[] PaddingSeparators = [',', ' '];
-
-        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
-        {
-            renderable = null;
-
-            if (!IsColumnsNode(node))
-            {
-                return false;
-            }
-
-            if (!TryConvertChildrenToRenderables(node.Children, context, out var children))
-            {
-                return false;
-            }
-
-            var columns = new Columns(children);
-
-            if (string.Equals(GetAttribute(node, "data-columns-expand") ?? GetAttribute(node, "data-expand"), "true", StringComparison.OrdinalIgnoreCase))
-            {
-                columns = columns.Expand();
-            }
-
-            var paddingValue = GetAttribute(node, "data-columns-padding") ?? GetAttribute(node, "data-padding");
-            var spacing = Math.Max(TryGetIntAttribute(node, "data-spacing", 0), 0);
-
-            IRenderable result = columns;
-            if (!string.IsNullOrWhiteSpace(paddingValue) && TryParsePadding(paddingValue, out var padding))
-            {
-                result = new Padder(columns, padding);
-            }
-            else if (spacing > 0)
-            {
-                result = new Padder(columns, new Padding(spacing, 0, spacing, 0));
-            }
-
-            renderable = result;
-            return true;
-        }
-
-        private static bool IsColumnsNode(VElementNode node)
-        {
-            if (node.Attributes.TryGetValue("data-columns-layout", out var layoutValue) && string.Equals(layoutValue, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (node.Attributes.TryGetValue("data-columns", out var value) && string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private static bool TryParsePadding(string raw, out Padding padding)
-        {
-            var parts = raw.Split(PaddingSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var values = parts
-                .Select(part => int.TryParse(part, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number) ? Math.Max(number, 0) : 0)
-                .Take(4)
-                .ToArray();
-
-            padding = values.Length switch
-            {
-                0 => new Padding(0, 0, 0, 0),
-                1 => new Padding(values[0], values[0], values[0], values[0]),
-                2 => new Padding(values[0], values[1], values[0], values[1]),
-                3 => new Padding(values[0], values[1], values[2], values[1]),
-                4 => new Padding(values[0], values[1], values[2], values[3]),
-                _ => new Padding(0, 0, 0, 0),
-            };
-
-            return true;
-        }
-    }
-
-    private sealed class GridElementTranslator : IVdomElementTranslator
-    {
-        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
-        {
-            renderable = null;
-
-            if (!node.Attributes.TryGetValue("data-grid", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!TryConvertChildrenToRenderables(node.Children, context, out var children))
-            {
-                return false;
-            }
-
-            var columnCount = Math.Clamp(TryGetIntAttribute(node, "data-columns", 2), 1, 4);
-            var grid = new Grid();
-            for (var i = 0; i < columnCount; i++)
-            {
-                grid.AddColumn();
-            }
-
-            if (children.Count > 0)
-            {
-                foreach (var row in Chunk(children, columnCount))
-                {
-                    grid.AddRow(row);
-                }
-            }
-
-            if (string.Equals(GetAttribute(node, "data-grid-expand") ?? GetAttribute(node, "data-expand"), "true", StringComparison.OrdinalIgnoreCase))
-            {
-                grid.Expand();
-            }
-
-            if (TryParsePositiveInt(GetAttribute(node, "data-grid-width") ?? GetAttribute(node, "data-width"), out var width))
-            {
-                grid.Width = width;
-            }
-
-            renderable = grid;
-            return true;
-        }
-
-        private static IEnumerable<IRenderable[]> Chunk(IReadOnlyList<IRenderable> items, int size)
-        {
-            var buffer = new List<IRenderable>(size);
-            foreach (var item in items)
-            {
-                buffer.Add(item);
-                if (buffer.Count == size)
-                {
-                    yield return buffer.ToArray();
-                    buffer.Clear();
-                }
-            }
-
-            if (buffer.Count > 0)
-            {
-                while (buffer.Count < size)
-                {
-                    buffer.Add(new Markup(string.Empty));
-                }
-
-                yield return buffer.ToArray();
-            }
-        }
-    }
-
-    private sealed class PadderElementTranslator : IVdomElementTranslator
-    {
-        private static readonly char[] PaddingSeparators = [',', ' '];
-
-        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
-        {
-            renderable = null;
-
-            if (!node.Attributes.TryGetValue("data-padder", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!TryConvertChildrenToRenderables(node.Children, context, out var children))
-            {
-                return false;
-            }
-
-            var content = ComposeChildContent(children);
-            var padding = ParsePadding(GetAttribute(node, "data-padding"));
-            var padder = new Padder(content, padding);
-
-            if (string.Equals(GetAttribute(node, "data-expand"), "true", StringComparison.OrdinalIgnoreCase))
-            {
-                padder = padder.Expand();
-            }
-
-            renderable = padder;
-            return true;
-        }
-
-        private static Padding ParsePadding(string? raw)
-        {
-            if (string.IsNullOrWhiteSpace(raw))
-            {
-                return new Padding(0, 0, 0, 0);
-            }
-
-            var parts = raw.Split(PaddingSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var values = parts
-                .Select(part => int.TryParse(part, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number) ? Math.Max(number, 0) : 0)
-                .Take(4)
-                .ToArray();
-
-            return values.Length switch
-            {
-                0 => new Padding(0, 0, 0, 0),
-                1 => new Padding(values[0], values[0], values[0], values[0]),
-                2 => new Padding(values[0], values[1], values[0], values[1]),
-                3 => new Padding(values[0], values[1], values[2], values[1]),
-                4 => new Padding(values[0], values[1], values[2], values[3]),
-                _ => new Padding(0, 0, 0, 0),
-            };
-        }
-    }
-
-    private sealed class AlignElementTranslator : IVdomElementTranslator
-    {
-        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
-        {
-            renderable = null;
-
-            if (!node.Attributes.TryGetValue("data-align", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!TryConvertChildrenToRenderables(node.Children, context, out var children))
-            {
-                return false;
-            }
-
-            var content = ComposeChildContent(children);
-            var horizontal = ParseHorizontalAlignment(GetAttribute(node, "data-horizontal"));
-            var vertical = ParseVerticalAlignment(GetAttribute(node, "data-vertical"));
-            var width = ParseOptionalPositiveInt(GetAttribute(node, "data-width"));
-            var height = ParseOptionalPositiveInt(GetAttribute(node, "data-height"));
-
-            var align = new Align(content, horizontal, vertical)
-            {
-                Width = width,
-                Height = height,
-            };
-
-            renderable = align;
-            return true;
-        }
-    }
+        => TranslatorCatalog.Value.Translators;
 
     internal interface IVdomElementTranslator
     {
-        bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable);
+        bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable);
     }
 
     internal sealed class TranslationContext
@@ -500,178 +131,15 @@ internal sealed class VdomSpectreTranslator
             => _translator.TryTranslateInternal(node, this, out renderable);
     }
 
-    private sealed class TextElementTranslator : IVdomElementTranslator
+    private static string? GetAttribute(VNode node, string name)
     {
-        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
+        if (node.Kind != VNodeKind.Element)
         {
-            renderable = null;
-
-            if (!string.Equals(node.TagName, "span", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!node.Attributes.TryGetValue("data-text", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (node.Children.OfType<VElementNode>().Any())
-            {
-                return false;
-            }
-
-            var style = GetAttribute(node, "data-style");
-            var isMarkup = TryGetBoolAttribute(node, "data-ismarkup", out var boolValue) && boolValue;
-            var content = string.Concat(node.Children.Select(child => child is VTextNode text ? text.Text : string.Empty)) ?? string.Empty;
-            var markup = ComponentMarkupUtilities.CreateStyledMarkup(style, content, requiresEscape: !isMarkup);
-            renderable = new Markup(markup);
-            return true;
+            return null;
         }
+
+        return node.Attributes.TryGetValue(name, out var value) ? value : null;
     }
-
-    private sealed class SpacerElementTranslator : IVdomElementTranslator
-    {
-        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
-        {
-            renderable = null;
-
-            if (!string.Equals(node.TagName, "div", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!node.Attributes.ContainsKey("data-spacer"))
-            {
-                return false;
-            }
-
-            var lines = Math.Max(TryGetIntAttribute(node, "data-lines", 1), 0);
-            if (lines == 0)
-            {
-                renderable = new Markup(string.Empty);
-                return true;
-            }
-
-            var fill = GetAttribute(node, "data-fill");
-            var builder = new System.Text.StringBuilder();
-
-            if (string.IsNullOrEmpty(fill))
-            {
-                for (var i = 0; i < lines; i++)
-                {
-                    builder.AppendLine();
-                }
-            }
-            else
-            {
-                var glyph = Markup.Escape(fill[0].ToString());
-                for (var i = 0; i < lines; i++)
-                {
-                    builder.Append(glyph);
-                    builder.AppendLine();
-                }
-            }
-
-            renderable = new Markup(builder.ToString());
-            return true;
-        }
-    }
-
-    private sealed class NewlineElementTranslator : IVdomElementTranslator
-    {
-        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
-        {
-            renderable = null;
-
-            if (!string.Equals(node.TagName, "div", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!node.Attributes.ContainsKey("data-newline"))
-            {
-                return false;
-            }
-
-            var count = Math.Max(TryGetIntAttribute(node, "data-count", 1), 0);
-            if (count == 0)
-            {
-                renderable = new Markup(string.Empty);
-                return true;
-            }
-
-            var builder = new StringBuilder();
-            for (var i = 0; i < count; i++)
-            {
-                builder.AppendLine();
-            }
-
-            renderable = new Markup(builder.ToString());
-            return true;
-        }
-    }
-
-    private sealed class SpinnerElementTranslator : IVdomElementTranslator
-    {
-        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
-        {
-            renderable = null;
-
-            if (!string.Equals(node.TagName, "div", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!node.Attributes.ContainsKey("data-spinner"))
-            {
-                return false;
-            }
-
-            var spinnerType = GetAttribute(node, "data-spinner-type");
-            var spinner = ComponentMarkupUtilities.ResolveSpinner(spinnerType);
-            var message = GetAttribute(node, "data-message") ?? string.Empty;
-            var style = GetAttribute(node, "data-style");
-            var autoDismiss = TryGetBoolAttribute(node, "data-auto-dismiss", out var parsed) && parsed;
-
-            var animated = new AnimatedSpinnerRenderable(spinner, message, style, autoDismiss);
-            AnimatedRenderableRegistry.Register(animated);
-
-            renderable = animated;
-            return true;
-        }
-    }
-
-    private sealed class ButtonElementTranslator : IVdomElementTranslator
-    {
-        public bool TryTranslate(VElementNode node, TranslationContext context, out IRenderable? renderable)
-        {
-            renderable = null;
-
-            if (!string.Equals(node.TagName, "div", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(node.TagName, "button", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!node.Attributes.TryGetValue("data-button", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!TryConvertChildrenToRenderables(node.Children, context, out var children))
-            {
-                return false;
-            }
-
-            var descriptor = ButtonRenderableDescriptorFactory.Create(name => GetAttribute(node, name));
-            renderable = ButtonRenderableBuilder.Build(descriptor, children);
-            return true;
-        }
-    }
-
-    private static string? GetAttribute(VElementNode node, string name)
-        => node.Attributes.TryGetValue(name, out var value) ? value : null;
 
     private static bool TryConvertChildrenToRenderables(IReadOnlyList<VNode> children, TranslationContext context, out List<IRenderable> renderables)
     {
@@ -679,24 +147,23 @@ internal sealed class VdomSpectreTranslator
 
         foreach (var child in children)
         {
-            switch (child)
+            switch (child.Kind)
             {
-                case VTextNode textNode:
-                    if (!string.IsNullOrWhiteSpace(textNode.Text))
+                case VNodeKind.Text:
+                    if (!string.IsNullOrWhiteSpace(child.Text))
                     {
-                        renderables.Add(new Markup(Markup.Escape(textNode.Text)));
+                        renderables.Add(new Markup(Markup.Escape(child.Text)));
                     }
+
                     break;
-                case VElementNode elementNode:
-                    if (!context.TryTranslate(elementNode, out var childRenderable) || childRenderable is null)
+                default:
+                    if (!context.TryTranslate(child, out var childRenderable) || childRenderable is null)
                     {
                         renderables = new List<IRenderable>();
                         return false;
                     }
 
                     renderables.Add(childRenderable);
-                    break;
-                default:
                     break;
             }
         }
@@ -764,7 +231,7 @@ internal sealed class VdomSpectreTranslator
         return null;
     }
 
-    private static bool TryGetBoolAttribute(VElementNode node, string name, out bool value)
+    private static bool TryGetBoolAttribute(VNode node, string name, out bool value)
     {
         var raw = GetAttribute(node, name);
         if (!string.IsNullOrWhiteSpace(raw) && bool.TryParse(raw, out var parsed))
@@ -777,7 +244,7 @@ internal sealed class VdomSpectreTranslator
         return false;
     }
 
-    private static int TryGetIntAttribute(VElementNode node, string name, int fallback)
+    private static int TryGetIntAttribute(VNode node, string name, int fallback)
     {
         var raw = GetAttribute(node, name);
         if (!string.IsNullOrWhiteSpace(raw) && int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
@@ -786,6 +253,61 @@ internal sealed class VdomSpectreTranslator
         }
 
         return fallback;
+    }
+
+    private static string? CollectInnerText(VNode node)
+    {
+        if (node is null)
+        {
+            return null;
+        }
+
+        var builder = new StringBuilder();
+        AppendInnerText(node, builder);
+        var value = builder.ToString().Trim();
+        return string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+
+    private static void AppendInnerText(VNode node, StringBuilder builder)
+    {
+        if (node.Kind == VNodeKind.Text)
+        {
+            if (!string.IsNullOrEmpty(node.Text))
+            {
+                builder.Append(node.Text);
+            }
+
+            return;
+        }
+
+        foreach (var child in node.Children)
+        {
+            AppendInnerText(child, builder);
+        }
+    }
+
+    private static IEnumerable<string> EnumerateClassNames(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            yield break;
+        }
+
+        var parts = raw.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var part in parts)
+        {
+            yield return part;
+        }
+    }
+
+    private static bool HasClass(VNode node, string className)
+    {
+        if (!node.Attributes.TryGetValue("class", out var classes))
+        {
+            return false;
+        }
+
+        return EnumerateClassNames(classes).Any(token => string.Equals(token, className, StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool TryParsePadding(string? raw, out Padding padding)
@@ -826,4 +348,103 @@ internal sealed class VdomSpectreTranslator
         result = default;
         return false;
     }
+
+    private static TranslatorCatalogData DiscoverTranslators()
+    {
+        var rootAssembly = typeof(VdomSpectreTranslator).Assembly;
+        var processedAssemblies = new HashSet<Assembly> { rootAssembly };
+
+        var configuration = new ContainerConfiguration().WithAssembly(rootAssembly);
+
+        foreach (var assembly in GetCandidateAssemblies())
+        {
+            if (!processedAssemblies.Add(assembly))
+            {
+                continue;
+            }
+
+            try
+            {
+                configuration = configuration.WithAssembly(assembly);
+            }
+            catch
+            {
+                // Ignore assemblies that cannot be loaded into the MEF container.
+            }
+        }
+
+        try
+        {
+            using var container = configuration.CreateContainer();
+            var import = container.GetExport<TranslatorImport>();
+            var translators = import.Translators
+                .Select(lazy => lazy.Value)
+                .ToList();
+
+            if (translators.Count == 0)
+            {
+                throw new InvalidOperationException("No VDOM element translators were discovered via MEF composition.");
+            }
+
+            var ordered = translators
+                .OrderBy(translator => GetOrderIndex(translator.GetType()))
+                .ThenBy(translator => translator.GetType().FullName, StringComparer.Ordinal)
+                .ToList();
+
+            return new TranslatorCatalogData(ordered);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to get VDOM translators from MEF container.");
+            Console.WriteLine(ex);
+            throw;
+        }
+    }
+
+    private static IEnumerable<Assembly> GetCandidateAssemblies()
+    {
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            if (assembly.IsDynamic)
+            {
+                continue;
+            }
+
+            var name = assembly.GetName().Name;
+            if (string.IsNullOrEmpty(name))
+            {
+                continue;
+            }
+
+            if (name.StartsWith("Microsoft", StringComparison.Ordinal) ||
+                name.StartsWith("System", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            yield return assembly;
+        }
+    }
+
+    private static int GetOrderIndex(Type translatorType)
+    {
+        for (var i = 0; i < TranslatorOrder.Length; i++)
+        {
+            if (TranslatorOrder[i].IsAssignableFrom(translatorType))
+            {
+                return i;
+            }
+        }
+
+        return int.MaxValue;
+    }
+
+    private sealed record TranslatorCatalogData(IReadOnlyList<IVdomElementTranslator> Translators);
+}
+
+[Export(typeof(TranslatorImport))]
+internal sealed class TranslatorImport
+{
+    [ImportMany]
+    public IEnumerable<Lazy<VdomSpectreTranslator.IVdomElementTranslator>> Translators { get; set; } = Array.Empty<Lazy<VdomSpectreTranslator.IVdomElementTranslator>>();
 }

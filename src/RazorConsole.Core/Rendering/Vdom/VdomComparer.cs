@@ -21,15 +21,15 @@ internal static class VdomComparer
             return false;
         }
 
-        return left switch
+        return left.Kind switch
         {
-            VTextNode leftText when right is VTextNode rightText => string.Equals(leftText.Text, rightText.Text, StringComparison.Ordinal),
-            VElementNode leftElement when right is VElementNode rightElement => AreElementsEqual(leftElement, rightElement),
-            _ => false,
+            VNodeKind.Text => string.Equals(left.Text, right.Text, StringComparison.Ordinal),
+            VNodeKind.Element => AreElementsEqual(left, right),
+            _ => AreChildrenEqual(left, right),
         };
     }
 
-    private static bool AreElementsEqual(VElementNode left, VElementNode right)
+    private static bool AreElementsEqual(VNode left, VNode right)
     {
         if (!string.Equals(left.TagName, right.TagName, StringComparison.Ordinal))
         {
@@ -59,6 +59,24 @@ internal static class VdomComparer
             }
         }
 
+        if (left.Children.Count != right.Children.Count)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < left.Children.Count; i++)
+        {
+            if (!AreEqual(left.Children[i], right.Children[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool AreChildrenEqual(VNode left, VNode right)
+    {
         if (left.Children.Count != right.Children.Count)
         {
             return false;

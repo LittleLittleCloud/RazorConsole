@@ -11,13 +11,16 @@ public class HtmlVdomConverterTests
         var success = HtmlVdomConverter.TryConvert("<div class='panel'><span>Hi</span></div>", out var root);
 
         Assert.True(success);
-        var element = Assert.IsType<VElementNode>(root);
-        Assert.Equal("div", element.TagName);
-        Assert.Equal("panel", element.Attributes["class"]);
-        Assert.Single(element.Children);
-        var textElement = Assert.IsType<VElementNode>(element.Children[0]);
+        Assert.NotNull(root);
+        Assert.Equal(VNodeKind.Element, root.Kind);
+        Assert.Equal("div", root.TagName);
+        Assert.Equal("panel", root.Attributes["class"]);
+        Assert.Single(root.Children);
+        var textElement = root.Children[0];
+        Assert.Equal(VNodeKind.Element, textElement.Kind);
         Assert.Equal("span", textElement.TagName);
-        var text = Assert.IsType<VTextNode>(textElement.Children[0]);
+        var text = textElement.Children[0];
+        Assert.Equal(VNodeKind.Text, text.Kind);
         Assert.Equal("Hi", text.Text);
     }
 

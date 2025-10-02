@@ -1,0 +1,50 @@
+@using System.Threading
+@using System.Threading.Tasks
+@implements IDisposable
+<p>Current Time: @currentTime</p>
+
+@code {
+    private DateTime currentTime = DateTime.Now;
+
+    private CancellationTokenSource? timerCancellation;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        timerCancellation = new CancellationTokenSource();
+        _ = StartTimerAsync(timerCancellation.Token);
+    }
+
+    private async Task StartTimerAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(1000, cancellationToken);
+                currentTime = DateTime.Now;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    public void Dispose()
+    {
+        if (timerCancellation is null)
+        {
+            return;
+        }
+
+        if (!timerCancellation.IsCancellationRequested)
+        {
+            timerCancellation.Cancel();
+        }
+
+        timerCancellation.Dispose();
+        timerCancellation = null;
+    }
+}

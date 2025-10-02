@@ -21,13 +21,11 @@ public sealed class FocusManagerTests
         var keys = new[] { "first", "second" };
         var initial = CreateView(keys, focusedKey: null);
 
-        var renderer = new FakeRenderer(_ => CreateView(keys, manager.CurrentFocusKey));
-
         using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
             new TestCanvas(),
             initial,
             new VdomDiffService(),
-            renderer);
+            (parameters, _) => Task.FromResult(CreateView(keys, manager.CurrentFocusKey)));
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 
@@ -43,22 +41,22 @@ public sealed class FocusManagerTests
         var initial = CreateView(keys, focusedKey: null);
         var renderCount = 0;
 
-        var renderer = new FakeRenderer(_ =>
+        Task<ConsoleViewResult> RenderAsync(object? _, CancellationToken __)
         {
             Interlocked.Increment(ref renderCount);
-            return CreateView(keys, manager.CurrentFocusKey);
-        });
+            return Task.FromResult(CreateView(keys, manager.CurrentFocusKey));
+        }
 
         using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
             new TestCanvas(),
             initial,
             new VdomDiffService(),
-            renderer);
+            RenderAsync);
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 
         renderCount = 0;
-    var changed = await manager.FocusNextAsync(session.Token);
+        var changed = await manager.FocusNextAsync(session.Token);
 
         Assert.True(changed);
         Assert.Equal("second", manager.CurrentFocusKey);
@@ -72,13 +70,11 @@ public sealed class FocusManagerTests
         var keys = new[] { "first", "second", "third" };
         var initial = CreateView(keys, focusedKey: null);
 
-        var renderer = new FakeRenderer(_ => CreateView(keys, manager.CurrentFocusKey));
-
         using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
             new TestCanvas(),
             initial,
             new VdomDiffService(),
-            renderer);
+            (parameters, _) => Task.FromResult(CreateView(keys, manager.CurrentFocusKey)));
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 
@@ -97,33 +93,26 @@ public sealed class FocusManagerTests
         var children = new List<VNode>(keys.Count);
         foreach (var key in keys)
         {
-            var attributes = new Dictionary<string, string?>(StringComparer.Ordinal)
-            {
-                { "data-focusable", "true" },
-                { "data-focus-key", key },
-                { "data-text", "true" },
-            };
+            var element = VNode.CreateElement("span");
+            element.SetAttribute("data-focusable", "true");
+            element.SetAttribute("data-focus-key", key);
+            element.SetAttribute("data-text", "true");
 
             if (string.Equals(key, focusedKey, StringComparison.Ordinal))
             {
-                attributes["data-style"] = "yellow";
+                element.SetAttribute("data-style", "yellow");
             }
 
-            var element = new VElementNode(
-                "span",
-                attributes,
-                new List<VNode> { new VTextNode(key) });
-
+            element.AddChild(VNode.CreateText(key));
             children.Add(element);
         }
 
-        var root = new VElementNode(
-            "div",
-            new Dictionary<string, string?>(StringComparer.Ordinal)
-            {
-                { "data-rows", "true" },
-            },
-            children);
+        var root = VNode.CreateElement("div");
+        root.SetAttribute("data-rows", "true");
+        foreach (var child in children)
+        {
+            root.AddChild(child);
+        }
 
         var html = focusedKey ?? "none";
         var renderable = new FakeRenderable(html);
@@ -161,20 +150,6 @@ public sealed class FocusManagerTests
 
         public IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
             => new[] { new Segment(_content) };
-    }
-
-    private sealed class FakeRenderer : IRazorComponentRenderer
-    {
-        private readonly Func<object?, ConsoleViewResult> _factory;
-
-        public FakeRenderer(Func<object?, ConsoleViewResult> factory)
-        {
-            _factory = factory;
-        }
-
-        public Task<ConsoleViewResult> RenderAsync<TComponent>(object? parameters = null, CancellationToken cancellationToken = default)
-            where TComponent : IComponent
-            => Task.FromResult(_factory(parameters));
     }
 
     private sealed class FakeComponent : IComponent

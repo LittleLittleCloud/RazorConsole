@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.Extensions.DependencyInjection;
 using RazorConsole.Core;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
@@ -17,9 +16,7 @@ public sealed class ConsoleAppTests
     {
         await using var app = AppHost.Create<TestComponent>();
 
-        var renderer = app.Services.GetRequiredService<IRazorComponentRenderer>();
-
-        var view = await renderer.RenderAsync<TestComponent>(new { Message = "Hello" });
+        var view = await app.RenderComponentAsync(new { Message = "Hello" });
 
         Assert.NotNull(view);
         Assert.IsType<ConsoleViewResult>(view);
@@ -49,7 +46,7 @@ public sealed class ConsoleAppTests
             });
         }, cts.Token);
 
-    var result = await tcs.Task;
+        var result = await tcs.Task;
 
         cts.Cancel();
         await runTask;

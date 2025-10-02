@@ -1,20 +1,19 @@
 @namespace RazorConsole.Components
-
+@using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components
-@using RazorConsole.Core.Rendering.ComponentMarkup
 @using System.Composition
-@inherits RenderableConverterComponentBase<RowsRenderableConverter>
-@attribute [Export(typeof(RenderableConverterComponentBase<RowsRenderableConverter>))]
 
 <div data-rows="true"
-    data-expand="@ExpandAttribute"
-    @attributes="RemainingAttributes">
+    data-expand="@ExpandAttribute">
     @ChildContent
 </div>
 
 @code {
     [Parameter]
     public bool Expand { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
 
     private string? ExpandAttribute => Expand ? "true" : null;
 }

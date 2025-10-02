@@ -50,10 +50,10 @@ public sealed class ConsoleComponentBaseTests
         component.SetLiveDisplayAccessor(accessor);
 
         var canvas = new RecordingCanvas();
-    var initialHtml = "<div data-rows=\"true\"><span data-text=\"true\">initial</span></div>";
-    var nextHtml = "<div data-rows=\"true\"><span data-text=\"true\">updated</span></div>";
-    var initialView = ConsoleViewResult.Create(initialHtml, new FakeRenderable("initial"), Array.Empty<IAnimatedConsoleRenderable>());
-    var nextView = ConsoleViewResult.Create(nextHtml, new FakeRenderable("updated"), Array.Empty<IAnimatedConsoleRenderable>());
+        var initialHtml = "<div data-rows=\"true\"><span data-text=\"true\">initial</span></div>";
+        var nextHtml = "<div data-rows=\"true\"><span data-text=\"true\">updated</span></div>";
+        var initialView = ConsoleViewResult.Create(initialHtml, new FakeRenderable("initial"), Array.Empty<IAnimatedConsoleRenderable>());
+        var nextView = ConsoleViewResult.Create(nextHtml, new FakeRenderable("updated"), Array.Empty<IAnimatedConsoleRenderable>());
         var renderCalls = 0;
         object? observedParameters = null;
 

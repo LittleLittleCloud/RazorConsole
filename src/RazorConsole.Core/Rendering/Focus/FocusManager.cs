@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -55,6 +56,26 @@ public sealed class FocusManager
         => key is not null && string.Equals(CurrentFocusKey, key, StringComparison.Ordinal);
 
     /// <summary>
+    /// Attempts to retrieve metadata associated with the currently focused target.
+    /// </summary>
+    /// <param name="snapshot">Populated with focus target details when available.</param>
+    /// <returns><see langword="true"/> when a focus target is active; otherwise <see langword="false"/>.</returns>
+    internal bool TryGetFocusedTarget(out FocusTargetSnapshot snapshot)
+    {
+        lock (_sync)
+        {
+            if (_currentIndex < 0 || _currentIndex >= _targets.Count)
+            {
+                snapshot = default;
+                return false;
+            }
+
+            snapshot = _targets[_currentIndex].ToSnapshot();
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Begins a new focus session that tracks updates on the provided live display context.
     /// </summary>
     /// <param name="context">Live display context associated with the current console render.</param>
@@ -87,8 +108,6 @@ public sealed class FocusManager
                 await context.UpdateModelAsync((object?)null, token).ConfigureAwait(false);
             };
             _sessionToken = linkedCts.Token;
-
-            context.ViewUpdated += OnViewUpdated;
 
             initialFocus = UpdateFocusTargets_NoLock(initialView);
         }
@@ -223,7 +242,6 @@ public sealed class FocusManager
                 return;
             }
 
-            _context.ViewUpdated -= OnViewUpdated;
             ResetState_NoLock();
         }
     }
@@ -328,32 +346,36 @@ public sealed class FocusManager
 
     private static void CollectRecursive(VNode node, List<int> path, List<FocusTarget> targets, ref int sequence)
     {
-        if (node is VElementNode element)
+        if (node.Kind == VNodeKind.Element && IsFocusable(node))
         {
-            if (IsFocusable(element))
-            {
-                var key = ResolveKey(element, path);
-                var currentSequence = sequence++;
-                var order = ResolveOrder(element, currentSequence);
-                targets.Add(new FocusTarget(key, order, currentSequence, path.ToArray()));
-            }
+            var key = ResolveKey(node, path);
+            var currentSequence = sequence++;
+            var order = ResolveOrder(node, currentSequence);
+            var attributes = CreateAttributeSnapshot(node.Attributes);
+            var events = node.Events.Count == 0
+                ? Array.Empty<VNodeEvent>()
+                : node.Events.ToArray();
 
-            for (var i = 0; i < element.Children.Count; i++)
-            {
-                path.Add(i);
-                CollectRecursive(element.Children[i], path, targets, ref sequence);
-                path.RemoveAt(path.Count - 1);
-            }
+            targets.Add(new FocusTarget(key, order, currentSequence, path.ToArray(), attributes, events));
         }
-        else if (node is VTextNode)
+
+        var children = node.Children;
+        for (var i = 0; i < children.Count; i++)
         {
-            // No-op for text nodes.
+            path.Add(i);
+            CollectRecursive(children[i], path, targets, ref sequence);
+            path.RemoveAt(path.Count - 1);
         }
     }
 
-    private static bool IsFocusable(VElementNode element)
+    private static bool IsFocusable(VNode element)
     {
-        if (!element.Attributes.TryGetValue("data-focusable", out var focusableValue))
+        if (element.Kind != VNodeKind.Element)
+        {
+            return false;
+        }
+
+        if (!element.Attributes.TryGetValue("data-focusable", out var focusableValue) || string.IsNullOrWhiteSpace(focusableValue))
         {
             return false;
         }
@@ -361,29 +383,39 @@ public sealed class FocusManager
         return bool.TryParse(focusableValue, out var focusable) && focusable;
     }
 
-    private static string ResolveKey(VElementNode element, IReadOnlyList<int> path)
+    private static string ResolveKey(VNode element, IReadOnlyList<int> path)
     {
-        if (element.Attributes.TryGetValue("data-focus-key", out var key) && !string.IsNullOrWhiteSpace(key))
+        if (element.Kind == VNodeKind.Element)
         {
-            return key;
-        }
+            if (element.Attributes.TryGetValue("data-focus-key", out var key) && !string.IsNullOrWhiteSpace(key))
+            {
+                return key;
+            }
 
-        if (element.Attributes.TryGetValue("id", out var id) && !string.IsNullOrWhiteSpace(id))
-        {
-            return id;
-        }
+            if (element.Attributes.TryGetValue("id", out var id) && !string.IsNullOrWhiteSpace(id))
+            {
+                return id;
+            }
 
-        if (element.Attributes.TryGetValue("data-key", out var dataKey) && !string.IsNullOrWhiteSpace(dataKey))
-        {
-            return dataKey;
+            if (element.Attributes.TryGetValue("data-key", out var dataKey) && !string.IsNullOrWhiteSpace(dataKey))
+            {
+                return dataKey;
+            }
+
+            if (!string.IsNullOrWhiteSpace(element.Key))
+            {
+                return element.Key!;
+            }
         }
 
         return string.Join('.', path);
     }
 
-    private static int ResolveOrder(VElementNode element, int sequence)
+    private static int ResolveOrder(VNode element, int sequence)
     {
-        if (element.Attributes.TryGetValue("data-focus-order", out var orderValue)
+        if (element.Kind == VNodeKind.Element
+            && element.Attributes.TryGetValue("data-focus-order", out var orderValue)
+            && !string.IsNullOrWhiteSpace(orderValue)
             && int.TryParse(orderValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var order))
         {
             return order;
@@ -392,7 +424,42 @@ public sealed class FocusManager
         return sequence;
     }
 
-    private sealed record FocusTarget(string Key, int Order, int Sequence, IReadOnlyList<int> Path);
+    private static IReadOnlyDictionary<string, string?> CreateAttributeSnapshot(IReadOnlyDictionary<string, string?> source)
+    {
+        if (source.Count == 0)
+        {
+            return EmptyAttributes;
+        }
+
+        var copy = new Dictionary<string, string?>(source.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in source)
+        {
+            copy[pair.Key] = pair.Value;
+        }
+
+        return new ReadOnlyDictionary<string, string?>(copy);
+    }
+
+    private sealed record FocusTarget(
+        string Key,
+        int Order,
+        int Sequence,
+        IReadOnlyList<int> Path,
+        IReadOnlyDictionary<string, string?> Attributes,
+        IReadOnlyList<VNodeEvent> Events)
+    {
+        public FocusTargetSnapshot ToSnapshot()
+            => new(Key, Path, Attributes, Events);
+    }
+
+    internal readonly record struct FocusTargetSnapshot(
+        string Key,
+        IReadOnlyList<int> Path,
+        IReadOnlyDictionary<string, string?> Attributes,
+        IReadOnlyList<VNodeEvent> Events);
+
+    private static readonly IReadOnlyDictionary<string, string?> EmptyAttributes =
+        new ReadOnlyDictionary<string, string?>(new Dictionary<string, string?>(0, StringComparer.OrdinalIgnoreCase));
 
     /// <summary>
     /// Disposable scope representing an active focus tracking session.

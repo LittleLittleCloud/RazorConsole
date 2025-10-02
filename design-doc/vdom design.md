@@ -1,89 +1,74 @@
-## Virtual DOM bridge design
+## Virtual DOM renderer redesign
 
-### Purpose
-- Introduce an intermediate virtual DOM (vdom) layer between Razor-generated HTML and console `IRenderable` objects.
-- Improve incremental updates by diffing successive HTML trees and emitting minimal console updates.
-- Align Razor authoring semantics (HTML) with Spectre.Console rendering primitives while keeping Razor components unchanged.
+### Goals
+- Render `.razor` components straight into a virtual console tree without taking a dependency on `HtmlRenderer`.
+- Preserve the Blazor event callback pipeline by deriving from `Microsoft.AspNetCore.Components.Renderer`.
+- Feed the existing diff and Spectre translator stacks with richer node metadata (attributes + events) while keeping Razor authoring unchanged.
 
-### Rendering pipeline (target state)
-1. **Razor component** renders to an HTML fragment (as today).
-2. **HTML parser** converts the fragment into a normalized DOM tree.
-3. **Vdom adapter** maps the DOM tree to lightweight vdom nodes (`VNode`).
-4. **Diff + patch** compares the new vdom with the previous frame and produces a set of vdom mutations.
-5. **Renderable translator** converts mutations into `IRenderable` updates for Spectre.Console.
-6. **Console renderer** applies updates to the live display.
+### Target pipeline (after refactor)
+1. `ConsoleRenderer` (new) mounts the root Razor component and produces a `VNode` tree directly from the render batch.
+2. `VNode` snapshot is passed to `SpectreRenderableFactory` to build the Spectre renderable.
+3. `ConsoleViewResult` carries the VDOM plus an optional HTML snapshot (generated from the VDOM only when required for diagnostics/tests).
+4. `ConsoleLiveDisplayContext` diffs successive `VNode` snapshots and drives Spectre updates.
 
-> Previous pipeline: `.razor -> HTML -> IRenderable -> console`
->
-> New pipeline: `.razor -> HTML -> vdom -> IRenderable -> console`
+> Reference: mirrors the approach in `RazorCliVdom.TerminalRenderer`, adapted to RazorConsole services and Spectre integration.
 
-### Guiding principles
-- **Deterministic mapping**: every HTML element used in the console should map to a predictable vdom node type and rendering primitive.
-- **Immutable snapshots**: treat vdom trees as persistent snapshots to simplify diffing.
-- **Diff first**: render steps operate on diffs rather than entire trees to reduce Spectre.Console churn and blinking.
-- **Separation of concerns**: keep Razor authoring, DOM parsing, vdom management, and Spectre rendering in distinct services.
+### Core components
+- **`ConsoleRenderer : Renderer`**
+	- Owns the `RendererSynchronizationContext` and integrates with DI just like `HtmlRenderer`.
+	- Overrides `UpdateDisplayAsync` to translate render batches into `VNode` graphs via a dedicated builder.
+	- Registers event handlers with the base renderer so `EventCallback` works end-to-end (no custom dispatcher hacks).
+- **`RenderBatchVNodeBuilder`**
+	- Consumes `RenderBatch.ReferenceFrames` to construct immutable `VNode` instances.
+	- Collapses markup frames, propagates component keys, and captures `EventCallbackWorkItem` data into event descriptors.
+- **`VNodeEventRegistry`**
+	- Indexes event descriptors by sequence + frame index so the input system can dispatch back into `Renderer.DispatchEventAsync`.
+	- Exposes lookup APIs for focus/input controllers without leaking renderer internals.
+- **`RazorComponentRenderer` (facade)**
+	- Creates a scope, resolves `ConsoleRenderer`, renders the requested component, and packages a `ConsoleViewResult`.
+	- Handles parameter projection just like today.
 
-### VNode model
-- `VNode`
-	- `type`: element, text, component placeholder, etc.
-	- `tagName`: lowercase HTML tag (for element nodes).
-	- `attributes`: normalized key/value pairs, preserving styles and Spectre metadata.
-	- `children`: ordered list of child `VNode`s.
-	- `key`: optional stable identifier for keyed diffing (sourced from `@key` Razor directive or `data-key` attributes).
-- `VText`
-	- Leaf node storing the final text to render.
-- `VComponent`
-	- For Razor child components that emit HTML lazily; holds component metadata and embedded vdom subtree when realized.
+### VNode model updates
+- `VNodeKind` retains `Element` and `Text`; we add `ComponentPlaceholder` if we ever need to expose unrendered components.
+- `VElementNode` gains:
+	- `IReadOnlyDictionary<string, VPropertyValue> Properties` — wraps strings, booleans, numbers, and `MarkupString` without lossy casting.
+	- `IReadOnlyList<VNodeEventDescriptor> Events` — captures event name, renderer-assigned handler ID, and modifiers (prevent default, stop propagation).
+	- `Key` remains for diffing.
+- `VTextNode` remains unchanged besides storing text as-is.
 
-### Diffing algorithm
-- Base diff on keyed tree comparison (similar to React reconciliation or the reference implementation in `RazorCliVdom`).
-- Compare `type`, `tagName`, and `key` to determine identity.
-- Produce a mutation list:
-	- `ReplaceNode`, `InsertNode`, `RemoveNode`, `UpdateAttributes`, `UpdateText`.
-- Bypass diffing for nodes marked `data-static="true"` or when keys change.
-- Support partial re-render: when Razor component re-renders only a subtree, diff against the previous subtree snapshot.
+### Event callback flow
+1. When the render batch contains an attribute whose value is an `EventCallbackWorkItem`, `RenderBatchVNodeBuilder` emits a `VNodeEventDescriptor`.
+2. The descriptor registers with `VNodeEventRegistry`, which stores the handler delegate and the owning renderer component ID.
+3. Console input adapters resolve descriptors (via `FocusManager` or other controllers) and forward events into `ConsoleRenderer.DispatchEventAsync`.
+4. Base `Renderer` schedules the callback on the dispatcher, so state updates re-render through the same pipeline.
 
-### HTML to vdom adapter
-- Parse HTML fragment using existing pipeline (ensure consistent casing & whitespace handling).
-- Normalize void elements (`br`, `img`) and custom components.
-- Map HTML attributes to Spectre concepts (e.g., `class="panel"` -> `PanelRenderable`).
-- Preserve data attributes (`data-*`) for downstream translators.
+### ConsoleViewResult adjustments
+- `ConsoleViewResult` exposes the new `VNode` snapshot publicly (read-only) so consumers no longer rely on HTML.
+- `Html` becomes optional: the renderer populates it on demand using a lightweight VDOM-to-markup serializer for tests that assert markup.
+- Animated renderable management stays the same.
 
-### Vdom to Spectre translator
-- Maintain a registry of handlers: `tagName -> IVirtualElementTranslator`.
-- Each translator converts vdom nodes into `IRenderable` (e.g., `<panel>` -> `PanelRenderable`).
-- Handle attribute diffs: translators receive `oldNode`, `newNode`, and the mutation type to avoid re-building expensive renderables.
-- Provide fallback translator for unsupported tags that renders plain text or logs diagnostics.
+### Diff & translation impacts
+- `VdomDiffService` compares `VPropertyValue` instances instead of raw strings; equality falls back to `Equals` with invariant string comparison for textual values.
+- Structural diff logic is otherwise unchanged, but mutations may carry updated property dictionaries and event lists.
+- `VdomSpectreTranslator` now receives fully-typed properties (e.g., numbers for padding) and can read event descriptors when emitters need to register focusable controls.
 
-### State management
-- Store previous vdom tree per live display context (`ConsoleLiveDisplayContext`).
-- Integrate with existing hot reload: on file change, clear cached vdom to force a fresh render.
-- Expose diagnostics hook to inspect diff results during development (attachable to tests).
-
-### Edge cases
-- **Whitespace normalization**: ensure text nodes preserve intentional line breaks while trimming excess whitespace that Spectre would collapse.
-- **Spectre limitations**: some HTML constructs (tables, flex layouts) may not map 1:1 to console components; document fallbacks.
-- **Streaming updates**: handle large tables/lists via chunked diffs to avoid large console repaints.
-- **Keys vs indices**: default to index-based reconciliation when no key is supplied, but warn in diagnostics when element order is unstable.
-- **Error resilience**: if HTML parsing fails, emit a diagnostic and fall back to previous renderable to avoid blank screens.
-
-### Integration plan
-1. **Create vdom abstractions** (`VNode`, diffing utilities, translators).
-2. **Wrap HTML renderer** to produce vdom snapshots.
-3. **Inject vdom diff service** into `ConsoleApp` render pipeline.
-4. **Update tests**: add unit tests for diff cases and translation mapping; update integration tests to assert minimal Spectre updates.
-5. **Telemetry & logging**: capture diff stats (nodes touched, time) for tuning.
+### Error handling & diagnostics
+- `ConsoleRenderer.HandleException` forwards to an injectable `ILogger` and rethrows for catastrophic failures.
+- Unmatched frame types (e.g., `Markup` when not expected) produce diagnostic nodes that render as plain text to avoid hard crashes.
+- A development flag enables dumping the generated VDOM for troubleshooting.
 
 ### Testing strategy
-- Unit tests for diff algorithm covering insert/remove/reorder and attribute changes.
-- Golden tests comparing HTML input to expected Spectre renderables.
-- Performance regression test simulating frequent updates (e.g., spinner, counter) to ensure no flicker.
+- Unit tests for `RenderBatchVNodeBuilder` covering attributes, keys, conditional rendering, and event descriptor capture.
+- Integration tests for `ConsoleRenderer` verifying that button clicks trigger `EventCallback` and re-render.
+- Regression tests to ensure HTML serialization (when requested) matches legacy expectations.
+- Existing VDOM diff and translator suites run unchanged but updated to new property types.
 
-### Future considerations
-- Cross-project sharing: align vdom utilities with `RazorCliVdom` (reference implementation) to avoid duplication.
-- Async component rendering: support streaming partial vdoms when Razor components emit fragments over time.
-- Serialization: allow exporting vdom snapshots for debugging or tooling integration.
+### Risks & mitigations
+- **Event dispatch regressions**: Mitigate with focused tests mirroring `RazorCliVdom` scenarios.
+- **Performance**: Avoid allocations by reusing builders per render batch and pooling dictionaries.
+- **Backward compatibility**: Phase out direct HTML comparisons by gradually migrating tests to VDOM assertions, keeping HTML serializer as a fallback during transition.
 
-### Assumptions & references
-- Based on prior experiments in `RazorCliVdom` (local reference in `Program.cs`); replicate its diffing approach while adapting naming to this repository.
-- HTML input is well-formed; malformed markup will be sanitized before diffing.
+### Follow-up work
+- Wire `VNodeEventRegistry` into the focus/input pipeline so keyboard navigation can trigger component callbacks.
+- Expose developer diagnostics (`consoleRenderer.ExportCurrentTree()`) for the gallery app.
+- Evaluate sharing the renderer with `RazorCliVdom` to reduce duplication once both repos stabilize.

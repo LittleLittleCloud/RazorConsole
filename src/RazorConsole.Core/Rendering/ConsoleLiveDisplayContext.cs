@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -7,51 +8,57 @@ using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console.Rendering;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace RazorConsole.Core.Rendering;
 
 /// <summary>
 /// Provides a simplified facade over Spectre.Console live display updates.
 /// </summary>
-public sealed class ConsoleLiveDisplayContext : IDisposable
+public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRenderer.RenderSnapshot>
 {
     private readonly ILiveDisplayCanvas _canvas;
-    private readonly VdomDiffService _diffService;
-    private readonly List<AnimationSubscription> _animations = new();
-    private readonly VdomSpectreTranslator _translator = new();
     private readonly object _sync = new();
-    private readonly object _parameterSync = new();
-    private string? _lastHtml;
-    private VNode? _lastVdom;
-    private readonly Func<object?, CancellationToken, Task<ConsoleViewResult>>? _renderAsync;
-    private object? _currentParameters;
+    private readonly ConsoleRenderer? _ownedRenderer;
+    private readonly VdomDiffService _diffService;
+    private readonly Func<object?, CancellationToken, Task<ConsoleViewResult>>? _renderCallback;
     private bool _disposed;
     private ConsoleViewResult? _currentView;
+    private IDisposable? _snapshotSubscription;
+    private List<AnimationSubscription>? _animationSubscriptions;
+    private object? _lastParameters;
 
     internal ConsoleLiveDisplayContext(
         ILiveDisplayCanvas canvas,
         ConsoleViewResult? initialView,
-        VdomDiffService diffService,
-        Func<object?, CancellationToken, Task<ConsoleViewResult>>? renderAsync = null,
+        ConsoleRenderer renderer,
+        bool ownsRenderer = false,
+        VdomDiffService? diffService = null,
+        Func<object?, CancellationToken, Task<ConsoleViewResult>>? renderCallback = null,
         object? initialParameters = null)
     {
         _canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
-        _diffService = diffService ?? throw new ArgumentNullException(nameof(diffService));
         if (initialView is not null)
         {
-            _lastHtml = initialView.Html;
-            _lastVdom = initialView.VdomRoot;
-            ApplyAnimations(initialView.AnimatedRenderables);
             _currentView = initialView;
         }
-        _renderAsync = renderAsync;
-        _currentParameters = initialParameters;
-    }
 
-    /// <summary>
-    /// Occurs when the live display successfully applies a new view.
-    /// </summary>
-    public event EventHandler<ConsoleViewResult>? ViewUpdated;
+        _snapshotSubscription = renderer.Subscribe(this);
+        if (ownsRenderer)
+        {
+            _ownedRenderer = renderer;
+        }
+
+        _diffService = diffService ?? new VdomDiffService();
+        _renderCallback = renderCallback;
+        _lastParameters = initialParameters;
+
+        if (initialView is not null)
+        {
+            UpdateAnimations(initialView.AnimatedRenderables);
+        }
+    }
 
     internal ConsoleViewResult? CurrentView
     {
@@ -71,57 +78,47 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
     /// <returns><see langword="true"/> when the view was updated; otherwise <see langword="false"/>.</returns>
     public bool UpdateView(ConsoleViewResult view)
     {
-        if (view is null)
+        if (view is null || view.Renderable is null)
         {
             throw new ArgumentNullException(nameof(view));
         }
 
-        var updated = false;
-
-        if (view.VdomRoot is not null && _lastVdom is not null)
+        lock (_sync)
         {
-            var diff = _diffService.Diff(_lastVdom, view.VdomRoot);
-            if (!diff.HasChanges)
-            {
-                _lastVdom = diff.Current ?? view.VdomRoot;
-                _lastHtml = view.Html;
-                return false;
-            }
+            var previous = _currentView;
+            var previousRoot = previous?.VdomRoot;
+            var currentRoot = view.VdomRoot;
 
-            if (TryApplyMutations(diff))
+            bool updated;
+
+            if (previousRoot is not null && currentRoot is not null)
             {
-                _lastVdom = diff.Current;
-                _lastHtml = view.Html;
-                ApplyAnimations(view.AnimatedRenderables);
+                var diff = _diffService.Diff(previousRoot, currentRoot);
+                if (!diff.HasChanges)
+                {
+                    updated = false;
+                }
+                else
+                {
+                    var applied = TryApplyMutations(diff);
+                    if (!applied)
+                    {
+                        _canvas.UpdateTarget(view.Renderable);
+                    }
+
+                    updated = true;
+                }
+            }
+            else
+            {
+                _canvas.UpdateTarget(view.Renderable);
                 updated = true;
             }
-        }
-        else if (string.Equals(view.Html, _lastHtml, StringComparison.Ordinal))
-        {
-            _lastHtml = view.Html;
-            return false;
-        }
 
-        if (!updated)
-        {
-            _canvas.UpdateTarget(view.Renderable);
-            _lastHtml = view.Html;
-            _lastVdom = view.VdomRoot;
-            ApplyAnimations(view.AnimatedRenderables);
-            updated = true;
+            _currentView = view;
+            UpdateAnimations(view.AnimatedRenderables);
+            return updated;
         }
-
-        if (updated)
-        {
-            lock (_sync)
-            {
-                _currentView = view;
-            }
-
-            ViewUpdated?.Invoke(this, view);
-        }
-
-        return updated;
     }
 
     /// <summary>
@@ -131,13 +128,11 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
     public void UpdateRenderable(IRenderable? renderable)
     {
         _canvas.UpdateTarget(renderable);
-        _lastHtml = null;
-        _lastVdom = null;
         lock (_sync)
         {
             _currentView = null;
+            DisposeAnimations();
         }
-        ResetAnimations();
     }
 
     /// <summary>
@@ -151,8 +146,25 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
     /// <param name="parameters">Parameter object passed to the component. Passing <see langword="null"/> reuses the previous parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns><see langword="true"/> when the view was updated; otherwise <see langword="false"/>.</returns>
-    public Task<bool> UpdateModelAsync(object? parameters, CancellationToken cancellationToken = default)
-        => UpdateModelInternalAsync(() => parameters, cancellationToken);
+    public async Task<bool> UpdateModelAsync(object? parameters, CancellationToken cancellationToken = default)
+    {
+        var callback = _renderCallback;
+        if (callback is null)
+        {
+            return false;
+        }
+
+        var effectiveParameters = parameters ?? _lastParameters;
+
+        var view = await callback(effectiveParameters, cancellationToken).ConfigureAwait(false);
+        if (view is null)
+        {
+            return false;
+        }
+
+        _lastParameters = effectiveParameters;
+        return UpdateView(view);
+    }
 
     public void Dispose()
     {
@@ -160,132 +172,131 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
         {
             return;
         }
+        DisposeAnimations();
+        _snapshotSubscription?.Dispose();
+#pragma warning disable BL0006
+        _ownedRenderer?.Dispose();
+#pragma warning restore BL0006
 
-        ResetAnimations();
         _disposed = true;
     }
 
     internal static ConsoleLiveDisplayContext Create<TComponent>(
         Spectre.Console.LiveDisplayContext context,
         ConsoleViewResult initialView,
-        VdomDiffService diffService,
-        IRazorComponentRenderer renderer,
-        object? initialParameters = null)
+        ConsoleRenderer renderer)
         where TComponent : IComponent
         => new(
             new LiveDisplayCanvasAdapter(context),
             initialView,
-            diffService,
-            (parameters, token) => renderer.RenderAsync<TComponent>(parameters, token),
-            initialParameters);
+            renderer);
 
     internal static ConsoleLiveDisplayContext CreateForTesting(
         ILiveDisplayCanvas canvas,
-        ConsoleViewResult? initialView = null,
-        VdomDiffService? diffService = null,
-        Func<object?, CancellationToken, Task<ConsoleViewResult>>? renderAsync = null,
+        ConsoleRenderer renderer,
+        ConsoleViewResult? initialView = null)
+        => new(canvas, initialView, renderer);
+
+    internal static ConsoleLiveDisplayContext CreateForTesting(
+        ILiveDisplayCanvas canvas,
+        ConsoleViewResult? initialView = null)
+    {
+        var renderer = CreateRenderer();
+        return new ConsoleLiveDisplayContext(canvas, initialView, renderer, ownsRenderer: true);
+    }
+
+    internal static ConsoleLiveDisplayContext CreateForTesting<TComponent>(
+        ILiveDisplayCanvas canvas,
+        ConsoleRenderer renderer,
+        ConsoleViewResult? initialView)
+        where TComponent : IComponent
+        => new(
+            canvas,
+            initialView,
+            renderer);
+
+    internal static ConsoleLiveDisplayContext CreateForTesting(
+        ILiveDisplayCanvas canvas,
+        ConsoleViewResult? initialView,
+        VdomDiffService diffService,
+        Func<object?, CancellationToken, Task<ConsoleViewResult>> renderCallback,
         object? initialParameters = null)
-        => new(canvas, initialView, diffService ?? new VdomDiffService(), renderAsync, initialParameters);
+    {
+        if (diffService is null)
+        {
+            throw new ArgumentNullException(nameof(diffService));
+        }
+
+        if (renderCallback is null)
+        {
+            throw new ArgumentNullException(nameof(renderCallback));
+        }
+
+        var renderer = CreateRenderer();
+        return new ConsoleLiveDisplayContext(canvas, initialView, renderer, ownsRenderer: true, diffService: diffService, renderCallback: renderCallback, initialParameters: initialParameters);
+    }
 
     internal static ConsoleLiveDisplayContext CreateForTesting<TComponent>(
         ILiveDisplayCanvas canvas,
         ConsoleViewResult? initialView,
         VdomDiffService diffService,
-        IRazorComponentRenderer renderer,
+        Func<object?, CancellationToken, Task<ConsoleViewResult>> renderCallback,
         object? initialParameters = null)
         where TComponent : IComponent
-        => new(
-            canvas,
-            initialView,
-            diffService,
-            (parameters, token) => renderer.RenderAsync<TComponent>(parameters, token),
-            initialParameters);
-
-    private async Task<bool> UpdateModelInternalAsync(Func<object?> parameterFactory, CancellationToken cancellationToken)
     {
-        if (_renderAsync is null)
+        if (diffService is null)
         {
-            throw new InvalidOperationException("This live display context does not support model updates.");
+            throw new ArgumentNullException(nameof(diffService));
         }
 
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var newParameters = parameterFactory();
-        var effectiveParameters = newParameters ?? GetCurrentParameters();
-
-        var view = await _renderAsync(effectiveParameters, cancellationToken).ConfigureAwait(false);
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (newParameters is not null)
+        if (renderCallback is null)
         {
-            SetCurrentParameters(newParameters);
+            throw new ArgumentNullException(nameof(renderCallback));
         }
 
-        return UpdateView(view);
+        var renderer = CreateRenderer();
+        return new ConsoleLiveDisplayContext(canvas, initialView, renderer, ownsRenderer: true, diffService: diffService, renderCallback: renderCallback, initialParameters: initialParameters);
     }
 
-    private object? GetCurrentParameters()
+    public void OnCompleted()
     {
-        lock (_parameterSync)
-        {
-            return _currentParameters;
-        }
     }
 
-    private void SetCurrentParameters(object? parameters)
+    public void OnError(Exception error)
     {
-        lock (_parameterSync)
-        {
-            _currentParameters = parameters;
-        }
     }
 
-    private void ApplyAnimations(IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables)
+    void IObserver<ConsoleRenderer.RenderSnapshot>.OnNext(ConsoleRenderer.RenderSnapshot value)
     {
-        ResetAnimations();
-
-        if (animatedRenderables is null || animatedRenderables.Count == 0)
+        try
         {
-            return;
+            var view = ConsoleViewResult.FromSnapshot(value, null);
+            UpdateView(view);
         }
-
-        lock (_sync)
+        catch
         {
-            foreach (var animated in animatedRenderables)
-            {
-                if (animated.RefreshInterval <= TimeSpan.Zero)
-                {
-                    continue;
-                }
-
-                _animations.Add(new AnimationSubscription(animated.RefreshInterval, _canvas));
-            }
-        }
-    }
-
-    private void ResetAnimations()
-    {
-        lock (_sync)
-        {
-            foreach (var animation in _animations)
-            {
-                animation.Dispose();
-            }
-
-            _animations.Clear();
+            UpdateRenderable(value.Renderable);
         }
     }
 
     private bool TryApplyMutations(VdomDiffResult diff)
     {
-        if (diff.Current is null)
+        if (!diff.HasChanges)
         {
             return false;
         }
 
         foreach (var mutation in diff.Mutations)
         {
-            if (!TryApplyMutation(diff.Current, mutation))
+            var applied = mutation.Kind switch
+            {
+                VdomMutationKind.UpdateText => _canvas.TryUpdateText(mutation.Path, mutation.Text),
+                VdomMutationKind.UpdateAttributes => _canvas.TryUpdateAttributes(mutation.Path, mutation.Attributes ?? EmptyAttributes),
+                VdomMutationKind.ReplaceNode => TryReplaceNode(mutation),
+                _ => false,
+            };
+
+            if (!applied)
             {
                 return false;
             }
@@ -294,83 +305,62 @@ public sealed class ConsoleLiveDisplayContext : IDisposable
         return true;
     }
 
-    private bool TryApplyMutation(VNode root, VdomMutation mutation)
-        => mutation.Kind switch
-        {
-            VdomMutationKind.ReplaceNode => TryApplyReplace(root, mutation),
-            VdomMutationKind.UpdateText => TryApplyUpdateText(root, mutation),
-            VdomMutationKind.UpdateAttributes => TryApplyUpdateAttributes(root, mutation),
-            _ => false,
-        };
-
-    private bool TryApplyReplace(VNode root, VdomMutation mutation)
+    private bool TryReplaceNode(VdomMutation mutation)
     {
-        if (mutation.Path.Count == 0)
+        if (mutation.Node is null)
         {
             return false;
         }
 
-        var node = FindNode(root, mutation.Path);
-        if (node is null)
+        if (!SpectreRenderableFactory.TryCreateRenderable(mutation.Node, out var renderable, out _) || renderable is null)
         {
             return false;
         }
 
-        if (!_translator.TryTranslate(node, out var renderable, out var _animated) || renderable is null)
-        {
-            return false;
-        }
-
-        if (!_canvas.TryReplaceNode(mutation.Path, renderable))
-        {
-            return false;
-        }
-
-        return true;
+        return _canvas.TryReplaceNode(mutation.Path, renderable);
     }
 
-    private bool TryApplyUpdateText(VNode root, VdomMutation mutation)
+    private void UpdateAnimations(IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables)
     {
-        var text = mutation.Text ?? string.Empty;
-        if (_canvas.TryUpdateText(mutation.Path, text))
+        DisposeAnimations();
+
+        if (animatedRenderables is null || animatedRenderables.Count == 0)
         {
-            return true;
+            return;
         }
 
-        return TryApplyReplace(root, mutation);
+        var subscriptions = new List<AnimationSubscription>(animatedRenderables.Count);
+        foreach (var animated in animatedRenderables)
+        {
+            subscriptions.Add(new AnimationSubscription(animated.RefreshInterval, _canvas));
+        }
+
+        _animationSubscriptions = subscriptions;
     }
 
-    private bool TryApplyUpdateAttributes(VNode root, VdomMutation mutation)
+    private void DisposeAnimations()
     {
-        var attributes = mutation.Attributes ?? new Dictionary<string, string?>(StringComparer.Ordinal);
-        if (_canvas.TryUpdateAttributes(mutation.Path, attributes))
+        if (_animationSubscriptions is null)
         {
-            return true;
+            return;
         }
 
-        return TryApplyReplace(root, mutation);
+        foreach (var subscription in _animationSubscriptions)
+        {
+            subscription.Dispose();
+        }
+
+        _animationSubscriptions = null;
     }
 
-    private static VNode? FindNode(VNode root, IReadOnlyList<int> path)
+    private static ConsoleRenderer CreateRenderer()
     {
-        if (path.Count == 0)
-        {
-            return root;
-        }
-
-        VNode current = root;
-        foreach (var index in path)
-        {
-            if (current is not VElementNode element || index < 0 || index >= element.Children.Count)
-            {
-                return null;
-            }
-
-            current = element.Children[index];
-        }
-
-        return current;
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        return new ConsoleRenderer(serviceProvider, NullLoggerFactory.Instance);
     }
+
+    private static readonly IReadOnlyDictionary<string, string?> EmptyAttributes =
+        new ReadOnlyDictionary<string, string?>(new Dictionary<string, string?>(0, StringComparer.Ordinal));
 
     internal interface ILiveDisplayCanvas
     {

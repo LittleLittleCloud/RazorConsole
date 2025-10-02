@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -12,6 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.Focus;
+using RazorConsole.Core.Rendering.Input;
 using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -112,16 +115,15 @@ public sealed class ConsoleAppBuilder
 
     private static void RegisterDefaults(IServiceCollection services)
     {
-        // services.TryAddSingleton<IComponentActivator, ServiceProviderComponentActivator>();
         services.TryAddSingleton<ConsoleNavigationManager>();
         services.TryAddSingleton<NavigationManager>(sp => sp.GetRequiredService<ConsoleNavigationManager>());
         services.TryAddSingleton<ILoggerFactory>(_ => NullLoggerFactory.Instance);
-        services.TryAddScoped(sp => new HtmlRenderer(sp, sp.GetRequiredService<ILoggerFactory>()));
-        services.TryAddSingleton<RazorComponentRenderer>();
-        services.TryAddSingleton<IRazorComponentRenderer>(sp => sp.GetRequiredService<RazorComponentRenderer>());
+        services.TryAddSingleton<ConsoleRenderer>();
         services.TryAddSingleton<VdomDiffService>();
         services.TryAddSingleton<FocusManager>();
         services.TryAddSingleton<LiveDisplayContextAccessor>();
+        services.TryAddSingleton<IKeyboardEventDispatcher, RendererKeyboardEventDispatcher>();
+        services.TryAddSingleton<KeyboardEventManager>();
     }
 }
 
@@ -163,7 +165,8 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
     private readonly ConsoleAppOptions _options;
     private readonly VdomDiffService _diffService;
     private readonly LiveDisplayContextAccessor? _liveContextAccessor;
-    private readonly IRazorComponentRenderer _renderer;
+    private readonly ConsoleRenderer _consoleRenderer;
+    private readonly SemaphoreSlim _renderLock = new(1, 1);
     private bool _disposed;
 
     internal ConsoleApp(ConsoleAppBuilder builder)
@@ -177,7 +180,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         _options = builder.BuildOptions();
         _diffService = _serviceProvider.GetRequiredService<VdomDiffService>();
         _liveContextAccessor = _serviceProvider.GetService<LiveDisplayContextAccessor>();
-        _renderer = _serviceProvider.GetRequiredService<IRazorComponentRenderer>();
+        _consoleRenderer = _serviceProvider.GetRequiredService<ConsoleRenderer>();
     }
 
     /// <summary>
@@ -213,12 +216,13 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 
         try
         {
-            var view = await _renderer.RenderAsync<TComponent>(parameters, shutdownToken).ConfigureAwait(false);
+            var view = await RenderComponentAsync(parameters, shutdownToken).ConfigureAwait(false);
+
             var currentParameters = parameters;
             var focusManager = _serviceProvider.GetService<FocusManager>();
+            var keyboardManager = _serviceProvider.GetService<KeyboardEventManager>();
 
             var callback = _options.AfterRenderAsync ?? ConsoleAppOptions.DefaultAfterRenderAsync;
-
             if (SupportsLiveDisplay())
             {
                 var liveDisplay = AnsiConsole.Live(view.Renderable);
@@ -227,22 +231,18 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 {
                     shutdownToken.ThrowIfCancellationRequested();
 
-                    using var context = ConsoleLiveDisplayContext.Create<TComponent>(liveContext, view, _diffService, _renderer, currentParameters);
+                    using var context = ConsoleLiveDisplayContext.Create<TComponent>(liveContext, view, _consoleRenderer);
                     _liveContextAccessor?.Attach(context);
                     FocusManager.FocusSession? session = null;
                     Task? keyListener = null;
 
                     try
                     {
-                        if (focusManager is not null)
+                        if (keyboardManager is not null && focusManager is not null && !Console.IsInputRedirected)
                         {
                             session = focusManager.BeginSession(context, view, shutdownToken);
                             await session.InitializationTask.ConfigureAwait(false);
-
-                            if (!Console.IsInputRedirected)
-                            {
-                                keyListener = ListenForFocusKeysAsync(focusManager, session.Token);
-                            }
+                            keyListener = keyboardManager.RunAsync(session.Token);
                         }
 
                         await callback(context, view, shutdownToken).ConfigureAwait(false);
@@ -274,7 +274,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 AnsiConsole.Clear();
             }
 
-            using var fallbackContext = ConsoleLiveDisplayContext.CreateForTesting<TComponent>(new FallbackLiveDisplayCanvas(), view, _diffService, _renderer, currentParameters);
+            using var fallbackContext = ConsoleLiveDisplayContext.CreateForTesting<TComponent>(new FallbackLiveDisplayCanvas(), _consoleRenderer, view);
             _liveContextAccessor?.Attach(fallbackContext);
             fallbackContext.UpdateRenderable(view.Renderable);
 
@@ -290,7 +290,9 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 
                     if (!Console.IsInputRedirected)
                     {
-                        fallbackKeyListener = ListenForFocusKeysAsync(focusManager, fallbackSession.Token);
+                        fallbackKeyListener = keyboardManager is not null
+                            ? keyboardManager.RunAsync(fallbackSession.Token)
+                            : ListenForFocusKeysAsync(focusManager, fallbackSession.Token);
                     }
                 }
 
@@ -332,6 +334,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         }
 
         _serviceProvider.Dispose();
+        _renderLock.Dispose();
         _disposed = true;
         GC.SuppressFinalize(this);
     }
@@ -345,6 +348,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         }
 
         await _serviceProvider.DisposeAsync().ConfigureAwait(false);
+        _renderLock.Dispose();
         _disposed = true;
         GC.SuppressFinalize(this);
     }
@@ -510,5 +514,59 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 
         public bool TryUpdateAttributes(IReadOnlyList<int> path, IReadOnlyDictionary<string, string?> attributes)
             => false;
+    }
+
+    public Task<ConsoleViewResult> RenderComponentAsync(object? parameters = null, CancellationToken cancellationToken = default)
+        => RenderComponentInternalAsync(parameters, cancellationToken);
+
+    private async Task<ConsoleViewResult> RenderComponentInternalAsync(object? parameters, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        await _renderLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var parameterView = CreateParameterView(parameters);
+            var snapshot = await _consoleRenderer.MountComponentAsync<TComponent>(parameterView, cancellationToken).ConfigureAwait(false);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return ConsoleViewResult.FromSnapshot(snapshot, _consoleRenderer);
+        }
+        finally
+        {
+            _renderLock.Release();
+        }
+    }
+
+    private static ParameterView CreateParameterView(object? parameters)
+    {
+        if (parameters is null)
+        {
+            return ParameterView.Empty;
+        }
+
+        if (parameters is ParameterView parameterView)
+        {
+            return parameterView;
+        }
+
+        if (parameters is IDictionary<string, object?> dictionary)
+        {
+            return ParameterView.FromDictionary(new Dictionary<string, object?>(dictionary));
+        }
+
+        if (parameters is IReadOnlyDictionary<string, object?> readOnlyDictionary)
+        {
+            return ParameterView.FromDictionary(readOnlyDictionary.ToDictionary(pair => pair.Key, pair => pair.Value));
+        }
+
+        var props = parameters
+            .GetType()
+            .GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)
+            .Where(property => property.GetMethod is not null)
+            .ToDictionary(property => property.Name, property => property.GetValue(parameters));
+
+        return ParameterView.FromDictionary(props);
     }
 }

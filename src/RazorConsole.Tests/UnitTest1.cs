@@ -18,7 +18,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-border=\"panel\" data-header=\"Header\">Hello</div>";
 
-    var success = TryCreateRenderable(html, out var renderable);
+        var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
         var panel = Assert.IsType<Panel>(renderable);
@@ -30,7 +30,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-spinner=\"true\" data-message=\"Working\" data-style=\"yellow\" data-spinner-type=\"Dots\"></div>";
 
-    var success = TryCreateRenderable(html, out var renderable, out var animations);
+        var success = TryCreateRenderable(html, out var renderable, out var animations);
 
         Assert.True(success);
         Assert.NotNull(renderable);
@@ -44,7 +44,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-button=\"true\" data-button-label=\"Run\" data-button-variant=\"primary\" data-button-active=\"true\" data-button-width=\"20\"></div>";
 
-    var success = TryCreateRenderable(html, out var renderable);
+        var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
 
@@ -53,8 +53,8 @@ public class HtmlRenderingTests
         Assert.Equal(20, panel.Width);
         Assert.Equal(new Padding(1, 0, 1, 0), panel.Padding);
 
-    var widthProperty = panel.GetType().GetProperty("Width", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-    Assert.NotNull(widthProperty);
+        var widthProperty = panel.GetType().GetProperty("Width", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        Assert.NotNull(widthProperty);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-button=\"true\"><span data-text=\"true\" data-style=\"green\">Custom</span></div>";
 
-    var success = TryCreateRenderable(html, out var renderable);
+        var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
 
@@ -76,7 +76,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-padder=\"true\" data-padding=\"2,1,2,1\"><span data-text=\"true\">Content</span></div>";
 
-    var success = TryCreateRenderable(html, out var renderable);
+        var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
         var padder = Assert.IsType<Padder>(renderable);
@@ -92,17 +92,17 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-align=\"true\" data-horizontal=\"center\" data-vertical=\"middle\" data-width=\"40\" data-height=\"5\"><span data-text=\"true\">Inner</span></div>";
 
-    var success = TryCreateRenderable(html, out var renderable);
+        var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
         var align = Assert.IsType<Align>(renderable);
 
-    var horizontalProperty = align.GetType().GetProperty("Horizontal");
+        var horizontalProperty = align.GetType().GetProperty("Horizontal");
         Assert.NotNull(horizontalProperty);
         var horizontal = (HorizontalAlignment?)horizontalProperty!.GetValue(align);
         Assert.Equal(HorizontalAlignment.Center, horizontal);
 
-    var verticalProperty = align.GetType().GetProperty("Vertical");
+        var verticalProperty = align.GetType().GetProperty("Vertical");
         Assert.NotNull(verticalProperty);
         var vertical = (VerticalAlignment?)verticalProperty!.GetValue(align);
         Assert.Equal(VerticalAlignment.Middle, vertical);
@@ -124,8 +124,8 @@ public class HtmlRenderingTests
         const string expandedHtml = "<div data-panel=\"true\" data-panel-expand=\"true\">Content</div>";
         const string collapsedHtml = "<div data-panel=\"true\">Content</div>";
 
-    var expandedSuccess = TryCreateRenderable(expandedHtml, out var expandedRenderable);
-    var collapsedSuccess = TryCreateRenderable(collapsedHtml, out var collapsedRenderable);
+        var expandedSuccess = TryCreateRenderable(expandedHtml, out var expandedRenderable);
+        var collapsedSuccess = TryCreateRenderable(collapsedHtml, out var collapsedRenderable);
 
         Assert.True(expandedSuccess);
         Assert.True(collapsedSuccess);
@@ -148,7 +148,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-panel=\"true\" data-panel-border=\"rounded\" data-panel-padding=\"1,2,3,4\" data-panel-height=\"10\" data-panel-width=\"40\">Content</div>";
 
-    var success = TryCreateRenderable(html, out var renderable);
+        var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
 
@@ -164,7 +164,7 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-columns=\"true\" data-columns-expand=\"true\" data-columns-padding=\"1,2,3,4\"><span data-text=\"true\">One</span></div>";
 
-    var success = TryCreateRenderable(html, out var renderable);
+        var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
 
@@ -202,7 +202,7 @@ public class HtmlRenderingTests
         Assert.NotNull(child);
         var columns = Assert.IsType<Columns>(child);
 
-    var expandProperty = columns.GetType().GetProperty("Expand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        var expandProperty = columns.GetType().GetProperty("Expand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         Assert.NotNull(expandProperty);
         var expandValue = expandProperty!.GetValue(columns) as bool?;
         Assert.True(expandValue);
@@ -213,12 +213,12 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-rows=\"true\" data-expand=\"true\"><span data-text=\"true\">Row1</span><span data-text=\"true\">Row2</span></div>";
 
-    var success = TryCreateRenderable(html, out var renderable);
+        var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
 
-    var rows = Assert.IsType<Rows>(renderable);
-    var expandProperty = rows.GetType().GetProperty("Expand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        var rows = Assert.IsType<Rows>(renderable);
+        var expandProperty = rows.GetType().GetProperty("Expand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         Assert.NotNull(expandProperty);
         var expandValue = expandProperty!.GetValue(rows) as bool?;
         Assert.True(expandValue);
@@ -229,12 +229,12 @@ public class HtmlRenderingTests
     {
         const string html = "<div data-grid=\"true\" data-columns=\"2\" data-grid-expand=\"true\" data-grid-width=\"80\"><span data-text=\"true\">Cell1</span><span data-text=\"true\">Cell2</span></div>";
 
-    var success = TryCreateRenderable(html, out var renderable);
+        var success = TryCreateRenderable(html, out var renderable);
 
         Assert.True(success);
 
         var grid = Assert.IsType<Grid>(renderable);
-    var expandProperty = grid.GetType().GetProperty("Expand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        var expandProperty = grid.GetType().GetProperty("Expand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         Assert.NotNull(expandProperty);
         var expandValue = expandProperty!.GetValue(grid) as bool?;
         Assert.True(expandValue);

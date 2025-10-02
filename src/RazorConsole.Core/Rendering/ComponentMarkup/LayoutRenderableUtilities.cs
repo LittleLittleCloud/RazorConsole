@@ -40,7 +40,7 @@ internal static class LayoutRenderableUtilities
                         yield return renderable;
                         yield break;
                     }
-                    
+
                     yield break;
                 }
             default:

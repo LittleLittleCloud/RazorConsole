@@ -49,34 +49,34 @@ public sealed class VdomDiffService
             return;
         }
 
-        switch (previous)
+        switch (previous.Kind)
         {
-            case VTextNode prevText when current is VTextNode newText:
-                if (!string.Equals(prevText.Text, newText.Text, StringComparison.Ordinal))
+            case VNodeKind.Text:
+                if (!string.Equals(previous.Text, current.Text, StringComparison.Ordinal))
                 {
-                    mutations.Add(CreateMutation(VdomMutationKind.UpdateText, path, current, newText.Text, null));
+                    mutations.Add(CreateMutation(VdomMutationKind.UpdateText, path, current.Clone(), current.Text, null));
                 }
 
                 return;
 
-            case VElementNode prevElement when current is VElementNode newElement:
-                if (!string.Equals(prevElement.TagName, newElement.TagName, StringComparison.Ordinal) ||
-                    !string.Equals(prevElement.Key, newElement.Key, StringComparison.Ordinal))
+            case VNodeKind.Element:
+                if (!string.Equals(previous.TagName, current.TagName, StringComparison.Ordinal) ||
+                    !string.Equals(previous.Key, current.Key, StringComparison.Ordinal))
                 {
-                    mutations.Add(CreateMutation(VdomMutationKind.ReplaceNode, path, current));
+                    mutations.Add(CreateMutation(VdomMutationKind.ReplaceNode, path, current.Clone()));
                     return;
                 }
 
-                if (!AreAttributesEqual(prevElement.Attributes, newElement.Attributes))
+                if (!AreAttributesEqual(previous.Attributes, current.Attributes))
                 {
-                    mutations.Add(CreateMutation(VdomMutationKind.UpdateAttributes, path, current, null, newElement.Attributes));
+                    mutations.Add(CreateMutation(VdomMutationKind.UpdateAttributes, path, current.Clone(), null, current.Attributes));
                 }
 
-                DiffChildren(prevElement.Children, newElement.Children, path, mutations);
+                DiffChildren(previous.Children, current.Children, path, mutations);
                 return;
 
             default:
-                mutations.Add(CreateMutation(VdomMutationKind.ReplaceNode, path, current));
+                DiffChildren(previous.Children, current.Children, path, mutations);
                 return;
         }
     }
@@ -97,7 +97,7 @@ public sealed class VdomDiffService
 
             if (i >= previousCount)
             {
-                mutations.Add(CreateMutation(VdomMutationKind.InsertNode, path, current[i]));
+                mutations.Add(CreateMutation(VdomMutationKind.InsertNode, path, current[i].Clone()));
                 path.RemoveAt(path.Count - 1);
                 continue;
             }
@@ -142,8 +142,8 @@ public sealed class VdomDiffService
         IReadOnlyDictionary<string, string?>? attributes = null)
     {
         var pathCopy = path.Count == 0 ? Array.Empty<int>() : path.ToArray();
-        var resolvedText = text ?? (node is VTextNode textNode ? textNode.Text : null);
-        var resolvedAttributes = attributes ?? (node is VElementNode element ? element.Attributes : null);
+        var resolvedText = text ?? (node is { Kind: VNodeKind.Text } ? node.Text : null);
+        var resolvedAttributes = attributes ?? (node is { Kind: VNodeKind.Element } ? node.Attributes : null);
 
         return new VdomMutation(kind, pathCopy, node, resolvedText, resolvedAttributes);
     }

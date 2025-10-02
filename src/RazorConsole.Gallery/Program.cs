@@ -1,10 +1,15 @@
-﻿using RazorConsole.Components;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RazorConsole.Components;
 using RazorConsole.Core;
+using RazorConsole.Gallery.Components;
 using RazorConsole.Gallery.Models;
 
-var model = new GreetingModel
+await AppHost.RunAsync<HelloComponent>(null, builder =>
 {
-    Timestamp = DateTime.Now,
-};
+    builder.Configure(options =>
+    {
+        options.AutoClearConsole = false;
+    });
 
-await AppHost.RunAsync<HelloComponent>(new { Model = model });
+    builder.Services.AddLogging();
+});

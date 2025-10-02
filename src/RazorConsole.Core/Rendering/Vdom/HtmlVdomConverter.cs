@@ -34,17 +34,23 @@ internal static class HtmlVdomConverter
         }
     }
 
-    private static VElementNode ConvertElement(XElement element, IReadOnlyList<int> path)
+    private static VNode ConvertElement(XElement element, IReadOnlyList<int> path)
     {
         var tagName = element.Name.LocalName.ToLowerInvariant();
-        var attributes = new Dictionary<string, string?>(StringComparer.Ordinal);
+        var vnode = VNode.CreateElement(tagName);
 
         foreach (var attribute in element.Attributes())
         {
-            attributes[attribute.Name.LocalName] = attribute.Value;
+            var name = attribute.Name.LocalName;
+            var value = attribute.Value;
+            vnode.SetAttribute(name, value);
+            if (string.Equals(name, "key", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(name, "data-key", StringComparison.OrdinalIgnoreCase))
+            {
+                vnode.SetKey(string.IsNullOrWhiteSpace(value) ? null : value);
+            }
         }
 
-        var children = new List<VNode>();
         var childElementIndex = 0;
         foreach (var node in element.Nodes())
         {
@@ -53,21 +59,20 @@ internal static class HtmlVdomConverter
                 case XText text when string.IsNullOrEmpty(text.Value):
                     break;
                 case XText text:
-                    children.Add(new VTextNode(text.Value));
+                    vnode.AddChild(VNode.CreateText(text.Value));
                     break;
                 case XElement childElement:
-                {
-                    var childPath = new List<int>(path) { childElementIndex };
-                    children.Add(ConvertElement(childElement, childPath));
-                    childElementIndex++;
-                    break;
-                }
+                    {
+                        var childPath = new List<int>(path) { childElementIndex };
+                        vnode.AddChild(ConvertElement(childElement, childPath));
+                        childElementIndex++;
+                        break;
+                    }
             }
         }
 
-        var key = ResolveKey(element, path);
-
-        return new VElementNode(tagName, attributes, children, key);
+        vnode.SetKey(ResolveKey(element, path));
+        return vnode;
     }
 
     private static string ResolveKey(XElement element, IReadOnlyList<int> path)

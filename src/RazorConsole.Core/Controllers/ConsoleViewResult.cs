@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console;
@@ -12,12 +13,18 @@ namespace RazorConsole.Core.Controllers;
 /// </summary>
 public sealed class ConsoleViewResult
 {
-    private ConsoleViewResult(string html, IRenderable renderable, IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables, VNode? vdomRoot)
+    private ConsoleViewResult(
+        string html,
+        IRenderable renderable,
+        IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables,
+        VNode? vdomRoot,
+        IObservable<ConsoleRenderer.RenderSnapshot>? snapshotStream)
     {
-        Html = html;
-        Renderable = renderable;
-        AnimatedRenderables = animatedRenderables;
+        Html = html ?? string.Empty;
+        Renderable = renderable ?? throw new ArgumentNullException(nameof(renderable));
+        AnimatedRenderables = animatedRenderables ?? Array.Empty<IAnimatedConsoleRenderable>();
         VdomRoot = vdomRoot;
+        SnapshotStream = snapshotStream;
     }
 
     /// <summary>
@@ -41,29 +48,38 @@ public sealed class ConsoleViewResult
     internal VNode? VdomRoot { get; }
 
     /// <summary>
-    /// Writes the renderable to the provided console.
+    /// Gets the observable stream of render snapshots associated with this view, if any.
     /// </summary>
-    /// <param name="console">Spectre console instance.</param>
-    public void WriteTo(IAnsiConsole console)
-    {
-        if (console is null)
-        {
-            throw new ArgumentNullException(nameof(console));
-        }
+    internal IObservable<ConsoleRenderer.RenderSnapshot>? SnapshotStream { get; }
 
-        console.Write(Renderable);
-    }
-
-    internal static ConsoleViewResult Create(string html, IRenderable renderable, IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables)
+    internal static ConsoleViewResult Create(
+        string html,
+        IRenderable renderable,
+        IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables,
+        IObservable<ConsoleRenderer.RenderSnapshot>? snapshotStream = null)
     {
         HtmlVdomConverter.TryConvert(html, out var root);
-        return Create(html, root, renderable, animatedRenderables);
+        return Create(html, root, renderable, animatedRenderables, snapshotStream);
     }
 
     internal static ConsoleViewResult Create(
         string html,
         VNode? vdomRoot,
         IRenderable renderable,
-        IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables)
-        => new(html, renderable, animatedRenderables, vdomRoot);
+        IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables,
+        IObservable<ConsoleRenderer.RenderSnapshot>? snapshotStream = null)
+        => new(html, renderable, animatedRenderables, vdomRoot, snapshotStream);
+
+    internal static ConsoleViewResult FromSnapshot(
+        ConsoleRenderer.RenderSnapshot snapshot,
+        IObservable<ConsoleRenderer.RenderSnapshot>? snapshotStream)
+    {
+        if (snapshot.Renderable is null)
+        {
+            throw new InvalidOperationException("Unable to create a view result because the renderable was not provided.");
+        }
+
+        var html = VdomHtmlSerializer.Serialize(snapshot.Root);
+        return Create(html, snapshot.Root, snapshot.Renderable, snapshot.AnimatedRenderables, snapshotStream);
+    }
 }

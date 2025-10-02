@@ -77,13 +77,16 @@ public class ConsoleLiveDisplayContextTests
         var renderCalls = 0;
 
         var initial = ConsoleViewResult.Create("<p/>", new FakeRenderable(), Array.Empty<IAnimatedConsoleRenderable>());
-        var renderer = new FakeRenderer(() => renderCalls++);
-
         using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
             canvas,
             initial,
             new VdomDiffService(),
-            renderer,
+            (parameters, _) =>
+            {
+                renderCalls++;
+                var value = parameters is DummyModel dummy ? dummy.Value : 0;
+                return Task.FromResult(ConsoleViewResult.Create($"<div>{value}</div>", new FakeRenderable(), Array.Empty<IAnimatedConsoleRenderable>()));
+            },
             initialParameters: new DummyModel { Value = 0 });
 
         var updated = await context.UpdateModelAsync(new DummyModel { Value = 42 });
@@ -97,40 +100,25 @@ public class ConsoleLiveDisplayContextTests
     public void UpdateView_AppliesReplaceMutation()
     {
         var canvas = new RecordingCanvas();
-        var initialVNode = new VElementNode(
-            "div",
-            new Dictionary<string, string?>(StringComparer.Ordinal)
+        var initialVNode = Element("div", div =>
+        {
+            div.SetAttribute("data-rows", "true");
+            div.AddChild(Element("span", span =>
             {
-                { "data-rows", "true" },
-            },
-            new List<VNode>
-            {
-                new VElementNode(
-                    "span",
-                    new Dictionary<string, string?>(StringComparer.Ordinal)
-                    {
-                        { "data-text", "true" },
-                    },
-                    new List<VNode> { new VTextNode("Hello") }),
-            });
+                span.SetAttribute("data-text", "true");
+                span.AddChild(Text("Hello"));
+            }));
+        });
 
-        var updatedVNode = new VElementNode(
-            "div",
-            new Dictionary<string, string?>(StringComparer.Ordinal)
+        var updatedVNode = Element("div", div =>
+        {
+            div.SetAttribute("data-rows", "true");
+            div.AddChild(Element("div", spacer =>
             {
-                { "data-rows", "true" },
-            },
-            new List<VNode>
-            {
-                new VElementNode(
-                    "div",
-                    new Dictionary<string, string?>(StringComparer.Ordinal)
-                    {
-                        { "data-spacer", "true" },
-                        { "data-lines", "1" },
-                    },
-                    Array.Empty<VNode>()),
-            });
+                spacer.SetAttribute("data-spacer", "true");
+                spacer.SetAttribute("data-lines", "1");
+            }));
+        });
 
         var initial = ConsoleViewResult.Create("initial", initialVNode, new FakeRenderable(), Array.Empty<IAnimatedConsoleRenderable>());
         using var context = ConsoleLiveDisplayContext.CreateForTesting(canvas, initial);
@@ -150,21 +138,17 @@ public class ConsoleLiveDisplayContextTests
     public void UpdateView_AppliesTextMutation()
     {
         var canvas = new RecordingCanvas();
-        var initialVNode = new VElementNode(
-            "div",
-            new Dictionary<string, string?>(StringComparer.Ordinal)
-            {
-                { "data-rows", "true" },
-            },
-            new List<VNode> { new VTextNode("Hello") });
+        var initialVNode = Element("div", div =>
+        {
+            div.SetAttribute("data-rows", "true");
+            div.AddChild(Text("Hello"));
+        });
 
-        var updatedVNode = new VElementNode(
-            "div",
-            new Dictionary<string, string?>(StringComparer.Ordinal)
-            {
-                { "data-rows", "true" },
-            },
-            new List<VNode> { new VTextNode("World") });
+        var updatedVNode = Element("div", div =>
+        {
+            div.SetAttribute("data-rows", "true");
+            div.AddChild(Text("World"));
+        });
 
         var initial = ConsoleViewResult.Create("initial", initialVNode, new FakeRenderable(), Array.Empty<IAnimatedConsoleRenderable>());
         using var context = ConsoleLiveDisplayContext.CreateForTesting(canvas, initial);
@@ -184,41 +168,27 @@ public class ConsoleLiveDisplayContextTests
     public void UpdateView_AppliesAttributeMutation()
     {
         var canvas = new RecordingCanvas();
-        var initialVNode = new VElementNode(
-            "div",
-            new Dictionary<string, string?>(StringComparer.Ordinal)
+        var initialVNode = Element("div", div =>
+        {
+            div.SetAttribute("data-rows", "true");
+            div.AddChild(Element("span", span =>
             {
-                { "data-rows", "true" },
-            },
-            new List<VNode>
-            {
-                new VElementNode(
-                    "span",
-                    new Dictionary<string, string?>(StringComparer.Ordinal)
-                    {
-                        { "data-text", "true" },
-                        { "data-style", "red" },
-                    },
-                    new List<VNode> { new VTextNode("Styled") }),
-            });
+                span.SetAttribute("data-text", "true");
+                span.SetAttribute("data-style", "red");
+                span.AddChild(Text("Styled"));
+            }));
+        });
 
-        var updatedVNode = new VElementNode(
-            "div",
-            new Dictionary<string, string?>(StringComparer.Ordinal)
+        var updatedVNode = Element("div", div =>
+        {
+            div.SetAttribute("data-rows", "true");
+            div.AddChild(Element("span", span =>
             {
-                { "data-rows", "true" },
-            },
-            new List<VNode>
-            {
-                new VElementNode(
-                    "span",
-                    new Dictionary<string, string?>(StringComparer.Ordinal)
-                    {
-                        { "data-text", "true" },
-                        { "data-style", "blue" },
-                    },
-                    new List<VNode> { new VTextNode("Styled") }),
-            });
+                span.SetAttribute("data-text", "true");
+                span.SetAttribute("data-style", "blue");
+                span.AddChild(Text("Styled"));
+            }));
+        });
 
         var initial = ConsoleViewResult.Create("initial", initialVNode, new FakeRenderable(), Array.Empty<IAnimatedConsoleRenderable>());
         using var context = ConsoleLiveDisplayContext.CreateForTesting(canvas, initial);
@@ -233,6 +203,16 @@ public class ConsoleLiveDisplayContextTests
         Assert.Equal(new[] { 0 }, attributeUpdate.Path);
         Assert.Equal("blue", attributeUpdate.Attributes["data-style"]);
     }
+
+    private static VNode Element(string tagName, Action<VNode>? configure = null)
+    {
+        var node = VNode.CreateElement(tagName);
+        configure?.Invoke(node);
+        return node;
+    }
+
+    private static VNode Text(string? value)
+        => VNode.CreateText(value);
 
     private sealed class TestCanvas : ConsoleLiveDisplayContext.ILiveDisplayCanvas
     {
@@ -329,25 +309,6 @@ public class ConsoleLiveDisplayContextTests
         }
 
         public TimeSpan RefreshInterval { get; }
-    }
-
-    private sealed class FakeRenderer : IRazorComponentRenderer
-    {
-        private readonly Action _onRender;
-
-        public FakeRenderer(Action onRender)
-        {
-            _onRender = onRender;
-        }
-
-        public Task<ConsoleViewResult> RenderAsync<TComponent>(object? parameters = null, CancellationToken cancellationToken = default)
-            where TComponent : IComponent
-        {
-            _onRender();
-            var value = parameters is DummyModel dummy ? dummy.Value : 0;
-            var view = ConsoleViewResult.Create($"<div>{value}</div>", new FakeRenderable(), Array.Empty<IAnimatedConsoleRenderable>());
-            return Task.FromResult(view);
-        }
     }
 
     private sealed class FakeComponent : IComponent
