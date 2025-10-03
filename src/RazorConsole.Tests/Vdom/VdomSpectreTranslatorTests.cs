@@ -55,7 +55,7 @@ public class VdomSpectreTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
         Assert.True(success);
-        Assert.IsType<Rows>(renderable);
+        Assert.IsType<Markup>(renderable);
         Assert.Empty(animations);
     }
 
