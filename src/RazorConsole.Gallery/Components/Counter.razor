@@ -1,13 +1,23 @@
 <p>Current count: @currentCount</p>
-<button @onfocus="OnFocus" @onclick="IncrementCount" @oninput="OnInput" @onchange="OnChange">Click me</button>
+<button @onfocus="OnFocus" @onfocusout="OnFocusOut" @onclick="IncrementCount" @oninput="OnInput" @onchange="OnChange">
+    @if (hasFocused)
+    {
+        <RazorConsole.Components.Text Foreground="@Spectre.Console.Color.Green" Content="Focused! Click me" />
+    }
+    else
+    {
+        <RazorConsole.Components.Text Content="Not Focused, click on tab to switch" Foreground="@Spectre.Console.Color.DarkSlateGray1" />
+    }
+</button>
 
-@code {
-    private int currentCount = 0;
+    @code {
+private int currentCount = 0;
+    private bool hasFocused = false;
 
     private void IncrementCount()
     {
         currentCount++;
-        
+
         StateHasChanged();
     }
 
@@ -21,5 +31,13 @@
 
     private void OnFocus(FocusEventArgs e)
     {
+        hasFocused = true;
+        StateHasChanged();
     }
-}
+
+    private void OnFocusOut(FocusEventArgs e)
+    {
+        hasFocused = false;
+        StateHasChanged();
+    }
+    }

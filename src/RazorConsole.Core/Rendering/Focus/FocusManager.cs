@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering.Vdom;
 
@@ -15,6 +16,7 @@ namespace RazorConsole.Core.Rendering.Focus;
 /// </summary>
 public sealed class FocusManager
 {
+    private readonly IFocusEventDispatcher? _eventDispatcher;
     private readonly object _sync = new();
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private List<FocusTarget> _targets = new();
@@ -27,6 +29,16 @@ public sealed class FocusManager
     /// Raised when the focused element changes.
     /// </summary>
     public event EventHandler<FocusChangedEventArgs>? FocusChanged;
+
+    public FocusManager()
+        : this(null)
+    {
+    }
+
+    internal FocusManager(IFocusEventDispatcher? eventDispatcher)
+    {
+        _eventDispatcher = eventDispatcher;
+    }
 
     /// <summary>
     /// Gets the key of the currently focused element.
@@ -113,7 +125,7 @@ public sealed class FocusManager
         }
 
         var initializationTask = initialFocus is not null
-            ? TriggerFocusChangedAsync(initialFocus, linkedCts.Token)
+            ? TriggerFocusChangedAsync(null, initialFocus!, linkedCts.Token)
             : Task.CompletedTask;
 
         return new FocusSession(this, context, linkedCts, initializationTask);
@@ -126,6 +138,7 @@ public sealed class FocusManager
     /// <returns><see langword="true"/> when focus changed; otherwise <see langword="false"/>.</returns>
     public async Task<bool> FocusNextAsync(CancellationToken token = default)
     {
+        FocusTarget? previousTarget = null;
         FocusTarget? nextTarget;
 
         lock (_sync)
@@ -133,6 +146,11 @@ public sealed class FocusManager
             if (_targets.Count == 0)
             {
                 return false;
+            }
+
+            if (_currentIndex >= 0 && _currentIndex < _targets.Count)
+            {
+                previousTarget = _targets[_currentIndex];
             }
 
             var previousKey = CurrentFocusKey;
@@ -151,7 +169,7 @@ public sealed class FocusManager
             nextTarget = _targets[nextIndex];
         }
 
-        await TriggerFocusChangedAsync(nextTarget!, token).ConfigureAwait(false);
+        await TriggerFocusChangedAsync(previousTarget, nextTarget!, token).ConfigureAwait(false);
         return true;
     }
 
@@ -162,13 +180,19 @@ public sealed class FocusManager
     /// <returns><see langword="true"/> when focus changed; otherwise <see langword="false"/>.</returns>
     public async Task<bool> FocusPreviousAsync(CancellationToken token = default)
     {
-        FocusTarget? previousTarget;
+        FocusTarget? priorTarget = null;
+        FocusTarget? nextTarget;
 
         lock (_sync)
         {
             if (_targets.Count == 0)
             {
                 return false;
+            }
+
+            if (_currentIndex >= 0 && _currentIndex < _targets.Count)
+            {
+                priorTarget = _targets[_currentIndex];
             }
 
             var previousKey = CurrentFocusKey;
@@ -184,10 +208,10 @@ public sealed class FocusManager
                 return false;
             }
 
-            previousTarget = _targets[nextIndex];
+            nextTarget = _targets[nextIndex];
         }
 
-        await TriggerFocusChangedAsync(previousTarget!, token).ConfigureAwait(false);
+        await TriggerFocusChangedAsync(priorTarget, nextTarget!, token).ConfigureAwait(false);
         return true;
     }
 
@@ -204,6 +228,7 @@ public sealed class FocusManager
             throw new ArgumentException("Focus key cannot be null or whitespace.", nameof(key));
         }
 
+        FocusTarget? previousTarget = null;
         FocusTarget? target;
 
         lock (_sync)
@@ -224,12 +249,17 @@ public sealed class FocusManager
                 return false;
             }
 
+            if (_currentIndex >= 0 && _currentIndex < _targets.Count)
+            {
+                previousTarget = _targets[_currentIndex];
+            }
+
             _currentIndex = index;
             CurrentFocusKey = _targets[index].Key;
             target = _targets[index];
         }
 
-        await TriggerFocusChangedAsync(target!, token).ConfigureAwait(false);
+        await TriggerFocusChangedAsync(previousTarget, target!, token).ConfigureAwait(false);
         return true;
     }
 
@@ -246,7 +276,7 @@ public sealed class FocusManager
         }
     }
 
-    private async Task TriggerFocusChangedAsync(FocusTarget target, CancellationToken token)
+    private async Task TriggerFocusChangedAsync(FocusTarget? previousTarget, FocusTarget target, CancellationToken token)
     {
         if (token.IsCancellationRequested)
         {
@@ -254,6 +284,8 @@ public sealed class FocusManager
         }
 
         FocusChanged?.Invoke(this, new FocusChangedEventArgs(target.Key));
+
+        await DispatchFocusEventsAsync(previousTarget, target, token).ConfigureAwait(false);
 
         var callback = _refreshCallback;
         if (callback is null)
@@ -272,18 +304,65 @@ public sealed class FocusManager
         }
     }
 
+    private async Task DispatchFocusEventsAsync(FocusTarget? previousTarget, FocusTarget target, CancellationToken token)
+    {
+        var dispatcher = _eventDispatcher;
+        if (dispatcher is null)
+        {
+            return;
+        }
+
+        token.ThrowIfCancellationRequested();
+
+        if (previousTarget is not null && TryGetEvent(previousTarget, "onfocusout", out var focusOutEvent))
+        {
+            await dispatcher.DispatchAsync(focusOutEvent.HandlerId, new FocusEventArgs { Type = "focusout" }, token).ConfigureAwait(false);
+        }
+
+        if (TryGetEvent(target, "onfocusin", out var focusInEvent))
+        {
+            await dispatcher.DispatchAsync(focusInEvent.HandlerId, new FocusEventArgs { Type = "focusin" }, token).ConfigureAwait(false);
+        }
+
+        if (TryGetEvent(target, "onfocus", out var focusEvent))
+        {
+            await dispatcher.DispatchAsync(focusEvent.HandlerId, new FocusEventArgs { Type = "focus" }, token).ConfigureAwait(false);
+        }
+    }
+
+    private static bool TryGetEvent(FocusTarget target, string name, out VNodeEvent nodeEvent)
+    {
+        foreach (var candidate in target.Events)
+        {
+            if (string.Equals(candidate.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                nodeEvent = candidate;
+                return true;
+            }
+        }
+
+        nodeEvent = default;
+        return false;
+    }
+
     private void OnViewUpdated(object? sender, ConsoleViewResult view)
     {
+        FocusTarget? previousTarget = null;
         FocusTarget? newFocus;
 
         lock (_sync)
         {
+            if (_currentIndex >= 0 && _currentIndex < _targets.Count)
+            {
+                previousTarget = _targets[_currentIndex];
+            }
+
             newFocus = UpdateFocusTargets_NoLock(view);
         }
 
         if (newFocus is not null)
         {
-            _ = TriggerFocusChangedAsync(newFocus, _sessionToken);
+            _ = TriggerFocusChangedAsync(previousTarget, newFocus, _sessionToken);
         }
     }
 
@@ -377,10 +456,15 @@ public sealed class FocusManager
 
         if (!element.Attributes.TryGetValue("data-focusable", out var focusableValue) || string.IsNullOrWhiteSpace(focusableValue))
         {
-            return false;
+            return element.Events.Count > 0;
         }
 
-        return bool.TryParse(focusableValue, out var focusable) && focusable;
+        if (bool.TryParse(focusableValue, out var focusable))
+        {
+            return focusable;
+        }
+
+        return element.Events.Count > 0;
     }
 
     private static string ResolveKey(VNode element, IReadOnlyList<int> path)

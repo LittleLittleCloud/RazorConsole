@@ -91,7 +91,7 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
 
             bool updated;
 
-            if (previousRoot is not null && currentRoot is not null)
+            if (previousRoot is not null && currentRoot is not null && _diffService is not null)
             {
                 var diff = _diffService.Diff(previousRoot, currentRoot);
                 if (!diff.HasChanges)

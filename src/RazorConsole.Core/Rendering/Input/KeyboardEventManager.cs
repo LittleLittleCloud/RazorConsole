@@ -18,7 +18,7 @@ internal interface IKeyboardEventDispatcher
     Task DispatchAsync(ulong handlerId, EventArgs eventArgs, CancellationToken cancellationToken);
 }
 
-internal sealed class RendererKeyboardEventDispatcher : IKeyboardEventDispatcher
+internal sealed class RendererKeyboardEventDispatcher : IKeyboardEventDispatcher, IFocusEventDispatcher
 {
     private readonly ConsoleRenderer _renderer;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.ComponentMarkup;
@@ -88,6 +89,91 @@ public sealed class FocusManagerTests
         Assert.Equal("second", manager.CurrentFocusKey);
     }
 
+    [Fact]
+    public async Task BeginSession_SelectsElementWithInteractiveEventsWhenNoFocusableAttribute()
+    {
+        var manager = new FocusManager();
+
+        var interactive = VNode.CreateElement("button");
+        interactive.SetAttribute("data-focus-key", "interactive");
+        interactive.SetEvent("onclick", 1UL);
+        interactive.AddChild(VNode.CreateText("Click"));
+
+        var root = VNode.CreateElement("div");
+        root.AddChild(interactive);
+
+        var view = ConsoleViewResult.Create(
+            "interactive",
+            root,
+            new FakeRenderable("interactive"),
+            Array.Empty<IAnimatedConsoleRenderable>());
+
+        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
+            new TestCanvas(),
+            view,
+            new VdomDiffService(),
+            (parameters, _) => Task.FromResult(view));
+
+        using var session = manager.BeginSession(context, view, CancellationToken.None);
+        await session.InitializationTask;
+
+        Assert.True(manager.HasFocusables);
+        Assert.Equal("interactive", manager.CurrentFocusKey);
+    }
+
+    [Fact]
+    public async Task FocusChange_DispatchesFocusEvents()
+    {
+        var dispatcher = new TestFocusEventDispatcher();
+        var manager = new FocusManager(dispatcher);
+
+        var first = VNode.CreateElement("input");
+        first.SetAttribute("data-focus-key", "first");
+        first.SetEvent("onfocus", 1UL);
+        first.SetEvent("onfocusin", 2UL);
+        first.SetEvent("onfocusout", 3UL);
+
+        var second = VNode.CreateElement("input");
+        second.SetAttribute("data-focus-key", "second");
+        second.SetEvent("onfocus", 4UL);
+        second.SetEvent("onfocusin", 5UL);
+        second.SetEvent("onfocusout", 6UL);
+
+        var root = VNode.CreateElement("div");
+        root.AddChild(first);
+        root.AddChild(second);
+
+        var view = ConsoleViewResult.Create(
+            "focus",
+            root,
+            new FakeRenderable("focus"),
+            Array.Empty<IAnimatedConsoleRenderable>());
+
+        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
+            new TestCanvas(),
+            view,
+            new VdomDiffService(),
+            (parameters, _) => Task.FromResult(view));
+
+        using var session = manager.BeginSession(context, view, CancellationToken.None);
+        await session.InitializationTask;
+
+        Assert.Collection(
+            dispatcher.Events,
+            e => Assert.Equal(("focusin", 2UL), e),
+            e => Assert.Equal(("focus", 1UL), e));
+
+        dispatcher.Events.Clear();
+
+        await manager.FocusNextAsync(session.Token);
+
+        Assert.Collection(
+            dispatcher.Events,
+            e => Assert.Equal(("focusout", 3UL), e),
+            e => Assert.Equal(("focusin", 5UL), e),
+            e => Assert.Equal(("focus", 4UL), e));
+    }
+
     private static ConsoleViewResult CreateView(IReadOnlyList<string> keys, string? focusedKey)
     {
         var children = new List<VNode>(keys.Count);
@@ -160,5 +246,22 @@ public sealed class FocusManagerTests
 
         public Task SetParametersAsync(ParameterView parameters)
             => Task.CompletedTask;
+    }
+
+    private sealed class TestFocusEventDispatcher : IFocusEventDispatcher
+    {
+        public List<(string EventType, ulong HandlerId)> Events { get; } = new();
+
+        public Task DispatchAsync(ulong handlerId, EventArgs eventArgs, CancellationToken cancellationToken)
+        {
+            var type = eventArgs switch
+            {
+                FocusEventArgs focus => focus.Type ?? string.Empty,
+                _ => eventArgs.GetType().Name,
+            };
+
+            Events.Add((type, handlerId));
+            return Task.CompletedTask;
+        }
     }
 }

@@ -118,12 +118,14 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<ConsoleNavigationManager>();
         services.TryAddSingleton<NavigationManager>(sp => sp.GetRequiredService<ConsoleNavigationManager>());
         services.TryAddSingleton<ILoggerFactory>(_ => NullLoggerFactory.Instance);
-        services.TryAddSingleton<ConsoleRenderer>();
-        services.TryAddSingleton<VdomDiffService>();
-        services.TryAddSingleton<FocusManager>();
-        services.TryAddSingleton<LiveDisplayContextAccessor>();
-        services.TryAddSingleton<IKeyboardEventDispatcher, RendererKeyboardEventDispatcher>();
-        services.TryAddSingleton<KeyboardEventManager>();
+    services.TryAddSingleton<ConsoleRenderer>();
+    services.TryAddSingleton<VdomDiffService>();
+    services.TryAddSingleton<RendererKeyboardEventDispatcher>();
+    services.TryAddSingleton<IKeyboardEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
+    services.TryAddSingleton<IFocusEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
+    services.TryAddSingleton<FocusManager>(sp => new FocusManager(sp.GetService<IFocusEventDispatcher>()));
+    services.TryAddSingleton<LiveDisplayContextAccessor>();
+    services.TryAddSingleton<KeyboardEventManager>();
     }
 }
 
