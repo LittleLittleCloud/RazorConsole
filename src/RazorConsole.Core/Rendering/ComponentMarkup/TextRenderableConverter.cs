@@ -31,11 +31,16 @@ public sealed class TextRenderableConverter : IRenderableConverter
         }
 
         var style = element.Attribute("data-style")?.Value;
+        var requiresEscape = true;
+
         var isMarkupValue = element.Attribute("data-ismarkup")?.Value;
-        var isMarkup = bool.TryParse(isMarkupValue, out var parsed) && parsed;
+        if (bool.TryParse(isMarkupValue, out var parsed))
+        {
+            requiresEscape = !parsed;
+        }
 
         var content = element.Value ?? string.Empty;
-        markup = ComponentMarkupUtilities.CreateStyledMarkup(style, content, requiresEscape: !isMarkup);
+        markup = ComponentMarkupUtilities.CreateStyledMarkup(style, content, requiresEscape);
         renderable = new Markup(markup);
         return true;
     }

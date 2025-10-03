@@ -1,5 +1,5 @@
 <p>Current count: @currentCount</p>
-<button data-focusable="true" @onclick="IncrementCount" @oninput="OnInput" @onchange="OnChange">Click me</button>
+<button @onfocus="OnFocus" @onclick="IncrementCount" @oninput="OnInput" @onchange="OnChange">Click me</button>
 
 @code {
     private int currentCount = 0;
@@ -16,6 +16,10 @@
     }
 
     private void OnChange(ChangeEventArgs e)
+    {
+    }
+
+    private void OnFocus(FocusEventArgs e)
     {
     }
 }

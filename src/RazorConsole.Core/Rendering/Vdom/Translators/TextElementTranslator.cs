@@ -31,16 +31,29 @@ internal sealed partial class VdomSpectreTranslator
                 return false;
             }
 
-            if (node.Children.Any(child => child.Kind == VNodeKind.Element))
+            if (!node.Attributes.TryGetValue("data-content", out var text) || text is null)
             {
+                // Missing required text content.
                 return false;
             }
 
-            var style = GetAttribute(node, "data-style");
-            var isMarkup = TryGetBoolAttribute(node, "data-ismarkup", out var boolValue) && boolValue;
-            var content = string.Concat(node.Children.Select(child => child.Kind == VNodeKind.Text ? child.Text : string.Empty)) ?? string.Empty;
-            var markup = ComponentMarkupUtilities.CreateStyledMarkup(style, content, requiresEscape: !isMarkup);
-            renderable = new Markup(markup);
+            if (node.Children.Any())
+            {
+                // Text element should not have any children.
+                return false;
+            }
+
+            var styleAttributes = GetAttribute(node, "data-style");
+            if (string.IsNullOrEmpty(styleAttributes))
+            {
+                renderable = new Markup(text);
+            }
+            else
+            {
+                var style = Style.Parse(styleAttributes ?? string.Empty);
+                renderable = new Markup(text, style);
+            }
+
             return true;
         }
     }

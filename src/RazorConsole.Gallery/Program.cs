@@ -4,7 +4,7 @@ using RazorConsole.Core;
 using RazorConsole.Gallery.Components;
 using RazorConsole.Gallery.Models;
 
-await AppHost.RunAsync<Counter>(null, builder =>
+await AppHost.RunAsync<Gallery>(null, builder =>
 {
     builder.Configure(options =>
     {

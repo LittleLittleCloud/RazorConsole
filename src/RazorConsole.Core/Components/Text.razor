@@ -3,17 +3,30 @@
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using System.Composition
-@inherits RenderableConverterComponentBase<TextRenderableConverter>
-@attribute [Export(typeof(RenderableConverterComponentBase<TextRenderableConverter>))]
+@using Spectre.Console
 
 <span data-text="true"
-    data-style="@Style"
-    @attributes="RemainingAttributes">@Value</span>
+      data-style="@StyleAttributes"
+      data-content="@Content" />
 
-@code {
-    [Parameter]
-    public string? Value { get; set; }
+    @code {
+        private string StyleAttributes => new Style(Foreground, Background, Decoration, link).ToMarkup();
 
-    [Parameter]
-    public string? Style { get; set; }
-}
+        [Parameter]
+        public required string Content { get; init; }
+
+        [Parameter]
+        public Color Foreground { get; set; } = Spectre.Console.Style.Plain.Foreground;
+
+        [Parameter]
+        public Color Background { get; set; } = Spectre.Console.Style.Plain.Background;
+
+        [Parameter]
+        public Decoration Decoration { get; set; } = Spectre.Console.Decoration.None;
+
+        [Parameter]
+        public string? link
+        {
+            get; set;
+        } = null;
+    }

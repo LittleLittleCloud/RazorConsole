@@ -88,11 +88,13 @@ Key parameters:
 ### Utility primitives
 
 **Text**
-Render raw Spectre markup or plain text with optional style preset.
+Render plain text with optional foreground/background styling.
 Key parameters:
-- `Value`: Text or markup to render.
-- `Style`: Optional Spectre style applied to the text.
-- `IsMarkup`: Set true to treat `Value` as Spectre markup.
+- `Value`: Text content to render (escaped by default).
+- `Foreground`: Spectre color applied to the text foreground.
+- `Background`: Spectre color applied behind the text.
+- `Decoration`: Spectre decoration flags (bold, underline, etc.).
+- `Link`: Optional hyperlink rendered alongside the text style.
 
 **Newline**
 Force a line break within parent layout.
