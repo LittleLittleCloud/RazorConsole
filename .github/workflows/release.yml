@@ -14,6 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Compute version suffix
+        run: echo "VersionSuffix=${GITHUB_SHA::6}" >> "$GITHUB_ENV"
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -23,10 +26,10 @@ jobs:
         run: dotnet restore RazorConsole.sln
 
       - name: Build
-        run: dotnet build RazorConsole.sln --configuration Release --no-restore
+        run: dotnet build RazorConsole.sln --configuration Release --no-restore -p:VersionSuffix=$VersionSuffix
 
       - name: Test
-        run: dotnet test RazorConsole.sln --configuration Release --no-build --verbosity normal
+        run: dotnet test RazorConsole.sln --configuration Release --no-build --verbosity normal -p:VersionSuffix=$VersionSuffix
 
       - name: Pack libraries
         id: pack
@@ -34,7 +37,8 @@ jobs:
           dotnet pack RazorConsole.sln \
             --configuration Release \
             --no-build \
-            --output artifacts/packages
+            --output artifacts/packages \
+            -p:VersionSuffix=$VersionSuffix
           echo "package-path=artifacts/packages" >> "$GITHUB_OUTPUT"
 
       - name: Upload NuGet packages
@@ -55,6 +59,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Compute version suffix
+        run: echo "VersionSuffix=${GITHUB_SHA::6}" >> "$GITHUB_ENV"
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -73,7 +80,8 @@ jobs:
             /p:IncludeNativeLibrariesForSelfExtract=true \
             /p:DebugType=None \
             /p:DebugSymbols=false \
-            --output artifacts/publish/${{ matrix.rid }}
+            --output artifacts/publish/${{ matrix.rid }} \
+            -p:VersionSuffix=$VersionSuffix
 
       - name: Create archive
         run: |

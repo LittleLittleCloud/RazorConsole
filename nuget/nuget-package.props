@@ -1,0 +1,52 @@
+<Project>
+  <PropertyGroup>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
+    <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
+    <IsPackable>true</IsPackable>
+
+    <!-- Default description and tags. Packages can override. -->
+    <Authors>LittleLittleCloud</Authors>
+    <Company>LittleLittleCloud</Company>
+    <Product>RazorConsole</Product>
+    <Description>Build interactive console applications using .NET Razor</Description>
+    <PackageTags>spectre-console;razor;console</PackageTags>
+    <PackageId>$(AssemblyName)</PackageId>
+
+        <!-- Required license, copyright, and repo information. Packages can override. -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>© LittleLittleCloud. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/LittleLittleCloud/RazorConsole/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/LittleLittleCloud/RazorConsole</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Use icon and NUGET readme from dotnet/nuget folder -->
+    <!-- <PackageIcon>icon.png</PackageIcon> -->
+    <!-- <PackageIconUrl>icon.png</PackageIconUrl> -->
+  <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- Include the XML documentation file in the NuGet package. -->
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SourceLink allows step-through debugging for source hosted on GitHub. -->
+    <!-- https://github.com/dotnet/sourcelink -->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Include icon.png and NUGET.md in the project. -->
+  <!-- <None Include="$(RepoRoot)/dotnet/nuget/icon.png" Link="icon.png" Pack="true" PackagePath="." /> -->
+  <!-- <None Include="$(RepoRoot)/dotnet/nuget/NUGET.md" Link="NUGET.md" Pack="true" PackagePath="." /> -->
+  <None Include="$(RepoRoot)/README.md" Link="README.md" Pack="true" PackagePath="." />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+</Project>

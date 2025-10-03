@@ -10,6 +10,7 @@
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="System.Composition" />
   </ItemGroup>
+  <Import Project="$(RepoRoot)/nuget/nuget-package.props" />
 
   <ItemGroup>
     <InternalVisibleTo Include="RazorConsole.Tests" />

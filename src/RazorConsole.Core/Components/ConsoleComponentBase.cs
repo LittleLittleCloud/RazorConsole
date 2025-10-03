@@ -108,6 +108,4 @@ public abstract class ConsoleComponentBase : ComponentBase
     /// <returns><see langword="true"/> when the focus key is currently focused; otherwise <see langword="false"/>.</returns>
     protected bool IsFocused(string? focusKey)
         => focusKey is not null && FocusManager?.IsFocused(focusKey) == true;
-
-    /// <summary>
 }
