@@ -56,7 +56,7 @@ internal sealed class KeyboardEventManager
     public KeyboardEventManager(
         FocusManager focusManager,
         IKeyboardEventDispatcher dispatcher,
-        ILogger<KeyboardEventManager> logger)
+        ILogger<KeyboardEventManager>? logger = null)
     {
         _focusManager = focusManager ?? throw new ArgumentNullException(nameof(focusManager));
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
