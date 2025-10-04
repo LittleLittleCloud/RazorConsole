@@ -18,6 +18,7 @@
     data-focus-order="@FocusOrderAttribute"
     data-expand="@ExpandAttribute"
     data-placeholder="@PlaceholderAttribute"
+    data-mask-input="@MaskInputAttribute"
     data-has-value="@HasValueAttribute"
     value="@_currentValue"
     @oninput="HandleInputAsync"
@@ -111,6 +112,9 @@
     public bool Disabled { get; set; }
 
     [Parameter]
+    public bool MaskInput { get; set; }
+
+    [Parameter]
     public int? FocusOrder { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
@@ -128,13 +132,31 @@
 
     private string HasValueAttribute => HasValue ? "true" : "false";
 
+    private string MaskInputAttribute => MaskInput ? "true" : "false";
+
     private bool HasValue => _currentValue.Length > 0;
 
     private Color CurrentBorderColor => Disabled
         ? DisabledBorderColor
         : _isFocused ? FocusedBorderColor : BorderColor;
 
-    private string DisplayContent => HasValue ? _currentValue : (Placeholder ?? string.Empty);
+    private string DisplayContent
+    {
+        get
+        {
+            if (!HasValue)
+            {
+                return Placeholder ?? string.Empty;
+            }
+
+            if (!MaskInput)
+            {
+                return _currentValue;
+            }
+
+            return new string('•', _currentValue.Length);
+        }
+    }
 
     private Color DisplayForeground => HasValue ? ValueColor : PlaceholderColor;
 

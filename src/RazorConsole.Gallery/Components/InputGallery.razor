@@ -1,70 +1,357 @@
+@using System
+@using System.Globalization
+@using System.Text
 @using RazorConsole.Components
 @using Spectre.Console
 
-<TextInput Label="Your Name:"
-           Value="@_value"
-           ValueChanged="OnValueChangedAsync"
-           Placeholder="Type your name..."
-           BorderColor="@Color.Grey37"
-           BorderPadding="@BorderPadding"
-           FocusedBorderColor="@Color.Yellow"
-           PlaceholderColor="@Color.Grey"
-           ValueColor="@Color.White"
-           Expand="true"
-           OnSubmit="OnSubmitAsync" />
+<Panel Title="Account Registration" Border="@BoxBorder.Rounded" Expand="true">
+    <Padder Padding="@PanelPadding">
+        <Markup Content="Fill in the details below to create a sample account."
+                Foreground="@Color.Grey70" />
 
-<Padder Padding="@InstructionPadding">
-    <Markup Content="@_helperText" Foreground="@Color.Grey70" Decoration="@Decoration.Dim" />
-</Padder>
+        <Padder Padding="@FieldPadding">
+            <TextInput Label="Email Address"
+                       Value="@_emailValue"
+                       ValueChanged="OnEmailChangedAsync"
+                       OnSubmit="SubmitRegistrationFromInputAsync"
+                       Placeholder="you@example.com"
+                       BorderColor="@Color.Grey37"
+                       FocusedBorderColor="@Color.Yellow"
+                       BorderPadding="@InputBorderPadding"
+                       Expand="true" />
 
-@if (_submittedName is not null)
-{
-    <Padder Padding="@ButtonRowPadding">
-        <Columns>
-            <Markup Content="@_submittedName" Decoration="@Decoration.Bold" />
-            <Padder Padding="@ButtonPadding">
-                <TextButton OnClick="ClearName" Content="Clear" BackgroundColor="@Color.Grey" />
+            <Padder Padding="@HelperPadding">
+                <Markup Content="@_emailHelper" Foreground="@_emailHelperColor" Decoration="@_emailHelperDecoration" />
             </Padder>
-        </Columns>
+        </Padder>
+
+        <Padder Padding="@FieldPadding">
+            <TextInput Label="Password"
+                       Value="@_passwordValue"
+                       ValueChanged="OnPasswordChangedAsync"
+                       OnSubmit="SubmitRegistrationFromInputAsync"
+                       Placeholder="At least 8 characters"
+                       MaskInput="true"
+                       BorderColor="@Color.Grey37"
+                       FocusedBorderColor="@Color.Yellow"
+                       BorderPadding="@InputBorderPadding"
+                       ValueColor="@Color.MediumPurple"
+                       Expand="true" />
+
+            <Padder Padding="@HelperPadding">
+                <Markup Content="@_passwordHelper" Foreground="@_passwordHelperColor" Decoration="@_passwordHelperDecoration" />
+            </Padder>
+        </Padder>
+
+        <Padder Padding="@FieldPadding">
+            <TextInput Label="Age"
+                       Value="@_ageValue"
+                       ValueChanged="OnAgeChangedAsync"
+                       OnSubmit="SubmitRegistrationFromInputAsync"
+                       Placeholder="Numbers only"
+                       BorderColor="@Color.Grey37"
+                       FocusedBorderColor="@Color.Yellow"
+                       BorderPadding="@InputBorderPadding"
+                       ValueColor="@Color.DeepSkyBlue1"
+                       Expand="true" />
+
+            <Padder Padding="@HelperPadding">
+                <Markup Content="@_ageHelper" Foreground="@_ageHelperColor" Decoration="@_ageHelperDecoration" />
+            </Padder>
+        </Padder>
+
+        <Padder Padding="@StatusRowPadding">
+            <Columns>
+                <Markup Content="@_statusMessage" Foreground="@_statusColor" Decoration="@_statusDecoration" />
+                <Padder Padding="@ButtonPadding">
+                    <TextButton Content="Submit"
+                                OnClick="SubmitRegistrationAsync"
+                                BackgroundColor="@Color.DarkOliveGreen3"
+                                FocusedColor="@Color.Chartreuse1" />
+                </Padder>
+                <Padder Padding="@ButtonPadding">
+                    <TextButton Content="Reset"
+                                OnClick="ResetForm"
+                                BackgroundColor="@Color.Grey37" />
+                </Padder>
+            </Columns>
+        </Padder>
     </Padder>
+</Panel>
+
+@if (_latestSubmission is not null)
+{
+    <Newline />
+
+    <Panel Title="Latest Submission" Border="@BoxBorder.Double" Expand="true">
+        <Padder Padding="@PanelPadding">
+            <Markup Content="@($"Email: {Spectre.Console.Markup.Escape(_latestSubmission.Email)}")" Decoration="@Decoration.Bold" />
+            <Newline />
+            <Markup Content="@($"Age: {_latestSubmission.Age}")" />
+            <Newline />
+            <Markup Content="@($"Password Length: {_latestSubmission.PasswordLength} characters")" />
+            <Newline />
+            <Markup Content="@($"Submitted: {_latestSubmission.SubmittedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)}")"
+                    Foreground="@Color.Grey70" />
+        </Padder>
+    </Panel>
 }
 
 @code {
-    private static readonly Padding InstructionPadding = new Padding(0, 1, 0, 0);
-    private static readonly Padding ButtonRowPadding = new Padding(0, 1, 0, 0);
+    private static readonly Padding PanelPadding = new Padding(1, 1, 1, 1);
+    private static readonly Padding FieldPadding = new Padding(0, 1, 0, 0);
+    private static readonly Padding HelperPadding = new Padding(1, 0, 0, 0);
+    private static readonly Padding StatusRowPadding = new Padding(0, 1, 0, 0);
     private static readonly Padding ButtonPadding = new Padding(1, 0, 0, 0);
-    private static readonly Padding BorderPadding = new Padding(1, 0, 1, 0);
-    private string? _value;
-    private string? _submittedName;
-    private string _helperText = "Start typing your name and press Enter to confirm.";
+    private static readonly Padding InputBorderPadding = new Padding(1, 0, 1, 0);
 
-    private Task OnValueChangedAsync(string? value)
+    private string _emailValue = string.Empty;
+    private string _passwordValue = string.Empty;
+    private string _ageValue = string.Empty;
+
+    private string _emailHelper = "We'll send confirmations to this address.";
+    private Color _emailHelperColor = Color.Grey70;
+    private Decoration _emailHelperDecoration = Decoration.Italic;
+
+    private string _passwordHelper = "Use at least 8 characters.";
+    private Color _passwordHelperColor = Color.Grey70;
+    private Decoration _passwordHelperDecoration = Decoration.Italic;
+
+    private string _ageHelper = "Must be 13 or older.";
+    private Color _ageHelperColor = Color.Grey70;
+    private Decoration _ageHelperDecoration = Decoration.Italic;
+
+    private string _statusMessage = "Complete all fields and select Submit.";
+    private Color _statusColor = Color.Grey70;
+    private Decoration _statusDecoration = Decoration.Italic;
+
+    private RegistrationSubmission? _latestSubmission;
+
+    private Task OnEmailChangedAsync(string? value)
     {
-        _value = string.IsNullOrEmpty(value) ? null : value;
-        _helperText = _value is null
-            ? "Start typing your name and press Enter to confirm."
-            : "Press Enter to confirm or Tab to move on.";
+        _emailValue = (value ?? string.Empty).Trim();
+        UpdateEmailHelper();
+        ResetStatusForEditing();
         StateHasChanged();
         return Task.CompletedTask;
     }
 
-    private Task OnSubmitAsync(string? value)
+    private Task OnPasswordChangedAsync(string? value)
     {
-        _submittedName = string.IsNullOrWhiteSpace(value)
-            ? null
-            : $"Nice to meet you, {value}!";
-
-        _helperText = _submittedName ?? "Name cleared. Type again to set a value.";
-
+        _passwordValue = value ?? string.Empty;
+        UpdatePasswordHelper();
+        ResetStatusForEditing();
         StateHasChanged();
         return Task.CompletedTask;
     }
 
-    private void ClearName()
+    private Task OnAgeChangedAsync(string? value)
     {
-        _value = null;
-        _submittedName = null;
-        _helperText = "Start typing your name and press Enter to confirm.";
+        var sanitized = NormalizeDigits(value);
+        var hadRemoval = !string.Equals(value ?? string.Empty, sanitized, StringComparison.Ordinal);
+
+        _ageValue = sanitized;
+        UpdateAgeHelper(hadRemoval);
+        ResetStatusForEditing();
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task SubmitRegistrationFromInputAsync(string? _) => SubmitRegistrationCoreAsync();
+
+    private Task SubmitRegistrationAsync() => SubmitRegistrationCoreAsync();
+
+    private Task SubmitRegistrationCoreAsync()
+    {
+        if (!CanSubmit())
+        {
+            _statusMessage = "Please fix the highlighted fields before submitting.";
+            _statusColor = Color.Orange3;
+            _statusDecoration = Decoration.Bold;
+            StateHasChanged();
+            return Task.CompletedTask;
+        }
+
+        var parsedAge = int.Parse(_ageValue, CultureInfo.InvariantCulture);
+        _latestSubmission = new RegistrationSubmission(
+            _emailValue,
+            parsedAge,
+            _passwordValue.Length,
+            DateTimeOffset.Now);
+
+        _statusMessage = "Registration submitted! Review the summary below.";
+        _statusColor = Color.Chartreuse1;
+        _statusDecoration = Decoration.Bold;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private void ResetForm()
+    {
+        _emailValue = string.Empty;
+        _passwordValue = string.Empty;
+        _ageValue = string.Empty;
+
+        _emailHelper = "We'll send confirmations to this address.";
+        _emailHelperColor = Color.Grey70;
+        _emailHelperDecoration = Decoration.Italic;
+
+        _passwordHelper = "Use at least 8 characters.";
+        _passwordHelperColor = Color.Grey70;
+        _passwordHelperDecoration = Decoration.Italic;
+
+        _ageHelper = "Must be 13 or older.";
+        _ageHelperColor = Color.Grey70;
+        _ageHelperDecoration = Decoration.Italic;
+
+        _statusMessage = "Complete all fields and select Submit.";
+        _statusColor = Color.Grey70;
+        _statusDecoration = Decoration.Italic;
+
+        _latestSubmission = null;
         StateHasChanged();
     }
+
+    private void UpdateEmailHelper()
+    {
+        if (_emailValue.Length == 0)
+        {
+            _emailHelper = "We'll send confirmations to this address.";
+            _emailHelperColor = Color.Grey70;
+            _emailHelperDecoration = Decoration.Italic;
+        }
+        else if (IsValidEmail(_emailValue))
+        {
+            _emailHelper = "Looks good!";
+            _emailHelperColor = Color.Chartreuse1;
+            _emailHelperDecoration = Decoration.Bold;
+        }
+        else
+        {
+            _emailHelper = "Needs an @ symbol and a domain.";
+            _emailHelperColor = Color.Orange3;
+            _emailHelperDecoration = Decoration.Bold;
+        }
+    }
+
+    private void UpdatePasswordHelper()
+    {
+        if (_passwordValue.Length == 0)
+        {
+            _passwordHelper = "Use at least 8 characters.";
+            _passwordHelperColor = Color.Grey70;
+            _passwordHelperDecoration = Decoration.Italic;
+        }
+        else if (_passwordValue.Length < 8)
+        {
+            _passwordHelper = "Password is too short.";
+            _passwordHelperColor = Color.Orange3;
+            _passwordHelperDecoration = Decoration.Bold;
+        }
+        else
+        {
+            _passwordHelper = "Strong enough for this demo.";
+            _passwordHelperColor = Color.Chartreuse1;
+            _passwordHelperDecoration = Decoration.Bold;
+        }
+    }
+
+    private void UpdateAgeHelper(bool hadRemoval)
+    {
+        if (_ageValue.Length == 0)
+        {
+            _ageHelper = "Must be 13 or older.";
+            _ageHelperColor = Color.Grey70;
+            _ageHelperDecoration = Decoration.Italic;
+            return;
+        }
+
+        if (hadRemoval)
+        {
+            _ageHelper = "Non-digit characters were removed.";
+            _ageHelperColor = Color.Gold3_1;
+            _ageHelperDecoration = Decoration.Bold;
+        }
+        else
+        {
+            _ageHelperDecoration = Decoration.Italic;
+        }
+
+        if (int.TryParse(_ageValue, NumberStyles.None, CultureInfo.InvariantCulture, out var parsed))
+        {
+            if (parsed < 13)
+            {
+                _ageHelper = "Registration requires an age of at least 13.";
+                _ageHelperColor = Color.Orange3;
+                _ageHelperDecoration = Decoration.Bold;
+            }
+            else if (parsed > 120)
+            {
+                _ageHelper = "That age seems unrealistic for this demo.";
+                _ageHelperColor = Color.Orange3;
+                _ageHelperDecoration = Decoration.Bold;
+            }
+            else
+            {
+                _ageHelper = "Age accepted.";
+                _ageHelperColor = Color.Chartreuse1;
+                _ageHelperDecoration = Decoration.Bold;
+            }
+        }
+        else
+        {
+            _ageHelper = "Unable to read that age.";
+            _ageHelperColor = Color.Orange3;
+            _ageHelperDecoration = Decoration.Bold;
+        }
+    }
+
+    private void ResetStatusForEditing()
+    {
+        _statusMessage = "Complete all fields and select Submit.";
+        _statusColor = Color.Grey70;
+        _statusDecoration = Decoration.Italic;
+    }
+
+    private bool CanSubmit()
+    {
+        return IsValidEmail(_emailValue)
+            && _passwordValue.Length >= 8
+            && int.TryParse(_ageValue, NumberStyles.None, CultureInfo.InvariantCulture, out var parsedAge)
+            && parsedAge >= 13
+            && parsedAge <= 120;
+    }
+
+    private static bool IsValidEmail(string email)
+    {
+        var atIndex = email.IndexOf('@');
+        if (atIndex <= 0 || atIndex == email.Length - 1)
+        {
+            return false;
+        }
+
+        var domainPart = email[(atIndex + 1)..];
+        return domainPart.Contains('.', StringComparison.Ordinal);
+    }
+
+    private static string NormalizeDigits(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        var builder = new StringBuilder(value.Length);
+        foreach (var ch in value)
+        {
+            if (char.IsDigit(ch))
+            {
+                builder.Append(ch);
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    private sealed record RegistrationSubmission(string Email, int Age, int PasswordLength, DateTimeOffset SubmittedAt);
 }

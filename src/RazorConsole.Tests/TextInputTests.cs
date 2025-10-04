@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Components;
 using RazorConsole.Core.Rendering;
+using RazorConsole.Core.Vdom;
 
 namespace RazorConsole.Tests;
 
@@ -53,6 +55,26 @@ public sealed class TextInputTests
         Assert.Equal("true", root.Attributes["data-expand"]);
     }
 
+    [Fact]
+    public async Task TextInput_WithMaskInput_RendersMaskedValue()
+    {
+        using var services = new ServiceCollection().BuildServiceProvider();
+        using var renderer = new ConsoleRenderer(services, NullLoggerFactory.Instance);
+
+        var snapshot = await renderer.MountComponentAsync<MaskedHost>(ParameterView.Empty, CancellationToken.None);
+
+        var root = Assert.IsType<VNode>(snapshot.Root);
+        Assert.Equal("true", root.Attributes["data-mask-input"]);
+
+        var maskedSpan = FindNode(root, static node =>
+            node.Attributes.TryGetValue("data-text", out var textFlag) &&
+            textFlag == "true" &&
+            node.Attributes.ContainsKey("data-content"));
+
+        Assert.NotNull(maskedSpan);
+        Assert.Equal("••••••", maskedSpan!.Attributes["data-content"]);
+    }
+
     private sealed class ValueHost : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -76,6 +98,17 @@ public sealed class TextInputTests
         }
     }
 
+    private sealed class MaskedHost : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TextInput>(0);
+            builder.AddAttribute(1, "Value", "Secret");
+            builder.AddAttribute(2, "MaskInput", true);
+            builder.CloseComponent();
+        }
+    }
+
     private sealed class PlaceholderHost : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -85,5 +118,24 @@ public sealed class TextInputTests
             builder.AddAttribute(2, "Placeholder", "Type here");
             builder.CloseComponent();
         }
+    }
+
+    private static VNode? FindNode(VNode node, Func<VNode, bool> predicate)
+    {
+        if (predicate(node))
+        {
+            return node;
+        }
+
+        foreach (var child in node.Children)
+        {
+            var match = FindNode(child, predicate);
+            if (match is not null)
+            {
+                return match;
+            }
+        }
+
+        return null;
     }
 }
