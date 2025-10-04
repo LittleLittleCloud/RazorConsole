@@ -20,7 +20,7 @@ internal sealed partial class VdomSpectreTranslator
                 return false;
             }
 
-            if (!node.Attributes.TryGetValue("data-rows", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+            if (!node.Attributes.TryGetValue("class", out var value) || !string.Equals(value, "rows", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -30,14 +30,13 @@ internal sealed partial class VdomSpectreTranslator
                 return false;
             }
 
-            var rows = new Rows(children);
+            var expand = GetAttribute(node, "data-expand") == "true";
 
-            if (string.Equals(GetAttribute(node, "data-expand"), "true", StringComparison.OrdinalIgnoreCase))
+            renderable = new Rows(children)
             {
-                rows.Expand();
-            }
+                Expand = expand,
+            };
 
-            renderable = rows;
             return true;
         }
     }
