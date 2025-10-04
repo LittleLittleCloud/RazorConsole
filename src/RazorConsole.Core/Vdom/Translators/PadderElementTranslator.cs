@@ -24,7 +24,7 @@ internal sealed partial class VdomSpectreTranslator
                 return false;
             }
 
-            if (!node.Attributes.TryGetValue("data-padder", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+            if (!node.Attributes.TryGetValue("class", out var value) || !string.Equals(value, "padder", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -37,11 +37,6 @@ internal sealed partial class VdomSpectreTranslator
             var content = ComposeChildContent(children);
             var padding = ParsePadding(GetAttribute(node, "data-padding"));
             var padder = new Padder(content, padding);
-
-            if (string.Equals(GetAttribute(node, "data-expand"), "true", StringComparison.OrdinalIgnoreCase))
-            {
-                padder = padder.Expand();
-            }
 
             renderable = padder;
             return true;

@@ -5,13 +5,9 @@
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
 @using System.Composition
-@inherits RenderableConverterComponentBase<PadderRenderableConverter>
-@attribute [Export(typeof(RenderableConverterComponentBase<PadderRenderableConverter>))]
 
-<div data-padder="true"
-     data-padding="@PaddingAttribute"
-    data-expand="@ExpandAttribute"
-    @attributes="RemainingAttributes">
+<div class="padder"
+     data-padding="@PaddingAttribute">
     @ChildContent
 </div>
 
@@ -19,10 +15,10 @@
     private static readonly Padding NoPadding = new(0, 0, 0, 0);
 
     [Parameter]
-    public Padding Padding { get; set; } = new(0, 0, 0, 0);
+    public RenderFragment? ChildContent { get; set; }
 
     [Parameter]
-    public bool Expand { get; set; }
+    public Padding Padding { get; set; } = NoPadding;
 
     private string? PaddingAttribute
     {
@@ -40,6 +36,4 @@
                 Padding.Bottom.ToString(CultureInfo.InvariantCulture));
         }
     }
-
-    private string? ExpandAttribute => Expand ? "true" : null;
 }

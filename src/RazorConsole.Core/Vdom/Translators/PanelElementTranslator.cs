@@ -50,19 +50,19 @@ internal sealed partial class VdomSpectreTranslator
                 panel = panel.Expand();
             }
 
-            panel.Border = ResolveBorder(GetAttribute(node, "data-panel-border"));
+            panel.Border = ResolveBorder(GetAttribute(node, "data-border"));
 
-            if (TryParsePadding(GetAttribute(node, "data-panel-padding"), out var padding))
+            if (TryParsePadding(GetAttribute(node, "data-padding"), out var padding))
             {
                 panel.Padding = padding;
             }
 
-            if (TryParsePositiveInt(GetAttribute(node, "data-panel-height"), out var height))
+            if (TryParsePositiveInt(GetAttribute(node, "data-height"), out var height))
             {
                 panel.Height = height;
             }
 
-            if (TryParsePositiveInt(GetAttribute(node, "data-panel-width"), out var width))
+            if (TryParsePositiveInt(GetAttribute(node, "data-width"), out var width))
             {
                 panel.Width = width;
             }
@@ -81,12 +81,7 @@ internal sealed partial class VdomSpectreTranslator
                 return false;
             }
 
-            if (node.Attributes.TryGetValue("data-panel", out var value) && string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (node.Attributes.TryGetValue("data-border", out var borderValue) && string.Equals(borderValue, "panel", StringComparison.OrdinalIgnoreCase))
+            if (node.Attributes.TryGetValue("class", out var value) && string.Equals(value, "panel", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -96,7 +91,7 @@ internal sealed partial class VdomSpectreTranslator
 
         private static bool ShouldExpand(VNode node)
         {
-            var value = GetAttribute(node, "data-panel-expand") ?? GetAttribute(node, "data-expand");
+            var value = GetAttribute(node, "data-expand");
             return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
         }
 

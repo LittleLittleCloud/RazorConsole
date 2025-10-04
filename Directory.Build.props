@@ -7,6 +7,7 @@
     <UseArtifactsOutput>true</UseArtifactsOutput>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <HotReloadAutoRestart>true</HotReloadAutoRestart> 
   </PropertyGroup>
 
   <PropertyGroup>

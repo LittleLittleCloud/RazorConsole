@@ -9,11 +9,23 @@
 @using RazorConsole.Core.Focus
 @using Spectre.Console
 @using RazorConsole.Gallery.Components
-
-<Panel Border="@BoxBorder.Double" Expand="false">
-    <Counter />
-    <Timer />
-    <TextGallery />
-    <InputGallery />
+<Panel>
+    <Align Height="50" Width="80" Horizontal="@HorizontalAlignment.Left" Vertical="VerticalAlignment.Bottom">
+        <Panel Border="@BoxBorder.Double" Expand="false">
+            <Padder Padding="@padding">
+                <Counter />
+                <Newline />
+                <Timer />
+                <Newline />
+                <TextGallery />
+                <Newline />
+                <InputGallery />
+            </Padder>
+        </Panel>
+    </Align>
 </Panel>
+
+@code{
+    private Padding padding => new Padding(2, 2, 2, 2);
+}
 

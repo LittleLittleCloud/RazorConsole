@@ -7,15 +7,15 @@
 @using Spectre.Console
 @using System.Composition
 
-<div data-panel="true"
+<div class="panel"
     data-header="@TitleAttribute"
     data-header-color="@HeaderColorAttribute"
     data-border-color="@BorderColorAttribute"
-     data-panel-expand="@ExpandAttribute"
-     data-panel-border="@BorderAttribute"
-     data-panel-padding="@PaddingAttribute"
-     data-panel-height="@HeightAttribute"
-     data-panel-width="@WidthAttribute">
+     data-expand="@ExpandAttribute"
+     data-border="@BorderAttribute"
+     data-padding="@PaddingAttribute"
+     data-height="@HeightAttribute"
+     data-width="@WidthAttribute">
     @ChildContent
 </div>
 
@@ -81,7 +81,7 @@
         }
     }
 
-    private string? ExpandAttribute => Expand ? "true" : null;
+    private string ExpandAttribute => Expand ? "true" : "false";
 
     private string? PaddingAttribute
     {

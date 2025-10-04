@@ -1,5 +1,6 @@
 using System;
 using System.Composition;
+using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -20,7 +21,7 @@ internal sealed partial class VdomSpectreTranslator
                 return false;
             }
 
-            if (!node.Attributes.TryGetValue("data-align", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+            if (!node.Attributes.TryGetValue("class", out var value) || !string.Equals(value, "align", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -30,13 +31,18 @@ internal sealed partial class VdomSpectreTranslator
                 return false;
             }
 
-            var content = ComposeChildContent(children);
+            if (children is not { Count: 1 })
+            {
+                return false;
+            }
+
+            var content = children[0];
             var horizontal = ParseHorizontalAlignment(GetAttribute(node, "data-horizontal"));
             var vertical = ParseVerticalAlignment(GetAttribute(node, "data-vertical"));
             var width = ParseOptionalPositiveInt(GetAttribute(node, "data-width"));
             var height = ParseOptionalPositiveInt(GetAttribute(node, "data-height"));
 
-            var align = new Align(content, horizontal, vertical)
+            var align = new MeasuredAlign(content, horizontal, vertical)
             {
                 Width = width,
                 Height = height,
