@@ -1,74 +1,70 @@
-<div @oninput="OnInput" @onfocus="OnFocus" @onfocusout="OnFocusOut" @onclick="OnClick">
-    <Border BorderColor="@borderColor">
-        <Columns>
-            <Markup Content="Your Name:" Foreground="@Spectre.Console.Color.Blue" />
-            @if (input is null)
-            {
-                <Markup Content="please provide your name..." Decoration="placeHolderDecoration" />
-            }
-            else
-            {
-                <Markup Content="@input" />
-            }
-        </Columns>
-    </Border>
-</div>
-@if (namePrompt is not null)
+@using RazorConsole.Components
+@using Spectre.Console
+
+<TextInput Label="Your Name:"
+           Value="@_value"
+           ValueChanged="OnValueChangedAsync"
+           Placeholder="Type your name..."
+           BorderColor="@Color.Grey37"
+           BorderPadding="@BorderPadding"
+           FocusedBorderColor="@Color.Yellow"
+           PlaceholderColor="@Color.Grey"
+           ValueColor="@Color.White"
+           Expand="true"
+           OnSubmit="OnSubmitAsync" />
+
+<Padder Padding="@InstructionPadding">
+    <Markup Content="@_helperText" Foreground="@Color.Grey70" Decoration="@Decoration.Dim" />
+</Padder>
+
+@if (_submittedName is not null)
 {
-    <Columns>
-        <Markup Content="@namePrompt" Decoration="Spectre.Console.Decoration.Bold" />
-        <TextButton OnClick="ClearName" Content="Clear" BackgroundColor="@Spectre.Console.Color.Grey" />
-    </Columns>
+    <Padder Padding="@ButtonRowPadding">
+        <Columns>
+            <Markup Content="@_submittedName" Decoration="@Decoration.Bold" />
+            <Padder Padding="@ButtonPadding">
+                <TextButton OnClick="ClearName" Content="Clear" BackgroundColor="@Color.Grey" />
+            </Padder>
+        </Columns>
+    </Padder>
 }
+
 @code {
-    private string? input = null;
-    private Spectre.Console.Decoration placeHolderDecoration = Spectre.Console.Decoration.Dim | Spectre.Console.Decoration.Italic;
-    private Spectre.Console.Color borderColor = Spectre.Console.Color.Default;
-    private string? namePrompt = null;
-    private void OnClick()
+    private static readonly Padding InstructionPadding = new Padding(0, 1, 0, 0);
+    private static readonly Padding ButtonRowPadding = new Padding(0, 1, 0, 0);
+    private static readonly Padding ButtonPadding = new Padding(1, 0, 0, 0);
+    private static readonly Padding BorderPadding = new Padding(1, 0, 1, 0);
+    private string? _value;
+    private string? _submittedName;
+    private string _helperText = "Start typing your name and press Enter to confirm.";
+
+    private Task OnValueChangedAsync(string? value)
     {
-        if (input is not null)
-        {
-            namePrompt = $"your name is {input}";
-        }
+        _value = string.IsNullOrEmpty(value) ? null : value;
+        _helperText = _value is null
+            ? "Start typing your name and press Enter to confirm."
+            : "Press Enter to confirm or Tab to move on.";
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnSubmitAsync(string? value)
+    {
+        _submittedName = string.IsNullOrWhiteSpace(value)
+            ? null
+            : $"Nice to meet you, {value}!";
+
+        _helperText = _submittedName ?? "Name cleared. Type again to set a value.";
+
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private void ClearName()
     {
-        namePrompt = null;
-        input = null;
-
-        StateHasChanged();
-    }
-
-    private void OnInput(ChangeEventArgs args)
-    {
-        if (args is null)
-        {
-            return;
-        }
-
-        string? value = args.Value switch
-        {
-            string text => text,
-            null => null,
-            _ => args.Value.ToString()
-        };
-
-        input = string.IsNullOrEmpty(value) ? null : value;
-
-        StateHasChanged();
-    }
-
-    private void OnFocus(FocusEventArgs e)
-    {
-        borderColor = Spectre.Console.Color.Yellow;
-        StateHasChanged();
-    }
-
-    private void OnFocusOut(FocusEventArgs e)
-    {
-        borderColor = Spectre.Console.Color.Default;
+        _value = null;
+        _submittedName = null;
+        _helperText = "Start typing your name and press Enter to confirm.";
         StateHasChanged();
     }
 }
