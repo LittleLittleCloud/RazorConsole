@@ -346,27 +346,6 @@ public sealed class FocusManager
         return false;
     }
 
-    private void OnViewUpdated(object? sender, ConsoleViewResult view)
-    {
-        FocusTarget? previousTarget = null;
-        FocusTarget? newFocus;
-
-        lock (_sync)
-        {
-            if (_currentIndex >= 0 && _currentIndex < _targets.Count)
-            {
-                previousTarget = _targets[_currentIndex];
-            }
-
-            newFocus = UpdateFocusTargets_NoLock(view);
-        }
-
-        if (newFocus is not null)
-        {
-            _ = TriggerFocusChangedAsync(previousTarget, newFocus, _sessionToken);
-        }
-    }
-
     private void ResetState_NoLock()
     {
         _context = null;

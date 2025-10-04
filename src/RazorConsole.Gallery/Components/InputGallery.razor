@@ -1,0 +1,71 @@
+<div @oninput="OnInput" @onfocus="OnFocus" @onfocusout="OnFocusOut" @onclick="OnClick">
+    <Border BorderColor="@borderColor">
+        @if (input is null)
+        {
+            <Markup Content="please provide your name..." Decoration="placeHolderDecoration" />
+        }
+        else
+        {
+            <Markup Content="@input" />
+        }
+    </Border>
+
+    @if (namePrompt is not null)
+    {
+        <Markup Content="@namePrompt" Decoration="Spectre.Console.Decoration.Bold" />
+        <div @onclick="ClearName">
+            <Markup Content="Clear" />
+        </div>
+    }
+</div>
+
+@code {
+    private string? input = null;
+    private Spectre.Console.Decoration placeHolderDecoration = Spectre.Console.Decoration.Dim | Spectre.Console.Decoration.Italic;
+    private Spectre.Console.Color borderColor = Spectre.Console.Color.Default;
+    private string? namePrompt = null;
+    private void OnClick()
+    {
+        if(input is not null)
+        {
+            namePrompt = $"your name is {input}";
+        }
+    }
+
+    private void ClearName()
+    {
+        namePrompt = null;
+        input = null;
+    }
+
+    private void OnInput(ChangeEventArgs args)
+    {
+        if (args is null)
+        {
+            return;
+        }
+
+        string? value = args.Value switch
+        {
+            string text => text,
+            null => null,
+            _ => args.Value.ToString()
+        };
+
+        input = string.IsNullOrEmpty(value) ? null : value;
+
+        StateHasChanged();
+    }
+
+    private void OnFocus(FocusEventArgs e)
+    {
+        borderColor = Spectre.Console.Color.Yellow;
+        StateHasChanged();
+    }
+
+    private void OnFocusOut(FocusEventArgs e)
+    {
+        borderColor = Spectre.Console.Color.Default;
+        StateHasChanged();
+    }
+}
