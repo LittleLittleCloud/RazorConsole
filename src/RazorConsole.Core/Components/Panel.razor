@@ -6,8 +6,6 @@
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
 @using System.Composition
-@inherits RenderableConverterComponentBase<PanelRenderableConverter>
-@attribute [Export(typeof(RenderableConverterComponentBase<PanelRenderableConverter>))]
 
 <div data-panel="true"
     data-header="@TitleAttribute"
@@ -17,12 +15,14 @@
      data-panel-border="@BorderAttribute"
      data-panel-padding="@PaddingAttribute"
      data-panel-height="@HeightAttribute"
-     data-panel-width="@WidthAttribute"
-     @attributes="RemainingAttributes">
+     data-panel-width="@WidthAttribute">
     @ChildContent
 </div>
 
 @code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
     private static readonly IReadOnlyDictionary<BoxBorder, string> BorderNames = new Dictionary<BoxBorder, string>
     {
         { BoxBorder.Square, "square" },

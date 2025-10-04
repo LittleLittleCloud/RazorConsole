@@ -139,6 +139,8 @@ public sealed class ConsoleAppOptions
     /// </summary>
     public bool AutoClearConsole { get; set; } = true;
 
+    public ConsoleLiveDisplayOptions ConsoleLiveDisplayOptions { get; } = ConsoleLiveDisplayOptions.Default;
+
     /// <summary>
     /// Callback invoked after a component has been rendered.
     /// </summary>
@@ -228,7 +230,10 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
             if (SupportsLiveDisplay())
             {
                 var liveDisplay = AnsiConsole.Live(view.Renderable);
-                liveDisplay.AutoClear = true;
+                liveDisplay.AutoClear = _options.ConsoleLiveDisplayOptions.AutoClear;
+                liveDisplay.Cropping = _options.ConsoleLiveDisplayOptions.Cropping;
+                liveDisplay.Overflow = _options.ConsoleLiveDisplayOptions.Overflow;
+
                 await liveDisplay.StartAsync(async liveContext =>
                 {
                     shutdownToken.ThrowIfCancellationRequested();

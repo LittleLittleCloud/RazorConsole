@@ -20,7 +20,7 @@ public sealed class ConsoleLiveDisplayOptions
     /// <summary>
     /// Gets or sets the vertical overflow cropping strategy.
     /// </summary>
-    public VerticalOverflowCropping Cropping { get; set; } = VerticalOverflowCropping.Top;
+    public VerticalOverflowCropping Cropping { get; set; } = VerticalOverflowCropping.Bottom;
 
     /// <summary>
     /// Creates a new instance with default settings.

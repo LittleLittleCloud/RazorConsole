@@ -33,23 +33,8 @@ internal sealed partial class VdomSpectreTranslator
 
             var rows = new Rows(children);
 
-            if (ShouldExpand(node))
-            {
-                rows.Expand();
-            }
-
             renderable = rows;
             return true;
-        }
-
-        private static bool ShouldExpand(VNode node)
-        {
-            if (TryGetBoolAttribute(node, "data-expand", out var expand) && expand)
-            {
-                return true;
-            }
-
-            return HasClass(node, "row") || HasClass(node, "w-100") || HasClass(node, "d-block");
         }
     }
 }

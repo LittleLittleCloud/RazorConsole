@@ -250,6 +250,14 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 case RenderTreeEditType.StepIn:
                     {
                         var parent = _cursor.Peek();
+
+                        // process region
+                        if (parent.Children is { Count: 1} && parent.Children[0].Kind == VNodeKind.Region)
+                        {
+                            _cursor.Push(parent.Children[0]);
+                            parent = _cursor.Peek();
+                        }
+
                         if ((uint)edit.SiblingIndex < (uint)parent.Children.Count)
                         {
                             _cursor.Push(parent.Children[edit.SiblingIndex]);
@@ -262,7 +270,13 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                     {
                         if (_cursor.Count > 0)
                         {
-                            _cursor.Pop();
+                            var parent = _cursor.Pop();
+
+                            // process region
+                            if (parent.Kind == VNodeKind.Region && _cursor.Count > 0)
+                            {
+                                _cursor.Pop();
+                            }
                         }
 
                         break;
