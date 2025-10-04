@@ -1,8 +1,15 @@
-@using RazorConsole.Components
 @using Spectre.Console
 
-<Text Content="Hello" />
-<Text Foreground="@Color.Red" Content="This text is red" />
-<Text Foreground="@Color.Green" Background="@Color.Black" Decoration="Decoration.Bold | Decoration.Underline" Content="This text is green with black background, bold and underlined." />
-<Text Foreground="@Color.Blue" Decoration="Decoration.Italic" Content="This text is blue and italic" />
-<Text link="https://github.com/LittleLittleCloud/RazorConsole" Foreground="@Color.Yellow" Decoration="Decoration.Underline" Content="This text is a link to RazorConsole GitHub repo." />
+<Markup Content="Hello" />
+<Markup Foreground="@Color.Red" Content="This text is red" />
+<Markup Foreground="@Color.Green" Background="@Color.Black" Decoration="Decoration.Bold | Decoration.Underline" Content="This text is green with black background, bold and underlined." />
+<Markup Foreground="@Color.Blue" Decoration="Decoration.Italic" Content="This text is blue and italic" />
+<Markup link="https://github.com/LittleLittleCloud/RazorConsole" Foreground="@Color.Yellow" Decoration="Decoration.Underline" Content="This text is a link to RazorConsole GitHub repo." />
+
+@code {
+    private Task OnTextChanged(string newText)
+    {
+        Console.WriteLine($"Text changed: {newText}");
+        return Task.CompletedTask;
+    }
+}

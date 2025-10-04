@@ -1,0 +1,38 @@
+@namespace RazorConsole.Components
+
+@using Microsoft.AspNetCore.Components
+@using System.Threading.Tasks
+@using RazorConsole.Core.Rendering.ComponentMarkup
+@using System.Composition
+@using Spectre.Console
+
+<span data-text="true"
+      data-style="@StyleAttributes"
+      data-content="@Content" />
+
+@code {
+    private string StyleAttributes => new Style(Foreground, Background, Decoration, link).ToMarkup();
+
+    [Parameter]
+    [EditorRequired]
+    public string Content
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    [Parameter]
+    public Color Foreground { get; set; } = Spectre.Console.Style.Plain.Foreground;
+
+    [Parameter]
+    public Color Background { get; set; } = Spectre.Console.Style.Plain.Background;
+
+    [Parameter]
+    public Decoration Decoration { get; set; } = Spectre.Console.Decoration.None;
+
+    [Parameter]
+    public string? link
+    {
+        get; set;
+    } = null;
+}

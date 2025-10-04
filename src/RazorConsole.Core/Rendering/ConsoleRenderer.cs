@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Vdom;
+using RazorConsole.Core.Vdom;
 using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering;
@@ -192,12 +193,17 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 case RenderTreeEditType.SetAttribute:
                     {
                         var parent = _cursor.Peek();
-                        var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
+                        RenderTreeFrame frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
                         if (frame.FrameType == RenderTreeFrameType.Attribute)
                         {
-                            ApplyAttributeFrame(parent, frame);
-                        }
+                            if ((uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
+                            {
+                                var child = parent.Children[edit.SiblingIndex];
+                                ApplyAttributeFrame(child, frame);
+                            }
 
+                            break;
+                        }
                         break;
                     }
 
@@ -205,18 +211,19 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                     {
                         var parent = _cursor.Peek();
                         var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-                        if (frame.FrameType == RenderTreeFrameType.Attribute)
+                        if (frame.FrameType == RenderTreeFrameType.Attribute && (uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
                         {
+                            var child = parent.Children[edit.SiblingIndex];
                             if (frame.AttributeEventHandlerId != 0)
                             {
-                                parent.RemoveEvent(frame.AttributeName!);
+                                child.RemoveEvent(frame.AttributeName!);
                             }
                             else
                             {
-                                parent.RemoveAttribute(frame.AttributeName!);
+                                child.RemoveAttribute(frame.AttributeName!);
                                 if (IsKeyAttribute(frame.AttributeName!))
                                 {
-                                    parent.SetKey(null);
+                                    child.SetKey(null);
                                 }
                             }
                         }
@@ -383,7 +390,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
     private RenderSnapshot CreateSnapshot()
     {
-        // LogComponentRoots();
+        //LogComponentRoots();
 
         if (_rootComponentId == -1 || !_componentRoots.TryGetValue(_rootComponentId, out var componentNode))
         {
@@ -582,37 +589,102 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         var result = new List<VNode>();
         foreach (var child in node.Children)
         {
-            switch (child.Kind)
+            foreach (var expanded in EnumerateRenderableSubtree(child, visitedComponents))
             {
-                case VNodeKind.Element:
-                    result.Add(child.Clone());
-                    break;
-                case VNodeKind.Text:
-                    result.Add(VNode.CreateText(child.Text));
-                    break;
-                case VNodeKind.Component:
-                    {
-                        var childId = TryGetComponentId(child);
-                        if (childId.HasValue && !visitedComponents.Contains(childId.Value) && _componentRoots.TryGetValue(childId.Value, out var componentRoot))
-                        {
-                            visitedComponents.Add(childId.Value);
-                            result.AddRange(CollectRenderableChildren(componentRoot, visitedComponents));
-                            visitedComponents.Remove(childId.Value);
-                        }
-                        else
-                        {
-                            result.AddRange(CollectRenderableChildren(child, visitedComponents));
-                        }
-
-                        break;
-                    }
-                default:
-                    result.AddRange(CollectRenderableChildren(child, visitedComponents));
-                    break;
+                result.Add(expanded);
             }
         }
 
         return result;
+    }
+
+    private IEnumerable<VNode> EnumerateRenderableSubtree(VNode node, HashSet<int> visitedComponents)
+    {
+        switch (node.Kind)
+        {
+            case VNodeKind.Element:
+                yield return CloneElementWithRenderableChildren(node, visitedComponents);
+                yield break;
+            case VNodeKind.Text:
+                yield return VNode.CreateText(node.Text);
+                yield break;
+            case VNodeKind.Component:
+                foreach (var expanded in EnumerateComponentRenderableChildren(node, visitedComponents))
+                {
+                    yield return expanded;
+                }
+
+                yield break;
+            default:
+                foreach (var child in node.Children)
+                {
+                    foreach (var expanded in EnumerateRenderableSubtree(child, visitedComponents))
+                    {
+                        yield return expanded;
+                    }
+                }
+
+                yield break;
+        }
+    }
+
+    private IEnumerable<VNode> EnumerateComponentRenderableChildren(VNode node, HashSet<int> visitedComponents)
+    {
+        var childId = TryGetComponentId(node);
+        if (childId.HasValue && !visitedComponents.Contains(childId.Value) && _componentRoots.TryGetValue(childId.Value, out var componentRoot))
+        {
+            visitedComponents.Add(childId.Value);
+            foreach (var descendant in CollectRenderableChildren(componentRoot, visitedComponents))
+            {
+                yield return descendant;
+            }
+
+            visitedComponents.Remove(childId.Value);
+            yield break;
+        }
+
+        foreach (var child in node.Children)
+        {
+            foreach (var expanded in EnumerateRenderableSubtree(child, visitedComponents))
+            {
+                yield return expanded;
+            }
+        }
+    }
+
+    private VNode CloneElementWithRenderableChildren(VNode element, HashSet<int> visitedComponents)
+    {
+        var tagName = element.TagName;
+        if (string.IsNullOrWhiteSpace(tagName))
+        {
+            throw new InvalidOperationException("Element VNodes must define a tag name.");
+        }
+
+        var clone = VNode.CreateElement(tagName);
+        if (!string.IsNullOrWhiteSpace(element.Key))
+        {
+            clone.SetKey(element.Key);
+        }
+
+        foreach (var attribute in element.Attributes)
+        {
+            clone.SetAttribute(attribute.Key, attribute.Value);
+        }
+
+        foreach (var @event in element.Events)
+        {
+            clone.SetEvent(@event.Name, @event.HandlerId, @event.Options);
+        }
+
+        foreach (var child in element.Children)
+        {
+            foreach (var nested in EnumerateRenderableSubtree(child, visitedComponents))
+            {
+                clone.AddChild(nested);
+            }
+        }
+
+        return clone;
     }
 
     private static VNode CreateRowsWrapper(List<VNode> children)
