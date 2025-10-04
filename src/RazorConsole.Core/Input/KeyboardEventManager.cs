@@ -51,8 +51,8 @@ internal sealed class KeyboardEventManager
     private readonly IKeyboardEventDispatcher _dispatcher;
     private readonly ILogger<KeyboardEventManager> _logger;
     private readonly Dictionary<string, StringBuilder> _buffers = new(StringComparer.Ordinal);
-    private readonly HashSet<string> _dirtyKeys = new(StringComparer.Ordinal);
     private readonly object _bufferSync = new();
+    private string? _activeFocusKey;
 
     public KeyboardEventManager(
         FocusManager focusManager,
@@ -108,14 +108,46 @@ internal sealed class KeyboardEventManager
         }
     }
 
-    internal Task HandleKeyAsync(ConsoleKeyInfo keyInfo, CancellationToken token)
+    internal async Task HandleKeyAsync(ConsoleKeyInfo keyInfo, CancellationToken token)
     {
-        return keyInfo.Key switch
+        var hasInitialTarget = _focusManager.TryGetFocusedTarget(out var initialTarget);
+
+        if (hasInitialTarget)
         {
-            ConsoleKey.Tab => HandleTabAsync(keyInfo, token),
-            ConsoleKey.Enter => TriggerActivationAsync(token),
-            _ => HandleTextInputAsync(keyInfo, token),
-        };
+            await DispatchKeyboardEventAsync(initialTarget, "onkeydown", keyInfo, token).ConfigureAwait(false);
+        }
+
+        switch (keyInfo.Key)
+        {
+            case ConsoleKey.Tab:
+                await HandleTabAsync(keyInfo, token).ConfigureAwait(false);
+                break;
+            case ConsoleKey.Enter:
+                await TriggerActivationAsync(token).ConfigureAwait(false);
+                break;
+            default:
+                if (ShouldRaiseKeyPress(keyInfo))
+                {
+                    var dispatched = hasInitialTarget
+                        ? await DispatchKeyboardEventAsync(initialTarget, "onkeypress", keyInfo, token).ConfigureAwait(false)
+                        : false;
+
+                    if (!dispatched)
+                    {
+                        await DispatchKeyboardEventAsync("onkeypress", keyInfo, token).ConfigureAwait(false);
+                    }
+                }
+
+                await HandleTextInputAsync(keyInfo, token).ConfigureAwait(false);
+                break;
+        }
+
+        var keyUpDispatched = await DispatchKeyboardEventAsync("onkeyup", keyInfo, token).ConfigureAwait(false);
+
+        if (!keyUpDispatched && hasInitialTarget)
+        {
+            await DispatchKeyboardEventAsync(initialTarget, "onkeyup", keyInfo, token).ConfigureAwait(false);
+        }
     }
 
     private async Task HandleTabAsync(ConsoleKeyInfo keyInfo, CancellationToken token)
@@ -204,6 +236,28 @@ internal sealed class KeyboardEventManager
         }
     }
 
+    private Task<bool> DispatchKeyboardEventAsync(string eventName, ConsoleKeyInfo keyInfo, CancellationToken token)
+    {
+        if (!_focusManager.TryGetFocusedTarget(out var target))
+        {
+            return Task.FromResult(false);
+        }
+
+        return DispatchKeyboardEventAsync(target, eventName, keyInfo, token);
+    }
+
+    private async Task<bool> DispatchKeyboardEventAsync(FocusManager.FocusTargetSnapshot target, string eventName, ConsoleKeyInfo keyInfo, CancellationToken token)
+    {
+        if (!TryGetEvent(target, eventName, out var nodeEvent))
+        {
+            return false;
+        }
+
+        var args = CreateKeyboardEventArgs(keyInfo, eventName);
+        await DispatchAsync(nodeEvent, args, token).ConfigureAwait(false);
+        return true;
+    }
+
     private bool TryApplyKeyToBuffer(FocusManager.FocusTargetSnapshot target, ConsoleKeyInfo keyInfo, out string value)
     {
         lock (_bufferSync)
@@ -223,11 +277,6 @@ internal sealed class KeyboardEventManager
             {
                 buffer.Append(keyInfo.KeyChar);
                 changed = true;
-            }
-
-            if (changed)
-            {
-                _dirtyKeys.Add(target.Key);
             }
 
             value = buffer.ToString();
@@ -279,6 +328,66 @@ internal sealed class KeyboardEventManager
         return string.Empty;
     }
 
+    private static KeyboardEventArgs CreateKeyboardEventArgs(ConsoleKeyInfo keyInfo, string eventName)
+    {
+        var type = eventName.StartsWith("on", StringComparison.OrdinalIgnoreCase)
+            ? eventName[2..]
+            : eventName;
+
+        type = type.ToLowerInvariant();
+
+        return new KeyboardEventArgs
+        {
+            Type = type,
+            Key = ResolveKeyValue(keyInfo),
+            Code = ResolveKeyCode(keyInfo),
+            Location = 0,
+            Repeat = false,
+            AltKey = (keyInfo.Modifiers & ConsoleModifiers.Alt) != 0,
+            CtrlKey = (keyInfo.Modifiers & ConsoleModifiers.Control) != 0,
+            MetaKey = false,
+            ShiftKey = (keyInfo.Modifiers & ConsoleModifiers.Shift) != 0,
+        };
+    }
+
+    private static string ResolveKeyValue(ConsoleKeyInfo keyInfo)
+    {
+        if (!char.IsControl(keyInfo.KeyChar) && keyInfo.KeyChar != '\0')
+        {
+            return keyInfo.KeyChar.ToString();
+        }
+
+        return keyInfo.Key switch
+        {
+            ConsoleKey.Enter => "Enter",
+            ConsoleKey.Tab => "Tab",
+            ConsoleKey.Backspace => "Backspace",
+            ConsoleKey.Escape => "Escape",
+            _ => keyInfo.Key.ToString(),
+        };
+    }
+
+    private static string ResolveKeyCode(ConsoleKeyInfo keyInfo)
+    {
+        if (keyInfo.Key >= ConsoleKey.A && keyInfo.Key <= ConsoleKey.Z)
+        {
+            return $"Key{keyInfo.Key}";
+        }
+
+        if (keyInfo.Key >= ConsoleKey.D0 && keyInfo.Key <= ConsoleKey.D9)
+        {
+            var digit = (int)keyInfo.Key - (int)ConsoleKey.D0;
+            return $"Digit{digit}";
+        }
+
+        return keyInfo.Key.ToString();
+    }
+
+    private static bool ShouldRaiseKeyPress(ConsoleKeyInfo keyInfo)
+    {
+        return !char.IsControl(keyInfo.KeyChar) && keyInfo.KeyChar != '\0';
+    }
+
     private void OnFocusChanged(object? sender, FocusChangedEventArgs e)
     {
         if (e is null)
@@ -286,18 +395,28 @@ internal sealed class KeyboardEventManager
             return;
         }
 
+        lock (_bufferSync)
+        {
+            if (_activeFocusKey is not null && _buffers.TryGetValue(_activeFocusKey, out var previousBuffer))
+            {
+                previousBuffer.Clear();
+                _buffers.Remove(_activeFocusKey);
+            }
+        }
+
         if (!_focusManager.TryGetFocusedTarget(out var target))
         {
+            lock (_bufferSync)
+            {
+                _activeFocusKey = null;
+            }
+
             return;
         }
 
         lock (_bufferSync)
         {
-            if (_dirtyKeys.Contains(target.Key))
-            {
-                return;
-            }
-
+            _activeFocusKey = target.Key;
             var buffer = GetOrCreateBuffer_NoLock(target);
             buffer.Clear();
             buffer.Append(ResolveInitialValue(target));

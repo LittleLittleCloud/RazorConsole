@@ -1,42 +1,13 @@
 
-<Border>
-    <div @onfocus="OnFocus" @onfocusout="OnFocusOut" @onclick="IncrementCount">
-        <Markup Content="@Content"
-                Foreground="@textColor" />
-    </div>
-</Border>
+
+<p>Current count: @currentCount</p>
+    <TextButton Content="Click me" OnClick="IncrementCount" BackgroundColor="@Spectre.Console.Color.Grey" />
 
 @code {
     private int currentCount = 0;
-    private Spectre.Console.Color textColor = Spectre.Console.Color.Default;
-    private string Content = "click me";
     private void IncrementCount()
     {
         currentCount++;
-        Content = $"click me {currentCount}";
-
-        StateHasChanged();
-    }
-
-    private void OnInput(ChangeEventArgs e)
-    {
-    }
-
-    private void OnChange(ChangeEventArgs e)
-    {
-    }
-
-    private void OnFocus(FocusEventArgs e)
-    {
-        textColor = Spectre.Console.Color.Yellow;
-        Content = "focused";
-        StateHasChanged();
-    }
-
-    private void OnFocusOut(FocusEventArgs e)
-    {
-        textColor = Spectre.Console.Color.Default;
-        Content = "not focused";
         StateHasChanged();
     }
 }

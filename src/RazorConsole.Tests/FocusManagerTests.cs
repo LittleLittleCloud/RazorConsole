@@ -30,38 +30,10 @@ public sealed class FocusManagerTests
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 
+        PushInitialSnapshot(manager, initial);
+
         Assert.True(manager.HasFocusables);
         Assert.Equal("first", manager.CurrentFocusKey);
-    }
-
-    [Fact]
-    public async Task FocusNextAsync_AdvancesFocus()
-    {
-        var manager = new FocusManager();
-        var keys = new[] { "first", "second", "third" };
-        var initial = CreateView(keys, focusedKey: null);
-        var renderCount = 0;
-
-        Task<ConsoleViewResult> RenderAsync(object? _, CancellationToken __)
-        {
-            Interlocked.Increment(ref renderCount);
-            return Task.FromResult(CreateView(keys, manager.CurrentFocusKey));
-        }
-
-        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
-            new TestCanvas(),
-            initial,
-            new VdomDiffService(),
-            RenderAsync);
-        using var session = manager.BeginSession(context, initial, CancellationToken.None);
-        await session.InitializationTask;
-
-        renderCount = 0;
-        var changed = await manager.FocusNextAsync(session.Token);
-
-        Assert.True(changed);
-        Assert.Equal("second", manager.CurrentFocusKey);
-        Assert.True(renderCount >= 1);
     }
 
     [Fact]
@@ -78,6 +50,8 @@ public sealed class FocusManagerTests
             (parameters, _) => Task.FromResult(CreateView(keys, manager.CurrentFocusKey)));
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
+
+        PushInitialSnapshot(manager, initial);
 
         await manager.FocusNextAsync(session.Token);
         await manager.FocusNextAsync(session.Token);
@@ -116,6 +90,8 @@ public sealed class FocusManagerTests
 
         using var session = manager.BeginSession(context, view, CancellationToken.None);
         await session.InitializationTask;
+
+        PushInitialSnapshot(manager, view);
 
         Assert.True(manager.HasFocusables);
         Assert.Equal("interactive", manager.CurrentFocusKey);
@@ -158,6 +134,8 @@ public sealed class FocusManagerTests
         using var session = manager.BeginSession(context, view, CancellationToken.None);
         await session.InitializationTask;
 
+        PushInitialSnapshot(manager, view);
+
         Assert.Collection(
             dispatcher.Events,
             e => Assert.Equal(("focusin", 2UL), e),
@@ -172,6 +150,52 @@ public sealed class FocusManagerTests
             e => Assert.Equal(("focusout", 3UL), e),
             e => Assert.Equal(("focusin", 5UL), e),
             e => Assert.Equal(("focus", 4UL), e));
+    }
+
+    [Fact]
+    public async Task FocusNextAsync_AdvancesFocus()
+    {
+        var manager = new FocusManager();
+        var keys = new[] { "first", "second", "third" };
+        var initial = CreateView(keys, focusedKey: null);
+        var renderCount = 0;
+
+        Task<ConsoleViewResult> RenderAsync(object? _, CancellationToken __)
+        {
+            Interlocked.Increment(ref renderCount);
+            return Task.FromResult(CreateView(keys, manager.CurrentFocusKey));
+        }
+
+        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
+            new TestCanvas(),
+            initial,
+            new VdomDiffService(),
+            RenderAsync);
+        using var session = manager.BeginSession(context, initial, CancellationToken.None);
+        await session.InitializationTask;
+
+        PushInitialSnapshot(manager, initial);
+
+        Assert.True(manager.HasFocusables);
+        Assert.Equal("first", manager.CurrentFocusKey);
+
+        renderCount = 0;
+        var changed = await manager.FocusNextAsync(session.Token);
+
+        Assert.True(changed);
+        Assert.Equal("second", manager.CurrentFocusKey);
+        Assert.True(renderCount >= 1);
+    }
+
+    private static void PushInitialSnapshot(FocusManager manager, ConsoleViewResult view)
+    {
+        if (view.VdomRoot is null)
+        {
+            return;
+        }
+
+        var snapshot = new ConsoleRenderer.RenderSnapshot(view.VdomRoot, view.Renderable, view.AnimatedRenderables);
+        ((IObserver<ConsoleRenderer.RenderSnapshot>)manager).OnNext(snapshot);
     }
 
     private static ConsoleViewResult CreateView(IReadOnlyList<string> keys, string? focusedKey)

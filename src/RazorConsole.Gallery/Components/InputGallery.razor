@@ -13,7 +13,7 @@
 @if (namePrompt is not null)
 {
     <Markup Content="@namePrompt" Decoration="Spectre.Console.Decoration.Bold" />
-    <TextButton OnClick="ClearName" Content="Clear" />
+    <TextButton OnClick="ClearName" Content="Clear" BackgroundColor="@Spectre.Console.Color.Grey"/>
 }
 @code {
     private string? input = null;
@@ -32,6 +32,8 @@
     {
         namePrompt = null;
         input = null;
+
+        StateHasChanged();
     }
 
     private void OnInput(ChangeEventArgs args)

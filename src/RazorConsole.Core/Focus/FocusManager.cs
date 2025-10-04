@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Web;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Vdom;
+using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Focus;
 
@@ -114,7 +115,19 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 
             _context = context;
 
-            initialFocus = null;
+            if (initialView.VdomRoot is not null)
+            {
+                var snapshot = new ConsoleRenderer.RenderSnapshot(
+                    initialView.VdomRoot,
+                    initialView.Renderable,
+                    initialView.AnimatedRenderables);
+
+                initialFocus = UpdateFocusTargets_NoLock(snapshot);
+            }
+            else
+            {
+                initialFocus = null;
+            }
         }
 
         var initializationTask = initialFocus is not null
@@ -146,7 +159,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
                 previousTarget = _targets[_currentIndex];
             }
 
-            var previousKey = CurrentFocusKey;
+            var previousIndex = _currentIndex;
             var nextIndex = _currentIndex < 0
                 ? 0
                 : (_currentIndex + 1) % _targets.Count;
@@ -154,7 +167,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
             _currentIndex = nextIndex;
             CurrentFocusKey = _targets[nextIndex].Key;
 
-            if (string.Equals(previousKey, CurrentFocusKey, StringComparison.Ordinal))
+            if (previousIndex == nextIndex)
             {
                 return false;
             }
@@ -188,7 +201,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
                 priorTarget = _targets[_currentIndex];
             }
 
-            var previousKey = CurrentFocusKey;
+            var previousIndex = _currentIndex;
             var nextIndex = _currentIndex < 0
                 ? _targets.Count - 1
                 : (_currentIndex - 1 + _targets.Count) % _targets.Count;
@@ -196,7 +209,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
             _currentIndex = nextIndex;
             CurrentFocusKey = _targets[nextIndex].Key;
 
-            if (string.Equals(previousKey, CurrentFocusKey, StringComparison.Ordinal))
+            if (previousIndex == nextIndex)
             {
                 return false;
             }
@@ -274,6 +287,23 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
         if (token.IsCancellationRequested)
         {
             return;
+        }
+
+        var context = _context;
+        if (context is not null)
+        {
+            try
+            {
+                await context.UpdateModelAsync(null, token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch
+            {
+                // Ignore rendering failures during focus changes.
+            }
         }
 
         FocusChanged?.Invoke(this, new FocusChangedEventArgs(target.Key));
@@ -488,7 +518,10 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 
     void IObserver<ConsoleRenderer.RenderSnapshot>.OnNext(ConsoleRenderer.RenderSnapshot value)
     {
-        UpdateFocusTargets_NoLock(value);
+        lock (_sync)
+        {
+            UpdateFocusTargets_NoLock(value);
+        }
     }
 
     private sealed record FocusTarget(
