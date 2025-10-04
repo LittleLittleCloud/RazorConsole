@@ -1,0 +1,25 @@
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Panel Title="Spinner Gallery" Border="@BoxBorder.Rounded" Expand="false">
+    <Padder Padding="@_padding">
+        <Grid Columns="2" Expand="false">
+            @foreach (var sample in _spinnerSamples)
+            {
+                <Markup Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Bold" Content="@sample.Name" />
+                <Spinner @key="sample.Name" SpinnerType="@sample.Spinner" />
+            }
+        </Grid>
+    </Padder>
+</Panel>
+
+@code {
+    private readonly (string Name, global::Spectre.Console.Spinner Spinner)[] _spinnerSamples =
+    {
+        ("Dots", global::Spectre.Console.Spinner.Known.Dots),
+        ("Bouncing Bar", global::Spectre.Console.Spinner.Known.BouncingBar),
+        ("Star", global::Spectre.Console.Spinner.Known.Star),
+    };
+
+    private readonly Padding _padding = new Padding(1, 1, 1, 1);
+}

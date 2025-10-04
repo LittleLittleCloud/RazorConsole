@@ -8,18 +8,24 @@
 
 <span data-text="true"
       data-style="@StyleAttributes"
-      data-content="@Content" />
+      data-content="@_escapedContent" />
 
 @code {
     private string StyleAttributes => new Style(Foreground, Background, Decoration, link).ToMarkup();
-
+    private string _escapedContent = string.Empty;
     [Parameter]
     [EditorRequired]
     public string Content
     {
-        get;
-        set;
-    } = string.Empty;
+        get
+        {
+            return _escapedContent;
+        }
+        set
+        {
+            _escapedContent = Spectre.Console.Markup.Escape(value);
+        }
+    }
 
     [Parameter]
     public Color Foreground { get; set; } = Spectre.Console.Style.Plain.Foreground;
