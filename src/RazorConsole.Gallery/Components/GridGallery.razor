@@ -1,0 +1,57 @@
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Panel Title="Conference Schedule" Border="@BoxBorder.Rounded" Expand="false">
+    <Padder Padding="@_schedulePadding">
+        <Grid Columns="3" Expand="true">
+            <Markup Foreground="@Color.Gold3_1" Decoration="Decoration.Bold" Content="Time" />
+            <Markup Foreground="@Color.Gold3_1" Decoration="Decoration.Bold" Content="Topic" />
+            <Markup Foreground="@Color.Gold3_1" Decoration="Decoration.Bold" Content="Speaker" />
+
+            @foreach (var session in _sessions)
+            {
+                <Markup Content="@session.Time" />
+                <Markup Content="@session.Topic" />
+                <Markup Content="@session.Speaker" />
+            }
+        </Grid>
+    </Padder>
+</Panel>
+
+<Newline />
+
+<Panel Title="Release Metrics" Border="@BoxBorder.Double" Expand="false">
+    <Padder Padding="@_metricsPadding">
+        <Grid Columns="2" Expand="false" Width="54">
+            <Markup Foreground="@Color.Turquoise2" Decoration="Decoration.Bold" Content="Metric" />
+            <Markup Foreground="@Color.Turquoise2" Decoration="Decoration.Bold" Content="Value" />
+
+            @foreach (var metric in _metrics)
+            {
+                <Markup Content="@metric.Label" />
+                <Markup Foreground="@metric.Color" Content="@metric.Value" />
+            }
+        </Grid>
+    </Padder>
+</Panel>
+
+@code {
+    private readonly (string Time, string Topic, string Speaker)[] _sessions = new[]
+    {
+        ("09:00", "Morning Standup", "L. Console"),
+        ("10:30", "Rendering Deep Dive", "S. Spectre"),
+        ("13:30", "Component Patterns", "R. Razor"),
+        ("15:00", "Hot Reload Demo", "C. Runtime"),
+    };
+
+    private readonly (string Label, string Value, Color Color)[] _metrics = new[]
+    {
+        ("Components", "18", Color.Chartreuse1),
+        ("Test Coverage", "92%", Color.GreenYellow),
+        ("NuGet Downloads", "12,408", Color.DeepSkyBlue1),
+        ("Open Issues", "7", Color.Orange1),
+    };
+
+    private readonly Padding _schedulePadding = new Padding(1, 1, 1, 0);
+    private readonly Padding _metricsPadding = new Padding(1, 1, 1, 1);
+}

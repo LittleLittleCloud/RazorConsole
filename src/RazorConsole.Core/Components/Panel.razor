@@ -8,9 +8,9 @@
 @using System.Composition
 
 <div class="panel"
-    data-header="@TitleAttribute"
-    data-header-color="@HeaderColorAttribute"
-    data-border-color="@BorderColorAttribute"
+     data-header="@TitleAttribute"
+     data-header-color="@HeaderColorAttribute"
+     data-border-color="@BorderColorAttribute"
      data-expand="@ExpandAttribute"
      data-border="@BorderAttribute"
      data-padding="@PaddingAttribute"
@@ -24,7 +24,7 @@
     public RenderFragment? ChildContent { get; set; }
 
     private static readonly IReadOnlyDictionary<BoxBorder, string> BorderNames = new Dictionary<BoxBorder, string>
-    {
+{
         { BoxBorder.Square, "square" },
         { BoxBorder.Rounded, "rounded" },
         { BoxBorder.Double, "double" },

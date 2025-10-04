@@ -5,27 +5,20 @@
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using System.Composition
-@inherits RenderableConverterComponentBase<GridRenderableConverter>
-@attribute [Export(typeof(RenderableConverterComponentBase<GridRenderableConverter>))]
 
-<div data-grid="true"
-     data-columns="@ColumnAttribute"
-     data-show-headers="@ShowHeadersAttribute"
-    data-grid-expand="@ExpandAttribute"
-    data-grid-width="@WidthAttribute"
-    @attributes="RemainingAttributes">
+<div class="grid"
+    data-columns="@ColumnAttribute"
+    data-expand="@ExpandAttribute"
+    data-width="@WidthAttribute">
     @ChildContent
 </div>
 
 @code {
-    private const int MinimumColumns = 1;
-    private const int MaximumColumns = 4;
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
 
     [Parameter]
     public int Columns { get; set; } = 2;
-
-    [Parameter]
-    public bool ShowHeaders { get; set; }
 
     [Parameter]
     public bool Expand { get; set; }
@@ -35,21 +28,9 @@
 
     private string ColumnAttribute => Columns.ToString(CultureInfo.InvariantCulture);
 
-    private string? ShowHeadersAttribute => ShowHeaders ? "true" : null;
-
-    private string? ExpandAttribute => Expand ? "true" : null;
+    private string ExpandAttribute => Expand ? "true" : "false";
 
     private string? WidthAttribute => Width.HasValue && Width.Value > 0
         ? Width.Value.ToString(CultureInfo.InvariantCulture)
         : null;
-
-    protected override void OnParametersSet()
-    {
-        Columns = Math.Clamp(Columns, MinimumColumns, MaximumColumns);
-
-        if (Width.HasValue && Width.Value <= 0)
-        {
-            Width = null;
-        }
-    }
 }

@@ -21,7 +21,7 @@ internal sealed partial class VdomSpectreTranslator
                 return false;
             }
 
-            if (!node.Attributes.TryGetValue("data-grid", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+            if (!node.Attributes.TryGetValue("class", out var value) || !string.Equals(value, "grid", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -31,8 +31,13 @@ internal sealed partial class VdomSpectreTranslator
                 return false;
             }
 
-            var columnCount = Math.Clamp(TryGetIntAttribute(node, "data-columns", 2), 1, 4);
-            var grid = new Grid();
+            var columnCount = TryGetIntAttribute(node, "data-columns", 2);
+            var isExpanded = !string.Equals(GetAttribute(node, "data-expand"), "false", StringComparison.OrdinalIgnoreCase);
+            var grid = new Grid()
+            {
+                Expand = isExpanded
+            };
+
             for (var i = 0; i < columnCount; i++)
             {
                 grid.AddColumn();
@@ -46,12 +51,7 @@ internal sealed partial class VdomSpectreTranslator
                 }
             }
 
-            if (string.Equals(GetAttribute(node, "data-grid-expand") ?? GetAttribute(node, "data-expand"), "true", StringComparison.OrdinalIgnoreCase))
-            {
-                grid.Expand();
-            }
-
-            if (TryParsePositiveInt(GetAttribute(node, "data-grid-width") ?? GetAttribute(node, "data-width"), out var width))
+            if (TryParsePositiveInt(GetAttribute(node, "data-width"), out var width))
             {
                 grid.Width = width;
             }
