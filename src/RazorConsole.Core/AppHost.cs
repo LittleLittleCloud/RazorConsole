@@ -221,7 +221,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
             var view = await RenderComponentAsync(parameters, shutdownToken).ConfigureAwait(false);
 
             var currentParameters = parameters;
-            var focusManager = _serviceProvider.GetService<FocusManager>();
+            var focusManager = _serviceProvider.GetRequiredService<FocusManager>();
             var keyboardManager = _serviceProvider.GetService<KeyboardEventManager>();
 
             var callback = _options.AfterRenderAsync ?? ConsoleAppOptions.DefaultAfterRenderAsync;
@@ -232,7 +232,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 await liveDisplay.StartAsync(async liveContext =>
                 {
                     shutdownToken.ThrowIfCancellationRequested();
-
+                    using var _ = _consoleRenderer.Subscribe(focusManager);
                     using var context = ConsoleLiveDisplayContext.Create<TComponent>(liveContext, view, _consoleRenderer);
                     _liveContextAccessor?.Attach(context);
                     FocusManager.FocusSession? session = null;
@@ -240,7 +240,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 
                     try
                     {
-                        if (keyboardManager is not null && focusManager is not null && !Console.IsInputRedirected)
+                        if (keyboardManager is not null && !Console.IsInputRedirected)
                         {
                             session = focusManager.BeginSession(context, view, shutdownToken);
                             await session.InitializationTask.ConfigureAwait(false);

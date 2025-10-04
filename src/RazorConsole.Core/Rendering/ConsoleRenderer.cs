@@ -223,7 +223,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                                 child.RemoveAttribute(frame.AttributeName!);
                                 if (IsKeyAttribute(frame.AttributeName!))
                                 {
-                                    child.SetKey(null);
+                                    parent.SetKey(null);
                                 }
                             }
                         }

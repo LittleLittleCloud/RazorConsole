@@ -15,16 +15,13 @@ namespace RazorConsole.Core.Focus;
 /// <summary>
 /// Tracks focusable elements within the current virtual DOM and coordinates focus changes.
 /// </summary>
-public sealed class FocusManager
+public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 {
     private readonly IFocusEventDispatcher? _eventDispatcher;
     private readonly object _sync = new();
-    private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private List<FocusTarget> _targets = new();
     private int _currentIndex = -1;
     private ConsoleLiveDisplayContext? _context;
-    private Func<CancellationToken, Task>? _refreshCallback;
-    private CancellationToken _sessionToken;
 
     /// <summary>
     /// Raised when the focused element changes.
@@ -116,13 +113,8 @@ public sealed class FocusManager
             ResetState_NoLock();
 
             _context = context;
-            _refreshCallback = async token =>
-            {
-                await context.UpdateModelAsync((object?)null, token).ConfigureAwait(false);
-            };
-            _sessionToken = linkedCts.Token;
 
-            initialFocus = UpdateFocusTargets_NoLock(initialView);
+            initialFocus = null;
         }
 
         var initializationTask = initialFocus is not null
@@ -287,22 +279,6 @@ public sealed class FocusManager
         FocusChanged?.Invoke(this, new FocusChangedEventArgs(target.Key));
 
         await DispatchFocusEventsAsync(previousTarget, target, token).ConfigureAwait(false);
-
-        var callback = _refreshCallback;
-        if (callback is null)
-        {
-            return;
-        }
-
-        await _refreshLock.WaitAsync(token).ConfigureAwait(false);
-        try
-        {
-            await callback(token).ConfigureAwait(false);
-        }
-        finally
-        {
-            _refreshLock.Release();
-        }
     }
 
     private async Task DispatchFocusEventsAsync(FocusTarget? previousTarget, FocusTarget target, CancellationToken token)
@@ -349,18 +325,16 @@ public sealed class FocusManager
     private void ResetState_NoLock()
     {
         _context = null;
-        _refreshCallback = null;
         _targets = new List<FocusTarget>();
         _currentIndex = -1;
         CurrentFocusKey = null;
-        _sessionToken = CancellationToken.None;
     }
 
-    private FocusTarget? UpdateFocusTargets_NoLock(ConsoleViewResult view)
+    private FocusTarget? UpdateFocusTargets_NoLock(ConsoleRenderer.RenderSnapshot view)
     {
-        var targets = view.VdomRoot is null
+        var targets = view.Root is null
             ? new List<FocusTarget>()
-            : CollectTargets(view.VdomRoot);
+            : CollectTargets(view.Root);
 
         var previousKey = CurrentFocusKey;
 
@@ -502,6 +476,19 @@ public sealed class FocusManager
         }
 
         return new ReadOnlyDictionary<string, string?>(copy);
+    }
+
+    public void OnCompleted()
+    {
+    }
+
+    public void OnError(Exception error)
+    {
+    }
+
+    void IObserver<ConsoleRenderer.RenderSnapshot>.OnNext(ConsoleRenderer.RenderSnapshot value)
+    {
+        UpdateFocusTargets_NoLock(value);
     }
 
     private sealed record FocusTarget(
