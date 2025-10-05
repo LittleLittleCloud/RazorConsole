@@ -199,7 +199,7 @@ public class KeyboardEventManagerTests
         var firstChar = new ConsoleKeyInfo('x', ConsoleKey.X, shift: false, alt: false, control: false);
         await harness.Manager.HandleKeyAsync(firstChar, CancellationToken.None);
 
-    harness.Dispatcher.Reset();
+        harness.Dispatcher.Reset();
 
         await harness.FocusManager.FocusNextAsync(harness.FocusToken);
         await harness.FocusManager.FocusPreviousAsync(harness.FocusToken);
@@ -241,7 +241,7 @@ public class KeyboardEventManagerTests
 
         public TestKeyboardEventDispatcher Dispatcher { get; }
 
-    public CancellationToken FocusToken => _session.Token;
+        public CancellationToken FocusToken => _session.Token;
 
         public static async Task<KeyboardHarness> CreateAsync(params FocusElementSpec[] elements)
         {

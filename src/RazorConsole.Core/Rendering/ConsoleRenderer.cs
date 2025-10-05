@@ -252,7 +252,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                         var parent = _cursor.Peek();
 
                         // process region
-                        if (parent.Children is { Count: 1} && parent.Children[0].Kind == VNodeKind.Region)
+                        if (parent.Children is { Count: 1 } && parent.Children[0].Kind == VNodeKind.Region)
                         {
                             _cursor.Push(parent.Children[0]);
                             parent = _cursor.Peek();
