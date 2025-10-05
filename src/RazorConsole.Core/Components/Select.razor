@@ -9,19 +9,11 @@
 @using Microsoft.AspNetCore.Components.Web
 @using Spectre.Console
 
-<div class="select"
+<div
      @onfocus="OnFocus"
      @onfocusout="OnFocusOut"
      @onclick="ToggleDropdownAsync"
-     @onkeydown="OnKeyDown"
-     data-select="true"
-     data-focusable="true"
-     data-focus-key="@_focusKey"
-     data-focus-order="@FocusOrderAttribute"
-     data-expand="@ExpandAttribute"
-     data-select-open="@OpenAttribute"
-     data-has-selection="@HasSelectionAttribute"
-     data-placeholder="@PlaceholderAttribute">
+     @onkeydown="OnKeyDown">
     <Panel BorderColor="@_inputBorderColor" Border="@BorderStyle" Expand="@Expand">
         <Columns>
             <Markup Content="@DisplayValue"
@@ -93,13 +85,7 @@
     public int? FocusOrder { get; set; }
 
     [Parameter]
-    public Color BorderColor { get; set; } = Color.Grey37;
-
-    [Parameter]
     public BoxBorder BorderStyle { get; set; } = BoxBorder.Rounded;
-
-    [Parameter]
-    public Padding ClearPadding { get; set; } = new Padding(1, 0, 1, 0);
 
     [Parameter]
     public Color PlaceholderColor { get; set; } = Color.Grey70;
@@ -112,9 +98,6 @@
 
     [Parameter]
     public Decoration ValueDecoration { get; set; } = Decoration.None;
-
-    [Parameter]
-    public string ClearLabel { get; set; } = "Clear";
 
     [Parameter]
     public string EmptyLabel { get; set; } = "No options available";
@@ -141,19 +124,7 @@
 
     private bool HasSelection => !string.IsNullOrEmpty(_selectedValue);
 
-    private string? PlaceholderAttribute => string.IsNullOrWhiteSpace(Placeholder) ? null : Placeholder;
-
-    private string OpenAttribute => _isOpen ? "true" : "false";
-
-    private string HasSelectionAttribute => HasSelection ? "true" : "false";
-
-    private string ExpandAttribute => Expand ? "true" : "false";
-
     private Color _inputBorderColor = Color.Grey37;
-
-    private string? FocusOrderAttribute => FocusOrder.HasValue
-        ? FocusOrder.Value.ToString(CultureInfo.InvariantCulture)
-        : null;
 
     private string DisplayValue => HasSelection ? _selectedValue ?? string.Empty : Placeholder ?? string.Empty;
 
@@ -206,32 +177,6 @@
 
         await InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
-
-    private async Task ClearSelectionAsync()
-    {
-        if (!HasSelection && !_isOpen)
-        {
-            return;
-        }
-
-        _selectedValue = null;
-        _highlightedValue = null;
-        _lastSuppliedValue = null;
-        _isOpen = false;
-
-        if (ValueChanged.HasDelegate)
-        {
-            await ValueChanged.InvokeAsync(null).ConfigureAwait(false);
-        }
-
-        if (OnClear.HasDelegate)
-        {
-            await OnClear.InvokeAsync().ConfigureAwait(false);
-        }
-
-        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-    }
-
     private void OnFocus()
     {
         _inputBorderColor = Color.Yellow;
