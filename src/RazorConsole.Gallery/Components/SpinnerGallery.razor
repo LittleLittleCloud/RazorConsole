@@ -5,50 +5,66 @@
     <Rows>
         <Markup Content="Spinner renders Spectre.Console spinner animations with optional message, style, and auto-dismiss configuration." Foreground="@Color.Grey70" />
         <Newline />
-        <Markup Content="Example" Decoration="@Decoration.Bold" />
+        <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
-            <Grid Columns="2" Expand="false">
-                @foreach (var sample in _spinnerSamples)
-                {
-                    <Markup Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Bold" Content="@sample.Name" />
-                    <Spinner @key="sample.Name" SpinnerType="@sample.Spinner" />
-                }
-            </Grid>
-            <Newline />
-            <Columns>
-                <Markup Content="Browse more spinner styles" Foreground="@Color.DeepSkyBlue1" link="https://spectreconsole.net/appendix/spinners" Decoration="@Decoration.Underline" />
-            </Columns>
-        </Padder>
-        <Newline />
-        <Markup Content="Code Example" Decoration="@Decoration.Bold" />
-        <Padder Padding="@_codeExamplePadding">
             <Rows>
-                <Markup Content="@CodeExampleLine1" Foreground="@Color.DeepSkyBlue1" />
-                <Markup Content="@CodeExampleLine2" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine3" Foreground="@Color.DeepSkyBlue1" />
+                @for (var index = 0; index < _spinnerSamples.Length; index++)
+                {
+                    var sample = _spinnerSamples[index];
+                    <Markup Content="@($"Example {index + 1} - Source Code")" Decoration="@Decoration.Bold" />
+                    <Padder Padding="@_codeExamplePadding">
+                        <Rows>
+                            @foreach (var line in sample.CodeLines)
+                            {
+                                <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
+                            }
+                        </Rows>
+                    </Padder>
+                    <Markup Content="@($"Example {index + 1} - View")" Decoration="@Decoration.Bold" />
+                    <Padder Padding="@_viewPadding">
+                        <Rows>
+                            <Markup Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Bold" Content="@sample.Name" />
+                            <Spinner @key="sample.Name" SpinnerType="@sample.Spinner" />
+                        </Rows>
+                    </Padder>
+                    <Newline />
+                }
+                <Columns>
+                    <Markup Content="Browse more spinner styles" Foreground="@Color.DeepSkyBlue1" link="https://spectreconsole.net/appendix/spinners" Decoration="@Decoration.Underline" />
+                </Columns>
+                <Markup Content="Source Code: Spinner.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
             </Rows>
         </Padder>
-        <Newline />
-        <Markup Content="Source Code: Spinner.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
     </Rows>
 </Padder>
 
 @code {
-    private readonly (string Name, global::Spectre.Console.Spinner Spinner)[] _spinnerSamples =
+    private sealed record SpinnerSample(string Name, global::Spectre.Console.Spinner Spinner, string[] CodeLines);
+
+    private readonly SpinnerSample[] _spinnerSamples =
     {
-        ("Dots", global::Spectre.Console.Spinner.Known.Dots),
-        ("Bouncing Bar", global::Spectre.Console.Spinner.Known.BouncingBar),
-        ("Star", global::Spectre.Console.Spinner.Known.Star),
-        ("Aesthetic", global::Spectre.Console.Spinner.Known.Aesthetic),
+        new("Dots", global::Spectre.Console.Spinner.Known.Dots, new[]
+        {
+            "<Spinner SpinnerType=\"Spinner.Known.Dots\" />",
+        }),
+        new("Bouncing Bar", global::Spectre.Console.Spinner.Known.BouncingBar, new[]
+        {
+            "<Spinner SpinnerType=\"Spinner.Known.BouncingBar\" />",
+        }),
+        new("Star", global::Spectre.Console.Spinner.Known.Star, new[]
+        {
+            "<Spinner SpinnerType=\"Spinner.Known.Star\" />",
+        }),
+        new("Aesthetic", global::Spectre.Console.Spinner.Known.Aesthetic, new[]
+        {
+            "<Spinner SpinnerType=\"Spinner.Known.Aesthetic\" />",
+        }),
     };
 
     private static readonly Padding _outerPadding = new(1, 1, 1, 1);
     private static readonly Padding _examplePadding = new(0, 1, 0, 0);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
-
-    private const string CodeExampleLine1 = "<Spinner SpinnerType=\"Spinner.Known.Dots\" />";
-    private const string CodeExampleLine2 = "<Spinner SpinnerType=\"Spinner.Known.Star\" />";
-    private const string CodeExampleLine3 = "<Spinner SpinnerType=\"Spinner.Known.Aesthetic\" />";
+    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Spinner.razor";
 }

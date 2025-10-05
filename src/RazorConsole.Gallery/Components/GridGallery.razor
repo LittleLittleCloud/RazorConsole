@@ -5,57 +5,68 @@
     <Rows>
         <Markup Content="Grid arranges content into rows and columns with optional width and expansion rules." Foreground="@Color.Grey70" />
         <Newline />
-        <Markup Content="Example" Decoration="@Decoration.Bold" />
+        <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
             <Rows>
-                <Panel Title="Conference Schedule" Border="@BoxBorder.Rounded" Expand="false">
-                    <Padder Padding="@_schedulePadding">
-                        <Grid Columns="3" Expand="true">
-                            <Markup Foreground="@Color.Gold3_1" Decoration="@Decoration.Bold" Content="Time" />
-                            <Markup Foreground="@Color.Gold3_1" Decoration="@Decoration.Bold" Content="Topic" />
-                            <Markup Foreground="@Color.Gold3_1" Decoration="@Decoration.Bold" Content="Speaker" />
+                <Markup Content="Example 1 - Source Code" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_codeExamplePadding">
+                    <Rows>
+                        @foreach (var line in _scheduleCode)
+                        {
+                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
+                        }
+                    </Rows>
+                </Padder>
+                <Markup Content="Example 1 - View" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_viewPadding">
+                    <Panel Title="Conference Schedule" Border="@BoxBorder.Rounded" Expand="false">
+                        <Padder Padding="@_schedulePadding">
+                            <Grid Columns="3" Expand="true">
+                                <Markup Foreground="@Color.Gold3_1" Decoration="@Decoration.Bold" Content="Time" />
+                                <Markup Foreground="@Color.Gold3_1" Decoration="@Decoration.Bold" Content="Topic" />
+                                <Markup Foreground="@Color.Gold3_1" Decoration="@Decoration.Bold" Content="Speaker" />
 
-                            @foreach (var session in _sessions)
-                            {
-                                <Markup Content="@session.Time" />
-                                <Markup Content="@session.Topic" />
-                                <Markup Content="@session.Speaker" />
-                            }
-                        </Grid>
-                    </Padder>
-                </Panel>
-
+                                @foreach (var session in _sessions)
+                                {
+                                    <Markup Content="@session.Time" />
+                                    <Markup Content="@session.Topic" />
+                                    <Markup Content="@session.Speaker" />
+                                }
+                            </Grid>
+                        </Padder>
+                    </Panel>
+                </Padder>
                 <Newline />
+                <Markup Content="Example 2 - Source Code" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_codeExamplePadding">
+                    <Rows>
+                        @foreach (var line in _metricsCode)
+                        {
+                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
+                        }
+                    </Rows>
+                </Padder>
+                <Markup Content="Example 2 - View" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_viewPadding">
+                    <Panel Title="Release Metrics" Border="@BoxBorder.Double" Expand="false">
+                        <Padder Padding="@_metricsPadding">
+                            <Grid Columns="2" Expand="false" Width="54">
+                                <Markup Foreground="@Color.Turquoise2" Decoration="@Decoration.Bold" Content="Metric" />
+                                <Markup Foreground="@Color.Turquoise2" Decoration="@Decoration.Bold" Content="Value" />
 
-                <Panel Title="Release Metrics" Border="@BoxBorder.Double" Expand="false">
-                    <Padder Padding="@_metricsPadding">
-                        <Grid Columns="2" Expand="false" Width="54">
-                            <Markup Foreground="@Color.Turquoise2" Decoration="@Decoration.Bold" Content="Metric" />
-                            <Markup Foreground="@Color.Turquoise2" Decoration="@Decoration.Bold" Content="Value" />
-
-                            @foreach (var metric in _metrics)
-                            {
-                                <Markup Content="@metric.Label" />
-                                <Markup Foreground="@metric.Color" Content="@metric.Value" />
-                            }
-                        </Grid>
-                    </Padder>
-                </Panel>
+                                @foreach (var metric in _metrics)
+                                {
+                                    <Markup Content="@metric.Label" />
+                                    <Markup Foreground="@metric.Color" Content="@metric.Value" />
+                                }
+                            </Grid>
+                        </Padder>
+                    </Panel>
+                </Padder>
+                <Newline />
+                <Markup Content="Source Code: Grid.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
             </Rows>
         </Padder>
-        <Newline />
-        <Markup Content="Code Example" Decoration="@Decoration.Bold" />
-        <Padder Padding="@_codeExamplePadding">
-            <Rows>
-                <Markup Content="@CodeExampleLine1" Foreground="@Color.DeepSkyBlue1" />
-                <Markup Content="@CodeExampleLine2" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine3" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine4" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine5" Foreground="@Color.DeepSkyBlue1" />
-            </Rows>
-        </Padder>
-        <Newline />
-        <Markup Content="Source Code: Grid.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
     </Rows>
 </Padder>
 
@@ -81,12 +92,43 @@
     private readonly Padding _schedulePadding = new Padding(1, 1, 1, 0);
     private readonly Padding _metricsPadding = new Padding(1, 1, 1, 1);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
 
-    private const string CodeExampleLine1 = "<Grid Columns=\"3\" Expand=\"true\">";
-    private const string CodeExampleLine2 = "    <Markup Content=\"Time\" />";
-    private const string CodeExampleLine3 = "    <Markup Content=\"Topic\" />";
-    private const string CodeExampleLine4 = "    <Markup Content=\"Speaker\" />";
-    private const string CodeExampleLine5 = "</Grid>";
+    private static readonly string[] _scheduleCode =
+    {
+        "<Panel Title=\"Conference Schedule\" Border=\"BoxBorder.Rounded\" Expand=\"false\">",
+        "    <Padder Padding=\"new(1, 1, 1, 0)\">",
+        "        <Grid Columns=\"3\" Expand=\"true\">",
+        "            <Markup Content=\"Time\" Foreground=\"Color.Gold3_1\" Decoration=\"Decoration.Bold\" />",
+        "            <Markup Content=\"Topic\" Foreground=\"Color.Gold3_1\" Decoration=\"Decoration.Bold\" />",
+        "            <Markup Content=\"Speaker\" Foreground=\"Color.Gold3_1\" Decoration=\"Decoration.Bold\" />",
+        "            @foreach (var session in _sessions)",
+        "            {",
+        "                <Markup Content=\"@session.Time\" />",
+        "                <Markup Content=\"@session.Topic\" />",
+        "                <Markup Content=\"@session.Speaker\" />",
+        "            }",
+        "        </Grid>",
+        "    </Padder>",
+        "</Panel>",
+    };
+
+    private static readonly string[] _metricsCode =
+    {
+        "<Panel Title=\"Release Metrics\" Border=\"BoxBorder.Double\" Expand=\"false\">",
+        "    <Padder Padding=\"new(1, 1, 1, 1)\">",
+        "        <Grid Columns=\"2\" Expand=\"false\" Width=\"54\">",
+        "            <Markup Content=\"Metric\" Foreground=\"Color.Turquoise2\" Decoration=\"Decoration.Bold\" />",
+        "            <Markup Content=\"Value\" Foreground=\"Color.Turquoise2\" Decoration=\"Decoration.Bold\" />",
+        "            @foreach (var metric in _metrics)",
+        "            {",
+        "                <Markup Content=\"@metric.Label\" />",
+        "                <Markup Content=\"@metric.Value\" Foreground=\"@metric.Color\" />",
+        "            }",
+        "        </Grid>",
+        "    </Padder>",
+        "</Panel>",
+    };
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Grid.razor";
 }

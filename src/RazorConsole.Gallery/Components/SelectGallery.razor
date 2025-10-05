@@ -6,32 +6,34 @@
     <Rows>
         <Markup Content="Select shows a focusable dropdown with keyboard navigation, callbacks for changes, and styling hooks for each option." Foreground="@Color.Grey70" />
         <Newline />
-        <Markup Content="Example" Decoration="@Decoration.Bold" />
+        <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
             <Rows>
-                <Select Options="@_componentOptions"
-                        Placeholder="Choose a component"
-                        Value="@_selected"
-                        ValueChanged="OnValueChangedAsync"
-                        OnSelected="OnSelectedAsync"
-                        OnClear="OnClearedAsync"
-                        Expand="true" />
-                <Markup Content="@_status" Foreground="@_statusColor" Decoration="@_statusDecoration" />
+                <Markup Content="Example 1 - Source Code" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_codeExamplePadding">
+                    <Rows>
+                        @foreach (var line in _exampleCode)
+                        {
+                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
+                        }
+                    </Rows>
+                </Padder>
+                <Markup Content="Example 1 - View" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_viewPadding">
+                    <Rows>
+                        <Select Options="@_componentOptions"
+                                Placeholder="Choose a component"
+                                Value="@_selected"
+                                ValueChanged="OnValueChangedAsync"
+                                OnSelected="OnSelectedAsync"
+                                OnClear="OnClearedAsync"
+                                Expand="true" />
+                        <Markup Content="@_status" Foreground="@_statusColor" Decoration="@_statusDecoration" />
+                    </Rows>
+                </Padder>
+                <Markup Content="Source Code: Select.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
             </Rows>
         </Padder>
-        <Newline />
-        <Markup Content="Code Example" Decoration="@Decoration.Bold" />
-        <Padder Padding="@_codeExamplePadding">
-            <Rows>
-                <Markup Content="@CodeExampleLine1" Foreground="@Color.DeepSkyBlue1" />
-                <Markup Content="@CodeExampleLine2" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine3" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine4" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine5" Foreground="@Color.DeepSkyBlue1" />
-            </Rows>
-        </Padder>
-        <Newline />
-        <Markup Content="Source Code: Select.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
     </Rows>
 </Padder>
 
@@ -39,6 +41,7 @@
     private static readonly Padding _outerPadding = new(1, 1, 1, 1);
     private static readonly Padding _examplePadding = new(0, 1, 0, 0);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
 
     private readonly string[] _componentOptions = new[]
     {
@@ -96,11 +99,19 @@
         _statusDecoration = decoration;
     }
 
-    private const string CodeExampleLine1 = "<Select Options=\"@items\" Placeholder=\"Choose\" Value=\"@value\"";
-    private const string CodeExampleLine2 = "        ValueChanged=\"OnValueChangedAsync\"";
-    private const string CodeExampleLine3 = "        OnSelected=\"OnSelectedAsync\"";
-    private const string CodeExampleLine4 = "        OnClear=\"OnClearedAsync\" Expand=\"true\" />";
-    private const string CodeExampleLine5 = "<Markup Content=\"@status\" />";
+    private static readonly string[] _exampleCode =
+    {
+        "<Rows>",
+        "    <Select Options=\"@_componentOptions\"",
+        "            Placeholder=\"Choose a component\"",
+        "            Value=\"@_selected\"",
+        "            ValueChanged=\"OnValueChangedAsync\"",
+        "            OnSelected=\"OnSelectedAsync\"",
+        "            OnClear=\"OnClearedAsync\"",
+        "            Expand=\"true\" />",
+        "    <Markup Content=\"@_status\" Foreground=\"@_statusColor\" Decoration=\"@_statusDecoration\" />",
+        "</Rows>",
+    };
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Select.razor";
 }

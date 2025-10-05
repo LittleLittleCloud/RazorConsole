@@ -5,38 +5,40 @@
     <Rows>
         <Markup Content="Columns lays out child content horizontally, optionally stretching items to fill the available width." Foreground="@Color.Grey70" />
         <Newline />
-        <Markup Content="Example" Decoration="@Decoration.Bold" />
+        <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
-            <Columns Expand="true">
-                <Panel Title="Status" Border="@BoxBorder.Square" Expand="true">
-                    <Padder Padding="@_innerPadding">
-                        <Markup Content="✅ Ready" Foreground="@Color.Chartreuse1" />
-                    </Padder>
-                </Panel>
-                <Panel Title="Owner" Border="@BoxBorder.Square" Expand="true">
-                    <Padder Padding="@_innerPadding">
-                        <Markup Content="RazorConsole" />
-                    </Padder>
-                </Panel>
-                <Panel Title="Next step" Border="@BoxBorder.Square" Expand="true">
-                    <Padder Padding="@_innerPadding">
-                        <Markup Content="Ship the demo" Foreground="@Color.DeepSkyBlue1" />
-                    </Padder>
-                </Panel>
-            </Columns>
-        </Padder>
-        <Newline />
-        <Markup Content="Code Example" Decoration="@Decoration.Bold" />
-        <Padder Padding="@_codeExamplePadding">
             <Rows>
-                <Markup Content="@CodeExampleLine1" Foreground="@Color.DeepSkyBlue1" />
-                <Markup Content="@CodeExampleLine2" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine3" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine4" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine5" Foreground="@Color.DeepSkyBlue1" />
+                <Markup Content="Example 1 - Source Code" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_codeExamplePadding">
+                    <Rows>
+                        @foreach (var line in _exampleOneCode)
+                        {
+                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
+                        }
+                    </Rows>
+                </Padder>
+                <Markup Content="Example 1 - View" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_viewPadding">
+                    <Columns Expand="true">
+                        <Panel Title="Status" Border="@BoxBorder.Square" Expand="true">
+                            <Padder Padding="@_innerPadding">
+                                <Markup Content="✅ Ready" Foreground="@Color.Chartreuse1" />
+                            </Padder>
+                        </Panel>
+                        <Panel Title="Owner" Border="@BoxBorder.Square" Expand="true">
+                            <Padder Padding="@_innerPadding">
+                                <Markup Content="RazorConsole" />
+                            </Padder>
+                        </Panel>
+                        <Panel Title="Next step" Border="@BoxBorder.Square" Expand="true">
+                            <Padder Padding="@_innerPadding">
+                                <Markup Content="Ship the demo" Foreground="@Color.DeepSkyBlue1" />
+                            </Padder>
+                        </Panel>
+                    </Columns>
+                </Padder>
             </Rows>
         </Padder>
-        <Newline />
         <Markup Content="Source Code: Columns.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
     </Rows>
 </Padder>
@@ -46,12 +48,28 @@
     private static readonly Padding _examplePadding = new(0, 1, 0, 0);
     private static readonly Padding _innerPadding = new(1, 0, 1, 0);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
 
-    private const string CodeExampleLine1 = "<Columns Expand=\"true\">";
-    private const string CodeExampleLine2 = "    <Panel Title=\"Status\" Border=\"BoxBorder.Square\" Expand=\"true\">";
-    private const string CodeExampleLine3 = "        <Markup Content=\"✅ Ready\" />";
-    private const string CodeExampleLine4 = "    </Panel>";
-    private const string CodeExampleLine5 = "</Columns>";
+    private static readonly string[] _exampleOneCode =
+    {
+        "<Columns Expand=\"true\">",
+        "    <Panel Title=\"Status\" Border=\"BoxBorder.Square\" Expand=\"true\">",
+        "        <Padder Padding=\"new(1, 0, 1, 0)\">",
+        "            <Markup Content=\"✅ Ready\" Foreground=\"Color.Chartreuse1\" />",
+        "        </Padder>",
+        "    </Panel>",
+        "    <Panel Title=\"Owner\" Border=\"BoxBorder.Square\" Expand=\"true\">",
+        "        <Padder Padding=\"new(1, 0, 1, 0)\">",
+        "            <Markup Content=\"RazorConsole\" />",
+        "        </Padder>",
+        "    </Panel>",
+        "    <Panel Title=\"Next step\" Border=\"BoxBorder.Square\" Expand=\"true\">",
+        "        <Padder Padding=\"new(1, 0, 1, 0)\">",
+        "            <Markup Content=\"Ship the demo\" Foreground=\"Color.DeepSkyBlue1\" />",
+        "        </Padder>",
+        "    </Panel>",
+        "</Columns>",
+    };
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Columns.razor";
 }

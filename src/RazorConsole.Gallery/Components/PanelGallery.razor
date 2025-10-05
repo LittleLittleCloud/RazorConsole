@@ -5,33 +5,35 @@
     <Rows>
         <Markup Content="Panel surfaces information inside a framed container with optional title, padding, size, and border configuration." Foreground="@Color.Grey70" />
         <Newline />
-        <Markup Content="Example" Decoration="@Decoration.Bold" />
+        <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
-            <Columns Expand="true">
-                <Panel Title="Release" TitleColor="@Color.Chartreuse1" Border="@BoxBorder.Double" BorderColor="@Color.Chartreuse1" Expand="false" Width="28">
-                    <Padder Padding="@_innerPadding">
-                        <Markup Content="Version 1.4.0" />
-                        <Newline />
-                        <Markup Content="Ready for publication" Foreground="@Color.Chartreuse1" Decoration="@Decoration.Bold" />
-                    </Padder>
-                </Panel>
-                <Panel Title="Notes" Border="@BoxBorder.Square" Expand="true" Padding="@_notesPadding">
-                    <Markup Content="Panels can expand to fill remaining space or honor explicit width constraints." Foreground="@Color.DeepSkyBlue1" />
-                </Panel>
-            </Columns>
-        </Padder>
-        <Newline />
-        <Markup Content="Code Example" Decoration="@Decoration.Bold" />
-        <Padder Padding="@_codeExamplePadding">
             <Rows>
-                <Markup Content="@CodeExampleLine1" Foreground="@Color.DeepSkyBlue1" />
-                <Markup Content="@CodeExampleLine2" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine3" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine4" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine5" Foreground="@Color.DeepSkyBlue1" />
+                <Markup Content="Example 1 - Source Code" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_codeExamplePadding">
+                    <Rows>
+                        @foreach (var line in _exampleCode)
+                        {
+                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
+                        }
+                    </Rows>
+                </Padder>
+                <Markup Content="Example 1 - View" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_viewPadding">
+                    <Columns Expand="true">
+                        <Panel Title="Release" TitleColor="@Color.Chartreuse1" Border="@BoxBorder.Double" BorderColor="@Color.Chartreuse1" Expand="false" Width="28">
+                            <Padder Padding="@_innerPadding">
+                                <Markup Content="Version 1.4.0" />
+                                <Newline />
+                                <Markup Content="Ready for publication" Foreground="@Color.Chartreuse1" Decoration="@Decoration.Bold" />
+                            </Padder>
+                        </Panel>
+                        <Panel Title="Notes" Border="@BoxBorder.Square" Expand="true" Padding="@_notesPadding">
+                            <Markup Content="Panels can expand to fill remaining space or honor explicit width constraints." Foreground="@Color.DeepSkyBlue1" />
+                        </Panel>
+                    </Columns>
+                </Padder>
             </Rows>
         </Padder>
-        <Newline />
         <Markup Content="Source Code: Panel.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
     </Rows>
 </Padder>
@@ -42,12 +44,23 @@
     private static readonly Padding _innerPadding = new(1, 1, 1, 1);
     private static readonly Padding _notesPadding = new(1, 0, 1, 0);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
 
-    private const string CodeExampleLine1 = "<Panel Title=\"Release\" Border=\"BoxBorder.Double\" Width=\"28\">";
-    private const string CodeExampleLine2 = "    <Markup Content=\"Version 1.4.0\" />";
-    private const string CodeExampleLine3 = "    <Newline />";
-    private const string CodeExampleLine4 = "    <Markup Content=\"Ready for publication\" />";
-    private const string CodeExampleLine5 = "</Panel>";
+    private static readonly string[] _exampleCode =
+    {
+        "<Columns Expand=\"true\">",
+        "    <Panel Title=\"Release\" TitleColor=\"Color.Chartreuse1\" Border=\"BoxBorder.Double\" BorderColor=\"Color.Chartreuse1\" Expand=\"false\" Width=\"28\">",
+        "        <Padder Padding=\"new(1, 1, 1, 1)\">",
+        "            <Markup Content=\"Version 1.4.0\" />",
+        "            <Newline />",
+        "            <Markup Content=\"Ready for publication\" Foreground=\"Color.Chartreuse1\" Decoration=\"Decoration.Bold\" />",
+        "        </Padder>",
+        "    </Panel>",
+        "    <Panel Title=\"Notes\" Border=\"BoxBorder.Square\" Expand=\"true\" Padding=\"new(1, 0, 1, 0)\">",
+        "        <Markup Content=\"Panels can expand to fill remaining space or honor explicit width constraints.\" Foreground=\"Color.DeepSkyBlue1\" />",
+        "    </Panel>",
+        "</Columns>",
+    };
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Panel.razor";
 }

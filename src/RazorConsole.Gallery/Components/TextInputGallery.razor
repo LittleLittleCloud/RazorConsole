@@ -6,40 +6,43 @@
     <Rows>
         <Markup Content="TextInput captures user text, supports masking, focus styling, and change/submit callbacks." Foreground="@Color.Grey70" />
         <Newline />
-        <Markup Content="Example" Decoration="@Decoration.Bold" />
+        <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
             <Rows>
-                <TextInput Label="First Name"
-                           Value="@_firstName"
-                           ValueChanged="OnFirstNameChangedAsync"
-                           Placeholder="Ada"
-                           FocusedBorderColor="@Color.DeepSkyBlue1"
-                           BorderPadding="@_inputPadding"
-                           Expand="true" />
-                <TextInput Label="Secret Note"
-                           Value="@_secretNote"
-                           ValueChanged="OnSecretChangedAsync"
-                           Placeholder="Classified"
-                           MaskInput="true"
-                           FocusedBorderColor="@Color.MediumOrchid"
-                           BorderPadding="@_inputPadding"
-                           Expand="true" />
-                <Markup Content="@PreviewText" />
-                <Markup Content="@SecretLengthText" Foreground="@Color.Grey70" Decoration="@Decoration.Italic" />
+                <Markup Content="Example 1 - Source Code" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_codeExamplePadding">
+                    <Rows>
+                        @foreach (var line in _exampleCode)
+                        {
+                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
+                        }
+                    </Rows>
+                </Padder>
+                <Markup Content="Example 1 - View" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_viewPadding">
+                    <Rows>
+                        <TextInput Label="First Name"
+                                   Value="@_firstName"
+                                   ValueChanged="OnFirstNameChangedAsync"
+                                   Placeholder="Ada"
+                                   FocusedBorderColor="@Color.DeepSkyBlue1"
+                                   BorderPadding="@_inputPadding"
+                                   Expand="true" />
+                        <TextInput Label="Secret Note"
+                                   Value="@_secretNote"
+                                   ValueChanged="OnSecretChangedAsync"
+                                   Placeholder="Classified"
+                                   MaskInput="true"
+                                   FocusedBorderColor="@Color.MediumOrchid"
+                                   BorderPadding="@_inputPadding"
+                                   Expand="true" />
+                        <Markup Content="@PreviewText" />
+                        <Markup Content="@SecretLengthText" Foreground="@Color.Grey70" Decoration="@Decoration.Italic" />
+                    </Rows>
+                </Padder>
+                <Markup Content="Source Code: TextInput.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
             </Rows>
         </Padder>
-        <Newline />
-        <Markup Content="Code Example" Decoration="@Decoration.Bold" />
-        <Padder Padding="@_codeExamplePadding">
-            <Rows>
-                <Markup Content="@CodeExampleLine1" Foreground="@Color.DeepSkyBlue1" />
-                <Markup Content="@CodeExampleLine2" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine3" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine4" Foreground="@Color.DeepSkyBlue1" />
-            </Rows>
-        </Padder>
-        <Newline />
-        <Markup Content="Source Code: TextInput.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
     </Rows>
 </Padder>
 
@@ -48,6 +51,7 @@
     private static readonly Padding _examplePadding = new(0, 1, 0, 0);
     private static readonly Padding _inputPadding = new(1, 0, 1, 0);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
 
     private string _firstName = string.Empty;
     private string _secretNote = string.Empty;
@@ -72,10 +76,28 @@
         return Task.CompletedTask;
     }
 
-    private const string CodeExampleLine1 = "<TextInput Label=\"First Name\" Value=\"@firstName\" Placeholder=\"Ada\" />";
-    private const string CodeExampleLine2 = "<TextInput Label=\"Secret Note\" Value=\"@secret\" MaskInput=\"true\" />";
-    private const string CodeExampleLine3 = "<Markup Content=\"@PreviewText\" />";
-    private const string CodeExampleLine4 = "<Markup Content=\"@SecretLengthText\" />";
+    private static readonly string[] _exampleCode =
+    {
+        "<Rows>",
+        "    <TextInput Label=\"First Name\"",
+        "               Value=\"@_firstName\"",
+        "               ValueChanged=\"OnFirstNameChangedAsync\"",
+        "               Placeholder=\"Ada\"",
+        "               FocusedBorderColor=\"Color.DeepSkyBlue1\"",
+        "               BorderPadding=\"new(1, 0, 1, 0)\"",
+        "               Expand=\"true\" />",
+        "    <TextInput Label=\"Secret Note\"",
+        "               Value=\"@_secretNote\"",
+        "               ValueChanged=\"OnSecretChangedAsync\"",
+        "               Placeholder=\"Classified\"",
+        "               MaskInput=\"true\"",
+        "               FocusedBorderColor=\"Color.MediumOrchid\"",
+        "               BorderPadding=\"new(1, 0, 1, 0)\"",
+        "               Expand=\"true\" />",
+        "    <Markup Content=\"@PreviewText\" />",
+        "    <Markup Content=\"@SecretLengthText\" Foreground=\"Color.Grey70\" Decoration=\"Decoration.Italic\" />",
+        "</Rows>",
+    };
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/TextInput.razor";
 }

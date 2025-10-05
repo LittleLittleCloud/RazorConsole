@@ -6,7 +6,7 @@
 @using Spectre.Console
 
 <Panel Title="Component Gallery" Border="@BoxBorder.Double" Expand="true">
-    <Columns Expand="true">
+    <Grid Expand="true">
         <Padder Padding="@_navigationPadding">
             <Rows>
                 @foreach (var tab in _tabs)
@@ -20,7 +20,6 @@
                 }
             </Rows>
         </Padder>
-        <Panel Border="@BoxBorder.None" Expand="true">
             @switch (_activeTab)
             {
                 case "align":
@@ -63,8 +62,7 @@
                     <TextInputGallery />
                     break;
             }
-        </Panel>
-    </Columns>
+    </Grid>
 </Panel>
 
 @code {

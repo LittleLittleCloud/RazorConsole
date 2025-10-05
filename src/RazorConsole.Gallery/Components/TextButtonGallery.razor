@@ -6,27 +6,31 @@
     <Rows>
         <Markup Content="TextButton renders clickable text with customizable focus and background colors." Foreground="@Color.Grey70" />
         <Newline />
-        <Markup Content="Example" Decoration="@Decoration.Bold" />
+        <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
-            <Columns>
-                <TextButton Content="@_buttonLabel"
-                            BackgroundColor="@_restingColor"
-                            FocusedColor="@Color.DeepSkyBlue1"
-                            OnClick="ToggleAsync" />
-                <Markup Content="@_status" Foreground="@_statusColor" Decoration="@_statusDecoration" />
-            </Columns>
-        </Padder>
-        <Newline />
-        <Markup Content="Code Example" Decoration="@Decoration.Bold" />
-        <Padder Padding="@_codeExamplePadding">
             <Rows>
-                <Markup Content="@CodeExampleLine1" Foreground="@Color.DeepSkyBlue1" />
-                <Markup Content="@CodeExampleLine2" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine3" Foreground="@Color.DeepSkyBlue1" />
+                <Markup Content="Example 1 - Source Code" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_codeExamplePadding">
+                    <Rows>
+                        @foreach (var line in _exampleCode)
+                        {
+                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
+                        }
+                    </Rows>
+                </Padder>
+                <Markup Content="Example 1 - View" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_viewPadding">
+                    <Columns>
+                        <TextButton Content="@_buttonLabel"
+                                    BackgroundColor="@_restingColor"
+                                    FocusedColor="@Color.DeepSkyBlue1"
+                                    OnClick="ToggleAsync" />
+                        <Markup Content="@_status" Foreground="@_statusColor" Decoration="@_statusDecoration" />
+                    </Columns>
+                </Padder>
+                <Markup Content="Source Code: TextButton.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
             </Rows>
         </Padder>
-        <Newline />
-        <Markup Content="Source Code: TextButton.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
     </Rows>
 </Padder>
 
@@ -34,12 +38,20 @@
     private static readonly Padding _outerPadding = new(1, 1, 1, 1);
     private static readonly Padding _examplePadding = new(0, 1, 0, 0);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/TextButton.razor";
 
-    private const string CodeExampleLine1 = "<TextButton Content=\"Toggle\" BackgroundColor=\"Color.Black\"";
-    private const string CodeExampleLine2 = "            FocusedColor=\"Color.DeepSkyBlue1\" OnClick=\"ToggleAsync\" />";
-    private const string CodeExampleLine3 = "<Markup Content=\"@status\" />";
+    private static readonly string[] _exampleCode =
+    {
+        "<Columns>",
+        "    <TextButton Content=\"Toggle\"",
+        "                BackgroundColor=\"Color.Black\"",
+        "                FocusedColor=\"Color.DeepSkyBlue1\"",
+        "                OnClick=\"ToggleAsync\" />",
+        "    <Markup Content=\"@_status\" Foreground=\"@_statusColor\" Decoration=\"@_statusDecoration\" />",
+        "</Columns>",
+    };
 
     private bool _isActive;
     private string _buttonLabel = "Toggle";

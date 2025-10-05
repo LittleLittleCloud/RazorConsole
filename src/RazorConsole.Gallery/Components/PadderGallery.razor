@@ -5,31 +5,44 @@
     <Rows>
         <Markup Content="Padder adds outer spacing around its child content without modifying the child component itself." Foreground="@Color.Grey70" />
         <Newline />
-        <Markup Content="Example" Decoration="@Decoration.Bold" />
+        <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
-            <Columns>
-                <Panel Title="No extra padding" Border="@BoxBorder.Square" Expand="false">
-                    <Markup Content="Text touches the border." />
-                </Panel>
-                <Padder Padding="@_innerPadding">
-                    <Panel Title="Padder adds space" Border="@BoxBorder.Square" Expand="false">
-                        <Markup Content="Comfortable breathing room." />
+            <Rows>
+                <Markup Content="Example 1 - Source Code" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_codeExamplePadding">
+                    <Rows>
+                        @foreach (var line in _noPaddingCode)
+                        {
+                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
+                        }
+                    </Rows>
+                </Padder>
+                <Markup Content="Example 1 - View" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_viewPadding">
+                    <Panel Title="No extra padding" Border="@BoxBorder.Square" Expand="false">
+                        <Markup Content="Text touches the border." />
                     </Panel>
                 </Padder>
-            </Columns>
-        </Padder>
-        <Newline />
-        <Markup Content="Code Example" Decoration="@Decoration.Bold" />
-        <Padder Padding="@_codeExamplePadding">
-            <Rows>
-                <Markup Content="@CodeExampleLine1" Foreground="@Color.DeepSkyBlue1" />
-                <Markup Content="@CodeExampleLine2" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine3" Foreground="@Color.DeepSkyBlue1" />
-                <Markup Content="@CodeExampleLine4" Foreground="@Color.Grey70" />
-                <Markup Content="@CodeExampleLine5" Foreground="@Color.DeepSkyBlue1" />
+                <Newline />
+                <Markup Content="Example 2 - Source Code" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_codeExamplePadding">
+                    <Rows>
+                        @foreach (var line in _paddedCode)
+                        {
+                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
+                        }
+                    </Rows>
+                </Padder>
+                <Markup Content="Example 2 - View" Decoration="@Decoration.Bold" />
+                <Padder Padding="@_viewPadding">
+                    <Padder Padding="@_innerPadding">
+                        <Panel Title="Padder adds space" Border="@BoxBorder.Square" Expand="false">
+                            <Markup Content="Comfortable breathing room." />
+                        </Panel>
+                    </Padder>
+                </Padder>
             </Rows>
         </Padder>
-        <Newline />
         <Markup Content="Source Code: Padder.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
     </Rows>
 </Padder>
@@ -39,12 +52,23 @@
     private static readonly Padding _examplePadding = new(0, 1, 0, 0);
     private static readonly Padding _innerPadding = new(1, 1, 1, 1);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
 
-    private const string CodeExampleLine1 = "<Panel Title=\"No extra padding\" Border=\"BoxBorder.Square\">";
-    private const string CodeExampleLine2 = "    <Markup Content=\"Text touches the border.\" />";
-    private const string CodeExampleLine3 = "</Panel>";
-    private const string CodeExampleLine4 = "<Padder Padding=\"new(1, 1, 1, 1)\">";
-    private const string CodeExampleLine5 = "    <Panel Title=\"Padder adds space\" Border=\"BoxBorder.Square\" />";
+    private static readonly string[] _noPaddingCode =
+    {
+        "<Panel Title=\"No extra padding\" Border=\"BoxBorder.Square\" Expand=\"false\">",
+        "    <Markup Content=\"Text touches the border.\" />",
+        "</Panel>",
+    };
+
+    private static readonly string[] _paddedCode =
+    {
+        "<Padder Padding=\"new(1, 1, 1, 1)\">",
+        "    <Panel Title=\"Padder adds space\" Border=\"BoxBorder.Square\" Expand=\"false\">",
+        "        <Markup Content=\"Comfortable breathing room.\" />",
+        "    </Panel>",
+        "</Padder>",
+    };
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Padder.razor";
 }

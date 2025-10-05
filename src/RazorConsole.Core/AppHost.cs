@@ -231,7 +231,6 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
             {
                 var liveDisplay = AnsiConsole.Live(view.Renderable);
                 liveDisplay.AutoClear = _options.ConsoleLiveDisplayOptions.AutoClear;
-                liveDisplay.Cropping = _options.ConsoleLiveDisplayOptions.Cropping;
                 liveDisplay.Overflow = _options.ConsoleLiveDisplayOptions.Overflow;
 
                 await liveDisplay.StartAsync(async liveContext =>

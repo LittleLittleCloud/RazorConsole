@@ -15,12 +15,12 @@ public sealed class ConsoleLiveDisplayOptions
     /// <summary>
     /// Gets or sets the vertical overflow behaviour for the live display.
     /// </summary>
-    public VerticalOverflow Overflow { get; set; } = VerticalOverflow.Ellipsis;
+    public VerticalOverflow Overflow { get; set; } = VerticalOverflow.Visible;
 
     /// <summary>
     /// Gets or sets the vertical overflow cropping strategy.
     /// </summary>
-    public VerticalOverflowCropping Cropping { get; set; } = VerticalOverflowCropping.Bottom;
+    public VerticalOverflowCropping Cropping { get; set; } = VerticalOverflowCropping.Top;
 
     /// <summary>
     /// Creates a new instance with default settings.
