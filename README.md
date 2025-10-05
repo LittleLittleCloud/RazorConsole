@@ -43,7 +43,7 @@ dotnet add package RazorConsole
 await AppHost.RunAsync<Counter>();
 ```
 
-![Counter component demonstration](./assets/counter.gif)
+![Image](https://github.com/user-attachments/assets/888dd6c7-1221-4b2e-8232-a03417fc70a1)
 
 ## Component Gallery
 
