@@ -1,34 +1,50 @@
 @using RazorConsole.Components
 @using Spectre.Console
 
-<Panel Title="Padder" Border="@BoxBorder.Rounded" Expand="false">
-    <Padder Padding="@_outerPadding">
-        <Rows>
-            <Markup Content="Padder adds outer spacing around its child content without modifying the child component itself." Foreground="@Color.Grey70" />
-            <Newline />
-            <Markup Content="Example" Decoration="@Decoration.Bold" />
-            <Padder Padding="@_examplePadding">
-                <Columns>
-                    <Panel Title="No extra padding" Border="@BoxBorder.Square" Expand="false">
-                        <Markup Content="Text touches the border." />
+<Padder Padding="@_outerPadding">
+    <Rows>
+        <Markup Content="Padder adds outer spacing around its child content without modifying the child component itself." Foreground="@Color.Grey70" />
+        <Newline />
+        <Markup Content="Example" Decoration="@Decoration.Bold" />
+        <Padder Padding="@_examplePadding">
+            <Columns>
+                <Panel Title="No extra padding" Border="@BoxBorder.Square" Expand="false">
+                    <Markup Content="Text touches the border." />
+                </Panel>
+                <Padder Padding="@_innerPadding">
+                    <Panel Title="Padder adds space" Border="@BoxBorder.Square" Expand="false">
+                        <Markup Content="Comfortable breathing room." />
                     </Panel>
-                    <Padder Padding="@_innerPadding">
-                        <Panel Title="Padder adds space" Border="@BoxBorder.Square" Expand="false">
-                            <Markup Content="Comfortable breathing room." />
-                        </Panel>
-                    </Padder>
-                </Columns>
-            </Padder>
-            <Newline />
-            <Markup Content="Documentation: Padder.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
-        </Rows>
-    </Padder>
-</Panel>
+                </Padder>
+            </Columns>
+        </Padder>
+        <Newline />
+        <Markup Content="Code Example" Decoration="@Decoration.Bold" />
+        <Padder Padding="@_codeExamplePadding">
+            <Rows>
+                <Markup Content="@CodeExampleLine1" Foreground="@Color.DeepSkyBlue1" />
+                <Markup Content="@CodeExampleLine2" Foreground="@Color.Grey70" />
+                <Markup Content="@CodeExampleLine3" Foreground="@Color.DeepSkyBlue1" />
+                <Markup Content="@CodeExampleLine4" Foreground="@Color.Grey70" />
+                <Markup Content="@CodeExampleLine5" Foreground="@Color.DeepSkyBlue1" />
+            </Rows>
+        </Padder>
+        <Newline />
+        <Markup Content="Source Code: Padder.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+    </Rows>
+</Padder>
 
 @code {
     private static readonly Padding _outerPadding = new(1, 1, 1, 1);
     private static readonly Padding _examplePadding = new(0, 1, 0, 0);
     private static readonly Padding _innerPadding = new(1, 1, 1, 1);
+    private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+
+    private const string CodeExampleLine1 = "<Panel Title=\"No extra padding\" Border=\"BoxBorder.Square\">";
+    private const string CodeExampleLine2 = "    <Markup Content=\"Text touches the border.\" />";
+    private const string CodeExampleLine3 = "</Panel>";
+    private const string CodeExampleLine4 = "<Padder Padding=\"new(1, 1, 1, 1)\">";
+    private const string CodeExampleLine5 = "    <Panel Title=\"Padder adds space\" Border=\"BoxBorder.Square\" />";
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Padder.razor";
 }

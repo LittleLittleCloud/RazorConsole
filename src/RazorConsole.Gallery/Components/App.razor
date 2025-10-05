@@ -21,50 +21,48 @@
             </Rows>
         </Padder>
         <Panel Border="@BoxBorder.None" Expand="true">
-            <Padder Padding="@_contentPadding">
-                @switch (_activeTab)
-                {
-                    case "align":
-                        <AlignGallery />
-                        break;
-                    case "border":
-                        <BorderGallery />
-                        break;
-                    case "columns":
-                        <ColumnsGallery />
-                        break;
-                    case "grid":
-                        <GridGallery />
-                        break;
-                    case "markup":
-                        <MarkupGallery />
-                        break;
-                    case "newline":
-                        <NewlineGallery />
-                        break;
-                    case "padder":
-                        <PadderGallery />
-                        break;
-                    case "panel":
-                        <PanelGallery />
-                        break;
-                    case "rows":
-                        <RowsGallery />
-                        break;
-                    case "select":
-                        <SelectGallery />
-                        break;
-                    case "spinner":
-                        <SpinnerGallery />
-                        break;
-                    case "textbutton":
-                        <TextButtonGallery />
-                        break;
-                    case "textinput":
-                        <TextInputGallery />
-                        break;
-                }
-            </Padder>
+            @switch (_activeTab)
+            {
+                case "align":
+                    <AlignGallery />
+                    break;
+                case "border":
+                    <BorderGallery />
+                    break;
+                case "columns":
+                    <ColumnsGallery />
+                    break;
+                case "grid":
+                    <GridGallery />
+                    break;
+                case "markup":
+                    <MarkupGallery />
+                    break;
+                case "newline":
+                    <NewlineGallery />
+                    break;
+                case "padder":
+                    <PadderGallery />
+                    break;
+                case "panel":
+                    <PanelGallery />
+                    break;
+                case "rows":
+                    <RowsGallery />
+                    break;
+                case "select":
+                    <SelectGallery />
+                    break;
+                case "spinner":
+                    <SpinnerGallery />
+                    break;
+                case "textbutton":
+                    <TextButtonGallery />
+                    break;
+                case "textinput":
+                    <TextInputGallery />
+                    break;
+            }
         </Panel>
     </Columns>
 </Panel>
