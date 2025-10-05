@@ -1,92 +1,87 @@
 @using RazorConsole.Components
 @using Spectre.Console
 
-<Rows>
-    <Markup Content="Grid arranges content into rows and columns with optional width and expansion rules." Foreground="@Color.Grey70" />
-    <Newline />
-    <Markup Content="Examples" Decoration="@Decoration.Bold" />
+<Padder Padding="@(new(1, 1, 1, 1))">
     <Rows>
-        <Markup Content="Example 1" Decoration="@Decoration.Bold" />
-        <Columns Expand="true">
-            <Rows>
-                <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+        <Markup Content="Grid arranges content into rows and columns with optional width and expansion rules."
+            Foreground="@Color.Grey70" />
+        <Rows>
+            <Markup Content="Example 1" Decoration="@Decoration.Bold" />
+            <Grid Columns="2" Expand="true">
                 <Rows>
-                    @foreach (var line in _scheduleCode)
-                    {
-                        <Markup Content="@line" />
-                    }
+                    <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                    <Rows>
+                        @foreach (var line in _scheduleCode)
+                        {
+                            <Markup Content="@line" />
+                        }
+                    </Rows>
                 </Rows>
-            </Rows>
-            <Rows>
-                <Markup Content="Demo View" Decoration="@Decoration.Bold" />
-                <Panel Title="Conference Schedule"
-                       Border="@BoxBorder.Rounded"
-                       Expand="false">
-                    <Grid Columns="3" Expand="true">
-                        <Markup Foreground="@Color.Gold3_1"
-                                Decoration="@Decoration.Bold"
-                                Content="Time" />
-                        <Markup Foreground="@Color.Gold3_1"
-                                Decoration="@Decoration.Bold"
-                                Content="Topic" />
-                        <Markup Foreground="@Color.Gold3_1"
-                                Decoration="@Decoration.Bold"
-                                Content="Speaker" />
+                <Rows>
+                    <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                    <Panel Title="Conference Schedule" Border="@BoxBorder.Rounded" Expand="false">
+                        <Grid Columns="3" Expand="true">
+                            <Markup Foreground="@Color.Gold3_1" Decoration="@Decoration.Bold" Content="Time" />
+                            <Markup Foreground="@Color.Gold3_1" Decoration="@Decoration.Bold" Content="Topic" />
+                            <Markup Foreground="@Color.Gold3_1" Decoration="@Decoration.Bold" Content="Speaker" />
 
-                        <Markup Content="09:00" />
-                        <Markup Content="Morning Standup" />
-                        <Markup Content="L. Console" />
+                            <Markup Content="09:00" />
+                            <Markup Content="Morning Standup" />
+                            <Markup Content="L. Console" />
 
-                        <Markup Content="10:30" />
-                        <Markup Content="Rendering Deep Dive" />
-                        <Markup Content="S. Spectre" />
+                            <Markup Content="10:30" />
+                            <Markup Content="Rendering Deep Dive" />
+                            <Markup Content="S. Spectre" />
 
-                        <Markup Content="13:30" />
-                        <Markup Content="Component Patterns" />
-                        <Markup Content="R. Razor" />
+                            <Markup Content="13:30" />
+                            <Markup Content="Component Patterns" />
+                            <Markup Content="R. Razor" />
 
-                        <Markup Content="15:00" />
-                        <Markup Content="Hot Reload Demo" />
-                        <Markup Content="C. Runtime" />
-                    </Grid>
-                </Panel>
-            </Rows>
-        </Columns>
-        <Newline />
-        <Markup Content="Source Code: Grid.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+                            <Markup Content="15:00" />
+                            <Markup Content="Hot Reload Demo" />
+                            <Markup Content="C. Runtime" />
+                        </Grid>
+                    </Panel>
+                </Rows>
+            </Grid>
+            <Newline />
+            <Markup Content="Source Code: Grid.razor" Foreground="@Color.DeepSkyBlue1"
+                Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+        </Rows>
     </Rows>
-</Rows>
+</Padder>
 
 @code {
     private static readonly string[] _scheduleCode =
     {
-        "<Panel Title=\"Conference Schedule\"",
-        "       Border=\"BoxBorder.Rounded\" Expand=\"false\">",
-        "    <Grid Columns=\"3\" Expand=\"true\">",
-        "        <Markup Content=\"Time\"",
-        "               Foreground=\"Color.Gold3_1\"",
-        "               Decoration=\"Decoration.Bold\" />",
-        "        <Markup Content=\"Topic\"",
-        "               Foreground=\"Color.Gold3_1\"",
-        "               Decoration=\"Decoration.Bold\" />",
-        "        <Markup Content=\"Speaker\"",
-        "               Foreground=\"Color.Gold3_1\"",
-        "               Decoration=\"Decoration.Bold\" />",
-        "        <Markup Content=\"09:00\" />",
-        "        <Markup Content=\"Morning Standup\" />",
-        "        <Markup Content=\"L. Console\" />",
-        "        <Markup Content=\"10:30\" />",
-        "        <Markup Content=\"Rendering Deep Dive\" />",
-        "        <Markup Content=\"S. Spectre\" />",
-        "        <Markup Content=\"13:30\" />",
-        "        <Markup Content=\"Component Patterns\" />",
-        "        <Markup Content=\"R. Razor\" />",
-        "        <Markup Content=\"15:00\" />",
-        "        <Markup Content=\"Hot Reload Demo\" />",
-        "        <Markup Content=\"C. Runtime\" />",
-        "    </Grid>",
-        "</Panel>",
-    };
+"<Panel Title=\"Conference Schedule\"",
+" Border=\"BoxBorder.Rounded\" Expand=\"false\">",
+" <Grid Columns=\"3\" Expand=\"true\">",
+" <Markup Content=\"Time\"",
+" Foreground=\"Color.Gold3_1\"",
+" Decoration=\"Decoration.Bold\" />",
+" <Markup Content=\"Topic\"",
+" Foreground=\"Color.Gold3_1\"",
+" Decoration=\"Decoration.Bold\" />",
+" <Markup Content=\"Speaker\"",
+" Foreground=\"Color.Gold3_1\"",
+" Decoration=\"Decoration.Bold\" />",
+" <Markup Content=\"09:00\" />",
+" <Markup Content=\"Morning Standup\" />",
+" <Markup Content=\"L. Console\" />",
+" <Markup Content=\"10:30\" />",
+" <Markup Content=\"Rendering Deep Dive\" />",
+" <Markup Content=\"S. Spectre\" />",
+" <Markup Content=\"13:30\" />",
+" <Markup Content=\"Component Patterns\" />",
+" <Markup Content=\"R. Razor\" />",
+" <Markup Content=\"15:00\" />",
+" <Markup Content=\"Hot Reload Demo\" />",
+" <Markup Content=\"C. Runtime\" />",
+" </Grid>",
+"</Panel>",
+};
 
-    private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Grid.razor";
+    private const string DocumentationUrl =
+    "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Grid.razor";
 }

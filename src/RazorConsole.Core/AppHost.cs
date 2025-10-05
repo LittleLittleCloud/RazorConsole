@@ -97,16 +97,13 @@ public sealed class ConsoleAppBuilder
     /// </summary>
     public ConsoleAppBuilder Configure(Action<ConsoleAppOptions> configure)
     {
-        if (configure is null)
+        if (configure is not null)
         {
-            throw new ArgumentNullException(nameof(configure));
+            configure(Options);
         }
 
-        configure(Options);
         return this;
     }
-
-    internal ConsoleAppOptions BuildOptions() => Options.Clone();
 
     internal ServiceProvider BuildServiceProvider()
     {
@@ -146,12 +143,6 @@ public sealed class ConsoleAppOptions
     /// </summary>
     public Func<ConsoleLiveDisplayContext, ConsoleViewResult, CancellationToken, Task>? AfterRenderAsync { get; set; } = DefaultAfterRenderAsync;
 
-    internal ConsoleAppOptions Clone() => new()
-    {
-        AutoClearConsole = AutoClearConsole,
-        AfterRenderAsync = AfterRenderAsync,
-    };
-
     internal static Task DefaultAfterRenderAsync(ConsoleLiveDisplayContext context, ConsoleViewResult view, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
@@ -181,7 +172,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         }
 
         _serviceProvider = builder.BuildServiceProvider();
-        _options = builder.BuildOptions();
+        _options = builder.Options;
         _diffService = _serviceProvider.GetRequiredService<VdomDiffService>();
         _liveContextAccessor = _serviceProvider.GetService<LiveDisplayContextAccessor>();
         _consoleRenderer = _serviceProvider.GetRequiredService<ConsoleRenderer>();

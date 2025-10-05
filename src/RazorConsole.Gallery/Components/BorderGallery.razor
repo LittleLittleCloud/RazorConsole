@@ -5,43 +5,42 @@
     <Rows>
         <Markup Content="Border wraps child content with a Spectre.Console panel using the configured border style, color, and padding." Foreground="@Color.Grey70" />
         <Newline />
-        <Markup Content="Examples" Decoration="@Decoration.Bold" />
+        <Markup Content="Example 1" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
-            <Rows>
+            <Grid Columns="2" Expand="true">
+                <Padder Padding="@_columnPadding">
+                    <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                </Padder>
+                <Padder Padding="@_columnPadding">
+                    <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                </Padder>
+
                 @for (var index = 0; index < _examples.Length; index++)
                 {
                     var example = _examples[index];
-                    <Markup Content="@($"Example {index + 1}")" Decoration="@Decoration.Bold" />
-                    <Columns Expand="true">
-                        <Padder Padding="@_columnPadding">
-                            <Rows>
-                                <Markup Content="Source Code" Decoration="@Decoration.Bold" />
-                                <Padder Padding="@_codeExamplePadding">
-                                    <Rows>
-                                        @foreach (var line in example.CodeLines)
-                                        {
-                                            <Markup Content="@line" />
-                                        }
-                                    </Rows>
-                                </Padder>
-                            </Rows>
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Padder Padding="@_codeExamplePadding">
+                                <Rows>
+                                    @foreach (var line in example.CodeLines)
+                                    {
+                                        <Markup Content="@line" />
+                                    }
+                                </Rows>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                    <Padder Padding="@_columnPadding">
+                        <Padder Padding="@_viewPadding">
+                            <Border BoxBorder="@example.Border"
+                                    BorderColor="@example.BorderColor"
+                                    Padding="@_innerPadding">
+                                <Markup Content="@example.Description" />
+                            </Border>
                         </Padder>
-                        <Padder Padding="@_columnPadding">
-                            <Rows>
-                                <Markup Content="Demo View" Decoration="@Decoration.Bold" />
-                                <Padder Padding="@_viewPadding">
-                                    <Border BoxBorder="@example.Border"
-                                            BorderColor="@example.BorderColor"
-                                            Padding="@_innerPadding">
-                                        <Markup Content="@example.Description" />
-                                    </Border>
-                                </Padder>
-                            </Rows>
-                        </Padder>
-                    </Columns>
-                    <Newline />
+                    </Padder>
                 }
-            </Rows>
+            </Grid>
         </Padder>
         <Markup Content="Source Code: Border.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
     </Rows>

@@ -4,45 +4,43 @@
 <Padder Padding="@_outerPadding">
     <Rows>
         <Markup Content="Rows stacks child content vertically and can optionally expand height to fill the available space." Foreground="@Color.Grey70" />
-        <Newline />
-        <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
             <Rows>
-                @for (var index = 0; index < _examples.Length; index++)
-                {
-                    var example = _examples[index];
-                    <Markup Content="@($"Example {index + 1}")" Decoration="@Decoration.Bold" />
-                    <Columns Expand="true">
-                        <Padder Padding="@_columnPadding">
-                            <Rows>
-                                <Markup Content="Source Code" Decoration="@Decoration.Bold" />
-                                <Padder Padding="@_codeExamplePadding">
-                                    <Rows>
-                                        @foreach (var line in example.CodeLines)
-                                        {
-                                            <Markup Content="@line" />
-                                        }
-                                    </Rows>
-                                </Padder>
-                            </Rows>
-                        </Padder>
-                        <Padder Padding="@_columnPadding">
-                            <Rows>
-                                <Markup Content="Demo View" Decoration="@Decoration.Bold" />
-                                <Padder Padding="@_viewPadding">
-                                    <Panel Title="@example.Title"
-                                           Border="@BoxBorder.Square"
-                                           Expand="false">
-                                        <Padder Padding="@_innerPadding">
-                                            <Markup Content="@example.Content" Foreground="@example.Foreground" />
-                                        </Padder>
-                                    </Panel>
-                                </Padder>
-                            </Rows>
-                        </Padder>
-                    </Columns>
-                    <Newline />
-                }
+                <Markup Content="Example 1" Decoration="@Decoration.Bold" />
+                <Grid Columns="2" Expand="true">
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_codeExamplePadding">
+                                <Rows>
+                                    @foreach (var line in _exampleCode)
+                                    {
+                                        <Markup Content="@line" />
+                                    }
+                                </Rows>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_viewPadding">
+                                <Panel Title="Daily Agenda"
+                                       Border="@BoxBorder.Square"
+                                       Expand="false">
+                                    <Padder Padding="@_innerPadding">
+                                        <Rows>
+                                            <Markup Content="Morning: Daily sync" />
+                                            <Markup Content="Afternoon: Pair with teammates" />
+                                            <Markup Content="Evening: Ship features"
+                                                    Foreground="@Color.Chartreuse1" />
+                                        </Rows>
+                                    </Padder>
+                                </Panel>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                </Grid>
                 <Markup Content="Source Code: Rows.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
             </Rows>
         </Padder>
@@ -57,38 +55,19 @@
     private static readonly Padding _viewPadding = new(0, 1, 0, 1);
     private static readonly Padding _columnPadding = new(0, 1, 0, 0);
 
-    private sealed record RowsExample(string Title, string Content, Color Foreground, string[] CodeLines);
-
-    private static readonly RowsExample[] _examples =
+    private static readonly string[] _exampleCode =
     {
-        new("Morning", "Daily sync", Color.White, new[]
-        {
-            "<Panel Title=\"Morning\"",
-            "       Border=\"BoxBorder.Square\" Expand=\"false\">",
-            "    <Padder Padding=\"new(1, 0, 1, 0)\">",
-            "        <Markup Content=\"Daily sync\" />",
-            "    </Padder>",
-            "</Panel>",
-        }),
-        new("Afternoon", "Pair with teammates", Color.White, new[]
-        {
-            "<Panel Title=\"Afternoon\"",
-            "       Border=\"BoxBorder.Square\" Expand=\"false\">",
-            "    <Padder Padding=\"new(1, 0, 1, 0)\">",
-            "        <Markup Content=\"Pair with teammates\" />",
-            "    </Padder>",
-            "</Panel>",
-        }),
-        new("Evening", "Ship features", Color.Chartreuse1, new[]
-        {
-            "<Panel Title=\"Evening\"",
-            "       Border=\"BoxBorder.Square\" Expand=\"false\">",
-            "    <Padder Padding=\"new(1, 0, 1, 0)\">",
-            "        <Markup Content=\"Ship features\"",
-            "               Foreground=\"Color.Chartreuse1\" />",
-            "    </Padder>",
-            "</Panel>",
-        }),
+        "<Panel Title=\"Daily Agenda\"",
+        "       Border=\"BoxBorder.Square\" Expand=\"false\">",
+        "    <Padder Padding=\"new(1, 0, 1, 0)\">",
+        "        <Rows>",
+        "            <Markup Content=\"Morning: Daily sync\" />",
+        "            <Markup Content=\"Afternoon: Pair with teammates\" />",
+        "            <Markup Content=\"Evening: Ship features\"",
+        "                   Foreground=\"Color.Chartreuse1\" />",
+        "        </Rows>",
+        "    </Padder>",
+        "</Panel>",
     };
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Rows.razor";

@@ -100,10 +100,17 @@ internal sealed partial class VdomSpectreTranslator
     {
         foreach (var translator in _elementTranslators)
         {
-            if (translator.TryTranslate(node, context, out var candidate) && candidate is not null)
+            try
             {
-                renderable = candidate;
-                return true;
+                if (translator.TryTranslate(node, context, out var candidate) && candidate is not null)
+                {
+                    renderable = candidate;
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+                continue;
             }
         }
 

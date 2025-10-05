@@ -4,12 +4,10 @@
 <Padder Padding="@_outerPadding">
     <Rows>
         <Markup Content="Markup renders styled text by combining colors, decorations, and optional hyperlinks." Foreground="@Color.Grey70" />
-        <Newline />
-        <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
             <Rows>
                 <Markup Content="Example 1" Decoration="@Decoration.Bold" />
-                <Columns Expand="true">
+                <Grid Columns="2" Expand="true">
                     <Padder Padding="@_columnPadding">
                         <Rows>
                             <Markup Content="Source Code" Decoration="@Decoration.Bold" />
@@ -42,7 +40,7 @@
                             </Padder>
                         </Rows>
                     </Padder>
-                </Columns>
+                </Grid>
             </Rows>
         </Padder>
         <Markup Content="Source Code: Markup.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
