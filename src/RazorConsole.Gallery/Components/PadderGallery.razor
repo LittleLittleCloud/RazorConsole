@@ -15,7 +15,7 @@
                             <Markup Content="Source Code" Decoration="@Decoration.Bold" />
                             <Padder Padding="@_codeExamplePadding">
                                 <Rows>
-                                    @foreach (var line in _noPaddingCode)
+                                    @foreach (var line in _panelPaddedCode)
                                     {
                                         <Markup Content="@line" />
                                     }
@@ -27,42 +27,13 @@
                         <Rows>
                             <Markup Content="Demo View" Decoration="@Decoration.Bold" />
                             <Padder Padding="@_viewPadding">
-                                <Panel Title="No extra padding"
+                                <Panel Title="Padder adds space"
                                        Border="@BoxBorder.Square"
                                        Expand="false">
-                                    <Markup Content="Text touches the border." />
-                                </Panel>
-                            </Padder>
-                        </Rows>
-                    </Padder>
-                </Columns>
-                <Newline />
-                <Markup Content="Example 2" Decoration="@Decoration.Bold" />
-                <Columns Expand="true">
-                    <Padder Padding="@_columnPadding">
-                        <Rows>
-                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
-                            <Padder Padding="@_codeExamplePadding">
-                                <Rows>
-                                    @foreach (var line in _paddedCode)
-                                    {
-                                        <Markup Content="@line" />
-                                    }
-                                </Rows>
-                            </Padder>
-                        </Rows>
-                    </Padder>
-                    <Padder Padding="@_columnPadding">
-                        <Rows>
-                            <Markup Content="Demo View" Decoration="@Decoration.Bold" />
-                            <Padder Padding="@_viewPadding">
-                                <Padder Padding="@_innerPadding">
-                                    <Panel Title="Padder adds space"
-                                           Border="@BoxBorder.Square"
-                                           Expand="false">
+                                    <Padder Padding="@_innerPadding">
                                         <Markup Content="Comfortable breathing room." />
-                                    </Panel>
-                                </Padder>
+                                    </Padder>
+                                </Panel>
                             </Padder>
                         </Rows>
                     </Padder>
@@ -81,22 +52,14 @@
     private static readonly Padding _viewPadding = new(0, 1, 0, 1);
     private static readonly Padding _columnPadding = new(0, 1, 0, 0);
 
-    private static readonly string[] _noPaddingCode =
+    private static readonly string[] _panelPaddedCode =
     {
-        "<Panel Title=\"No extra padding\"",
+        "<Panel Title=\"Padder adds space\"",
         "       Border=\"BoxBorder.Square\" Expand=\"false\">",
-        "    <Markup Content=\"Text touches the border.\" />",
-        "</Panel>",
-    };
-
-    private static readonly string[] _paddedCode =
-    {
-        "<Padder Padding=\"new(1, 1, 1, 1)\">",
-        "    <Panel Title=\"Padder adds space\"",
-        "           Border=\"BoxBorder.Square\" Expand=\"false\">",
+        "    <Padder Padding=\"new(1, 1, 1, 1)\">",
         "        <Markup Content=\"Comfortable breathing room.\" />",
-        "    </Panel>",
-        "</Padder>",
+        "    </Padder>",
+        "</Panel>",
     };
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Padder.razor";

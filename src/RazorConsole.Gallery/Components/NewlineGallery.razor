@@ -26,22 +26,20 @@
                     <Padder Padding="@_columnPadding">
                         <Rows>
                             <Markup Content="Demo View" Decoration="@Decoration.Bold" />
-                            <Padder Padding="@_viewPadding">
-                                <Panel Title="Daily Checklist"
-                                       Border="@BoxBorder.Square"
-                                       Expand="false">
-                                    <Padder Padding="@_innerPadding">
-                                        <Markup Content="• Brew coffee" />
-                                        <Newline />
-                                        <Markup Content="• Review pull requests" />
-                                        <Newline />
-                                        <Newline />
-                                        <Markup Content="Break before stand-up"
-                                                Foreground="@Color.Grey70"
-                                                Decoration="@Decoration.Italic" />
-                                    </Padder>
-                                </Panel>
-                            </Padder>
+                            <Panel Title="Daily Checklist"
+                                   Border="@BoxBorder.Square"
+                                   Expand="false">
+                                <Rows>
+                                    <Markup Content="• Brew coffee" />
+                                    <Newline />
+                                    <Markup Content="• Review pull requests" />
+                                    <Newline />
+                                    <Newline />
+                                    <Markup Content="Break before stand-up"
+                                            Foreground="@Color.Grey70"
+                                            Decoration="@Decoration.Italic" />
+                                </Rows>
+                            </Panel>
                         </Rows>
                     </Padder>
                 </Columns>
@@ -54,25 +52,23 @@
 @code {
     private static readonly Padding _outerPadding = new(1, 1, 1, 1);
     private static readonly Padding _examplePadding = new(0, 1, 0, 0);
-    private static readonly Padding _innerPadding = new(1, 1, 1, 1);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
-    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
     private static readonly Padding _columnPadding = new(0, 1, 0, 0);
 
     private static readonly string[] _exampleCode =
     {
         "<Panel Title=\"Daily Checklist\"",
         "       Border=\"BoxBorder.Square\" Expand=\"false\">",
-        "    <Padder Padding=\"new(1, 1, 1, 1)\">",
-        "        <Markup Content=\"• Brew coffee\" />",
-        "        <Newline />",
-        "        <Markup Content=\"• Review pull requests\" />",
-        "        <Newline />",
-        "        <Newline />",
-        "        <Markup Content=\"Break before stand-up\"",
-        "               Foreground=\"Color.Grey70\"",
-        "               Decoration=\"Decoration.Italic\" />",
-        "    </Padder>",
+    "    <Rows>",
+    "        <Markup Content=\"• Brew coffee\" />",
+    "        <Newline />",
+    "        <Markup Content=\"• Review pull requests\" />",
+    "        <Newline />",
+    "        <Newline />",
+    "        <Markup Content=\"Break before stand-up\"",
+    "               Foreground=\"Color.Grey70\"",
+    "               Decoration=\"Decoration.Italic\" />",
+    "    </Rows>",
         "</Panel>",
     };
 

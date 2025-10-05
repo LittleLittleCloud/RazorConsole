@@ -23,12 +23,9 @@
         }
         set
         {
-            _escapedContent = EscapeContent ? Spectre.Console.Markup.Escape(value) : value;
+            _escapedContent = Spectre.Console.Markup.Escape(value);
         }
     }
-
-    [Parameter]
-    public bool EscapeContent {get; set;} = false;
 
     [Parameter]
     public Color Foreground { get; set; } = Spectre.Console.Style.Plain.Foreground;
