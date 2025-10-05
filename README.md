@@ -32,12 +32,19 @@ dotnet add package RazorConsole
 await AppHost.RunAsync<Counter>();
 ```
 <img src="./assets/counter.gif" alt="Counter component demonstration" style="width: 100%; height: auto;" />
+## Component Gallery
+
+Explore the built-in components interactively with the RazorConsole Component Gallery. Install the tool globally and launch it from any terminal:
+
+```bash
+dotnet tool install --global RazorConsole.Gallery --version 0.0.1
+```
+
+After installation, run `razorconsole-gallery` to open the showcase and browse component examples rendered in the console. The gallery includes quick links back to this README for more details.
 
 ## Community & support
 
 - File issues using the GitHub **Issues** tab.
-- Use GitHub Discussions (if enabled) for open-ended questions.
-- Follow the guidance in `.github/copilot-instructions.md` for project-specific GitHub Copilot prompts and context.
 
 ## License
 

@@ -1,7 +1,11 @@
 <Columns>
-    <p>Current count: @currentCount</p>
-    <TextButton Content="Click me" OnClick="IncrementCount" BackgroundColor="@Spectre.Console.Color.Grey" />
+    <p>Current count</p>
+    <Markup Content="@currentCount.ToString()" Foreground="@Spectre.Console.Color.Green" />
 </Columns>
+<TextButton Content="Click me"
+            OnClick="IncrementCount"
+            BackgroundColor="@Spectre.Console.Color.Grey"
+            FocusedColor="@Spectre.Console.Color.Blue" />
 
 
 @code {
@@ -9,6 +13,5 @@
     private void IncrementCount()
     {
         currentCount++;
-        StateHasChanged();
     }
 }
