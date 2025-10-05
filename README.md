@@ -11,7 +11,7 @@
 ## Install
 
 ```bash
-dotnet add package RazorConsole
+dotnet add package RazorConsole.Core
 ```
 
 ## Usage
