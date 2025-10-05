@@ -1,18 +1,30 @@
 @using RazorConsole.Components
 @using Spectre.Console
 
-    <Columns>
-        <Markup Content="Visit " />
-        <Markup Content="https://spectreconsole.net/appendix/spinners" link="https://spectreconsole.net/appendix/spinners" />
-        <Markup Content=" for all available spinners." />
-    </Columns>
-    <Grid Columns="2" Expand="false">
-        @foreach (var sample in _spinnerSamples)
-        {
-            <Markup Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Bold" Content="@sample.Name" />
-            <Spinner @key="sample.Name" SpinnerType="@sample.Spinner" />
-        }
-    </Grid>
+<Panel Title="Spinner" Border="@BoxBorder.Rounded" Expand="false">
+    <Padder Padding="@_outerPadding">
+        <Rows>
+            <Markup Content="Spinner renders Spectre.Console spinner animations with optional message, style, and auto-dismiss configuration." Foreground="@Color.Grey70" />
+            <Newline />
+            <Markup Content="Example" Decoration="@Decoration.Bold" />
+            <Padder Padding="@_examplePadding">
+                <Grid Columns="2" Expand="false">
+                    @foreach (var sample in _spinnerSamples)
+                    {
+                        <Markup Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Bold" Content="@sample.Name" />
+                        <Spinner @key="sample.Name" SpinnerType="@sample.Spinner" />
+                    }
+                </Grid>
+                <Newline />
+                <Columns>
+                    <Markup Content="Browse more spinner styles" Foreground="@Color.DeepSkyBlue1" link="https://spectreconsole.net/appendix/spinners" Decoration="@Decoration.Underline" />
+                </Columns>
+            </Padder>
+            <Newline />
+            <Markup Content="Documentation: Spinner.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+        </Rows>
+    </Padder>
+</Panel>
 
 @code {
     private readonly (string Name, global::Spectre.Console.Spinner Spinner)[] _spinnerSamples =
@@ -23,5 +35,8 @@
         ("Aesthetic", global::Spectre.Console.Spinner.Known.Aesthetic),
     };
 
-    private readonly Padding _padding = new Padding(1, 1, 1, 1);
+    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
+    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
+
+    private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Spinner.razor";
 }

@@ -1,0 +1,29 @@
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Panel Title="Markup" Border="@BoxBorder.Rounded" Expand="false">
+    <Padder Padding="@_outerPadding">
+        <Rows>
+            <Markup Content="Markup renders styled text by combining colors, decorations, and optional hyperlinks." Foreground="@Color.Grey70" />
+            <Newline />
+            <Markup Content="Example" Decoration="@Decoration.Bold" />
+            <Padder Padding="@_examplePadding">
+                <Rows>
+                    <Markup Content="Emphasize important labels" Foreground="@Color.Chartreuse1" Decoration="@Decoration.Bold" />
+                    <Markup Content="Callouts can be dimmed" Foreground="@Color.Grey70" Decoration="@DimItalicDecoration" />
+                    <Markup Content="Link to the repository" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="https://github.com/LittleLittleCloud/RazorConsole" />
+                </Rows>
+            </Padder>
+            <Newline />
+            <Markup Content="Documentation: Markup.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+        </Rows>
+    </Padder>
+</Panel>
+
+@code {
+    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
+    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
+    private static readonly Decoration DimItalicDecoration = Decoration.Dim | Decoration.Italic;
+
+    private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Markup.razor";
+}

@@ -1,0 +1,32 @@
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Panel Title="Border" Border="@BoxBorder.Rounded" Expand="false">
+    <Padder Padding="@_outerPadding">
+        <Rows>
+            <Markup Content="Border wraps child content with a Spectre.Console panel using the configured border style, color, and padding." Foreground="@Color.Grey70" />
+            <Newline />
+            <Markup Content="Example" Decoration="@Decoration.Bold" />
+            <Padder Padding="@_examplePadding">
+                <Columns>
+                    <Border BoxBorder="@BoxBorder.Rounded" BorderColor="@Color.Chartreuse1" Padding="@_innerPadding">
+                        <Markup Content="Rounded border with padding." />
+                    </Border>
+                    <Border BoxBorder="@BoxBorder.Double" BorderColor="@Color.DeepSkyBlue1" Padding="@_innerPadding">
+                        <Markup Content="Double border and custom color." />
+                    </Border>
+                </Columns>
+            </Padder>
+            <Newline />
+            <Markup Content="Documentation: Border.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+        </Rows>
+    </Padder>
+</Panel>
+
+@code {
+    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
+    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _innerPadding = new(1, 0, 1, 0);
+
+    private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Border.razor";
+}

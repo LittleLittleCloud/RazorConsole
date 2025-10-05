@@ -1,0 +1,34 @@
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Panel Title="Newline" Border="@BoxBorder.Rounded" Expand="false">
+    <Padder Padding="@_outerPadding">
+        <Rows>
+            <Markup Content="Newline injects a line break into the render tree, letting you add intentional spacing between elements." Foreground="@Color.Grey70" />
+            <Newline />
+            <Markup Content="Example" Decoration="@Decoration.Bold" />
+            <Padder Padding="@_examplePadding">
+                <Panel Title="Daily Checklist" Border="@BoxBorder.Square" Expand="false">
+                    <Padder Padding="@_innerPadding">
+                        <Markup Content="• Brew coffee" />
+                        <Newline />
+                        <Markup Content="• Review pull requests" />
+                        <Newline />
+                        <Newline />
+                        <Markup Content="Break before stand-up" Foreground="@Color.Grey70" Decoration="@Decoration.Italic" />
+                    </Padder>
+                </Panel>
+            </Padder>
+            <Newline />
+            <Markup Content="Documentation: Newline.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+        </Rows>
+    </Padder>
+</Panel>
+
+@code {
+    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
+    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _innerPadding = new(1, 1, 1, 1);
+
+    private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Newline.razor";
+}
