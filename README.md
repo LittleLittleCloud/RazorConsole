@@ -54,7 +54,7 @@ dotnet tool install --global RazorConsole.Gallery --version 0.0.1
 
 After installation, run `razorconsole-gallery` to open the showcase and browse component examples rendered in the console. The gallery includes quick links back to this README for more details.
 
-![Component Gallery](./assets/gallery.gif)
+![Component Gallery](./assets/gallery.png)
 
 ## Community & support
 
