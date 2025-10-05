@@ -11,23 +11,36 @@
                 @for (var index = 0; index < _examples.Length; index++)
                 {
                     var example = _examples[index];
-                    <Markup Content="@($"Example {index + 1} - Source Code")" Decoration="@Decoration.Bold" />
-                    <Padder Padding="@_codeExamplePadding">
-                        <Rows>
-                            @foreach (var line in example.CodeLines)
-                            {
-                                <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
-                            }
-                        </Rows>
-                    </Padder>
-                    <Markup Content="@($"Example {index + 1} - View")" Decoration="@Decoration.Bold" />
-                    <Padder Padding="@_viewPadding">
-                        <Panel Title="@example.Title" Border="@BoxBorder.Square" Expand="false">
-                            <Padder Padding="@_innerPadding">
-                                <Markup Content="@example.Content" Foreground="@example.Foreground" />
-                            </Padder>
-                        </Panel>
-                    </Padder>
+                    <Markup Content="@($"Example {index + 1}")" Decoration="@Decoration.Bold" />
+                    <Columns Expand="true">
+                        <Padder Padding="@_columnPadding">
+                            <Rows>
+                                <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                                <Padder Padding="@_codeExamplePadding">
+                                    <Rows>
+                                        @foreach (var line in example.CodeLines)
+                                        {
+                                            <Markup Content="@line" />
+                                        }
+                                    </Rows>
+                                </Padder>
+                            </Rows>
+                        </Padder>
+                        <Padder Padding="@_columnPadding">
+                            <Rows>
+                                <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                                <Padder Padding="@_viewPadding">
+                                    <Panel Title="@example.Title"
+                                           Border="@BoxBorder.Square"
+                                           Expand="false">
+                                        <Padder Padding="@_innerPadding">
+                                            <Markup Content="@example.Content" Foreground="@example.Foreground" />
+                                        </Padder>
+                                    </Panel>
+                                </Padder>
+                            </Rows>
+                        </Padder>
+                    </Columns>
                     <Newline />
                 }
                 <Markup Content="Source Code: Rows.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
@@ -42,6 +55,7 @@
     private static readonly Padding _innerPadding = new(1, 0, 1, 0);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
     private static readonly Padding _viewPadding = new(0, 1, 0, 1);
+    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
 
     private sealed record RowsExample(string Title, string Content, Color Foreground, string[] CodeLines);
 
@@ -49,7 +63,8 @@
     {
         new("Morning", "Daily sync", Color.White, new[]
         {
-            "<Panel Title=\"Morning\" Border=\"BoxBorder.Square\" Expand=\"false\">",
+            "<Panel Title=\"Morning\"",
+            "       Border=\"BoxBorder.Square\" Expand=\"false\">",
             "    <Padder Padding=\"new(1, 0, 1, 0)\">",
             "        <Markup Content=\"Daily sync\" />",
             "    </Padder>",
@@ -57,7 +72,8 @@
         }),
         new("Afternoon", "Pair with teammates", Color.White, new[]
         {
-            "<Panel Title=\"Afternoon\" Border=\"BoxBorder.Square\" Expand=\"false\">",
+            "<Panel Title=\"Afternoon\"",
+            "       Border=\"BoxBorder.Square\" Expand=\"false\">",
             "    <Padder Padding=\"new(1, 0, 1, 0)\">",
             "        <Markup Content=\"Pair with teammates\" />",
             "    </Padder>",
@@ -65,9 +81,11 @@
         }),
         new("Evening", "Ship features", Color.Chartreuse1, new[]
         {
-            "<Panel Title=\"Evening\" Border=\"BoxBorder.Square\" Expand=\"false\">",
+            "<Panel Title=\"Evening\"",
+            "       Border=\"BoxBorder.Square\" Expand=\"false\">",
             "    <Padder Padding=\"new(1, 0, 1, 0)\">",
-            "        <Markup Content=\"Ship features\" Foreground=\"Color.Chartreuse1\" />",
+            "        <Markup Content=\"Ship features\"",
+            "               Foreground=\"Color.Chartreuse1\" />",
             "    </Padder>",
             "</Panel>",
         }),

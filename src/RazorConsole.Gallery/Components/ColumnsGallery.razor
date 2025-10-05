@@ -8,35 +8,46 @@
         <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
             <Rows>
-                <Markup Content="Example 1 - Source Code" Decoration="@Decoration.Bold" />
-                <Padder Padding="@_codeExamplePadding">
-                    <Rows>
-                        @foreach (var line in _exampleOneCode)
-                        {
-                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
-                        }
-                    </Rows>
-                </Padder>
-                <Markup Content="Example 1 - View" Decoration="@Decoration.Bold" />
-                <Padder Padding="@_viewPadding">
-                    <Columns Expand="true">
-                        <Panel Title="Status" Border="@BoxBorder.Square" Expand="true">
-                            <Padder Padding="@_innerPadding">
-                                <Markup Content="✅ Ready" Foreground="@Color.Chartreuse1" />
+                <Markup Content="Example 1" Decoration="@Decoration.Bold" />
+                <Columns Expand="true">
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_codeExamplePadding">
+                                <Rows>
+                                    @foreach (var line in _exampleOneCode)
+                                    {
+                                        <Markup Content="@line" />
+                                    }
+                                </Rows>
                             </Padder>
-                        </Panel>
-                        <Panel Title="Owner" Border="@BoxBorder.Square" Expand="true">
-                            <Padder Padding="@_innerPadding">
-                                <Markup Content="RazorConsole" />
+                        </Rows>
+                    </Padder>
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_viewPadding">
+                                <Columns Expand="true">
+                                    <Panel Title="Status" Border="@BoxBorder.Square" Expand="true">
+                                        <Padder Padding="@_innerPadding">
+                                            <Markup Content="✅ Ready" Foreground="@Color.Chartreuse1" />
+                                        </Padder>
+                                    </Panel>
+                                    <Panel Title="Owner" Border="@BoxBorder.Square" Expand="true">
+                                        <Padder Padding="@_innerPadding">
+                                            <Markup Content="RazorConsole" />
+                                        </Padder>
+                                    </Panel>
+                                    <Panel Title="Next step" Border="@BoxBorder.Square" Expand="true">
+                                        <Padder Padding="@_innerPadding">
+                                            <Markup Content="Ship the demo" Foreground="@Color.DeepSkyBlue1" />
+                                        </Padder>
+                                    </Panel>
+                                </Columns>
                             </Padder>
-                        </Panel>
-                        <Panel Title="Next step" Border="@BoxBorder.Square" Expand="true">
-                            <Padder Padding="@_innerPadding">
-                                <Markup Content="Ship the demo" Foreground="@Color.DeepSkyBlue1" />
-                            </Padder>
-                        </Panel>
-                    </Columns>
-                </Padder>
+                        </Rows>
+                    </Padder>
+                </Columns>
             </Rows>
         </Padder>
         <Markup Content="Source Code: Columns.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
@@ -49,26 +60,27 @@
     private static readonly Padding _innerPadding = new(1, 0, 1, 0);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
     private static readonly Padding _viewPadding = new(0, 1, 0, 1);
+    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
 
     private static readonly string[] _exampleOneCode =
     {
-        "<Columns Expand=\"true\">",
-        "    <Panel Title=\"Status\" Border=\"BoxBorder.Square\" Expand=\"true\">",
-        "        <Padder Padding=\"new(1, 0, 1, 0)\">",
-        "            <Markup Content=\"✅ Ready\" Foreground=\"Color.Chartreuse1\" />",
-        "        </Padder>",
-        "    </Panel>",
-        "    <Panel Title=\"Owner\" Border=\"BoxBorder.Square\" Expand=\"true\">",
-        "        <Padder Padding=\"new(1, 0, 1, 0)\">",
-        "            <Markup Content=\"RazorConsole\" />",
-        "        </Padder>",
-        "    </Panel>",
-        "    <Panel Title=\"Next step\" Border=\"BoxBorder.Square\" Expand=\"true\">",
-        "        <Padder Padding=\"new(1, 0, 1, 0)\">",
-        "            <Markup Content=\"Ship the demo\" Foreground=\"Color.DeepSkyBlue1\" />",
-        "        </Padder>",
-        "    </Panel>",
-        "</Columns>",
+    "<Columns Expand=\"true\">",
+    "    <Panel Title=\"Status\" Border=\"BoxBorder.Square\" Expand=\"true\">",
+    "        <Padder Padding=\"new(1, 0, 1, 0)\">",
+    "            <Markup Content=\"✅ Ready\" Foreground=\"Color.Chartreuse1\" />",
+    "        </Padder>",
+    "    </Panel>",
+    "    <Panel Title=\"Owner\" Border=\"BoxBorder.Square\" Expand=\"true\">",
+    "        <Padder Padding=\"new(1, 0, 1, 0)\">",
+    "            <Markup Content=\"RazorConsole\" />",
+    "        </Padder>",
+    "    </Panel>",
+    "    <Panel Title=\"Next step\" Border=\"BoxBorder.Square\" Expand=\"true\">",
+    "        <Padder Padding=\"new(1, 0, 1, 0)\">",
+    "            <Markup Content=\"Ship the demo\" Foreground=\"Color.DeepSkyBlue1\" />",
+    "        </Padder>",
+    "    </Panel>",
+    "</Columns>",
     };
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Columns.razor";

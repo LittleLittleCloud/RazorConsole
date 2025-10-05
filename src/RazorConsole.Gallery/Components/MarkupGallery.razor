@@ -8,23 +8,41 @@
         <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
             <Rows>
-                <Markup Content="Example 1 - Source Code" Decoration="@Decoration.Bold" />
-                <Padder Padding="@_codeExamplePadding">
-                    <Rows>
-                        @foreach (var line in _exampleCode)
-                        {
-                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
-                        }
-                    </Rows>
-                </Padder>
-                <Markup Content="Example 1 - View" Decoration="@Decoration.Bold" />
-                <Padder Padding="@_viewPadding">
-                    <Rows>
-                        <Markup Content="Emphasize important labels" Foreground="@Color.Chartreuse1" Decoration="@Decoration.Bold" />
-                        <Markup Content="Callouts can be dimmed" Foreground="@Color.Grey70" Decoration="@DimItalicDecoration" />
-                        <Markup Content="Link to the repository" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="https://github.com/LittleLittleCloud/RazorConsole" />
-                    </Rows>
-                </Padder>
+                <Markup Content="Example 1" Decoration="@Decoration.Bold" />
+                <Columns Expand="true">
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_codeExamplePadding">
+                                <Rows>
+                                    @foreach (var line in _exampleCode)
+                                    {
+                                        <Markup Content="@line" />
+                                    }
+                                </Rows>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_viewPadding">
+                                <Rows>
+                                    <Markup Content="Emphasize important labels"
+                                            Foreground="@Color.Chartreuse1"
+                                            Decoration="@Decoration.Bold" />
+                                    <Markup Content="Callouts can be dimmed"
+                                            Foreground="@Color.Grey70"
+                                            Decoration="@DimItalicDecoration" />
+                                    <Markup Content="Link to the repository"
+                                            Foreground="@Color.DeepSkyBlue1"
+                                            Decoration="@Decoration.Underline"
+                                            link="https://github.com/LittleLittleCloud/RazorConsole" />
+                                </Rows>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                </Columns>
             </Rows>
         </Padder>
         <Markup Content="Source Code: Markup.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
@@ -37,12 +55,20 @@
     private static readonly Decoration DimItalicDecoration = Decoration.Dim | Decoration.Italic;
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
     private static readonly Padding _viewPadding = new(0, 1, 0, 1);
+    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
 
     private static readonly string[] _exampleCode =
     {
-        "<Markup Content=\"Emphasize important labels\" Foreground=\"Color.Chartreuse1\" Decoration=\"Decoration.Bold\" />",
-        "<Markup Content=\"Callouts can be dimmed\" Foreground=\"Color.Grey70\" Decoration=\"Decoration.Dim | Decoration.Italic\" />",
-        "<Markup Content=\"Link to the repository\" Foreground=\"Color.DeepSkyBlue1\" Decoration=\"Decoration.Underline\" link=\"https://github.com/LittleLittleCloud/RazorConsole\" />",
+        "<Markup Content=\"Emphasize important labels\"",
+        "       Foreground=\"Color.Chartreuse1\"",
+        "       Decoration=\"Decoration.Bold\" />",
+        "<Markup Content=\"Callouts can be dimmed\"",
+        "       Foreground=\"Color.Grey70\"",
+        "       Decoration=\"Decoration.Dim | Decoration.Italic\" />",
+        "<Markup Content=\"Link to the repository\"",
+        "       Foreground=\"Color.DeepSkyBlue1\"",
+        "       Decoration=\"Decoration.Underline\"",
+        "       link=\"https://github.com/LittleLittleCloud/RazorConsole\" />",
     };
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Markup.razor";

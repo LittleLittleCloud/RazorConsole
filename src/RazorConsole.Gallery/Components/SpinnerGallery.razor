@@ -11,22 +11,35 @@
                 @for (var index = 0; index < _spinnerSamples.Length; index++)
                 {
                     var sample = _spinnerSamples[index];
-                    <Markup Content="@($"Example {index + 1} - Source Code")" Decoration="@Decoration.Bold" />
-                    <Padder Padding="@_codeExamplePadding">
-                        <Rows>
-                            @foreach (var line in sample.CodeLines)
-                            {
-                                <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
-                            }
-                        </Rows>
-                    </Padder>
-                    <Markup Content="@($"Example {index + 1} - View")" Decoration="@Decoration.Bold" />
-                    <Padder Padding="@_viewPadding">
-                        <Rows>
-                            <Markup Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Bold" Content="@sample.Name" />
-                            <Spinner @key="sample.Name" SpinnerType="@sample.Spinner" />
-                        </Rows>
-                    </Padder>
+                    <Markup Content="@($"Example {index + 1}")" Decoration="@Decoration.Bold" />
+                    <Columns Expand="true">
+                        <Padder Padding="@_columnPadding">
+                            <Rows>
+                                <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                                <Padder Padding="@_codeExamplePadding">
+                                    <Rows>
+                                        @foreach (var line in sample.CodeLines)
+                                        {
+                                            <Markup Content="@line" />
+                                        }
+                                    </Rows>
+                                </Padder>
+                            </Rows>
+                        </Padder>
+                        <Padder Padding="@_columnPadding">
+                            <Rows>
+                                <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                                <Padder Padding="@_viewPadding">
+                                    <Rows>
+                                        <Markup Foreground="@Color.DeepSkyBlue1"
+                                                Decoration="@Decoration.Bold"
+                                                Content="@sample.Name" />
+                                        <Spinner @key="sample.Name" SpinnerType="@sample.Spinner" />
+                                    </Rows>
+                                </Padder>
+                            </Rows>
+                        </Padder>
+                    </Columns>
                     <Newline />
                 }
                 <Columns>
@@ -65,6 +78,7 @@
     private static readonly Padding _examplePadding = new(0, 1, 0, 0);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
     private static readonly Padding _viewPadding = new(0, 1, 0, 1);
+    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Spinner.razor";
 }

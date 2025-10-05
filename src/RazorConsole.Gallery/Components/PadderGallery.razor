@@ -8,39 +8,65 @@
         <Markup Content="Examples" Decoration="@Decoration.Bold" />
         <Padder Padding="@_examplePadding">
             <Rows>
-                <Markup Content="Example 1 - Source Code" Decoration="@Decoration.Bold" />
-                <Padder Padding="@_codeExamplePadding">
-                    <Rows>
-                        @foreach (var line in _noPaddingCode)
-                        {
-                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
-                        }
-                    </Rows>
-                </Padder>
-                <Markup Content="Example 1 - View" Decoration="@Decoration.Bold" />
-                <Padder Padding="@_viewPadding">
-                    <Panel Title="No extra padding" Border="@BoxBorder.Square" Expand="false">
-                        <Markup Content="Text touches the border." />
-                    </Panel>
-                </Padder>
-                <Newline />
-                <Markup Content="Example 2 - Source Code" Decoration="@Decoration.Bold" />
-                <Padder Padding="@_codeExamplePadding">
-                    <Rows>
-                        @foreach (var line in _paddedCode)
-                        {
-                            <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
-                        }
-                    </Rows>
-                </Padder>
-                <Markup Content="Example 2 - View" Decoration="@Decoration.Bold" />
-                <Padder Padding="@_viewPadding">
-                    <Padder Padding="@_innerPadding">
-                        <Panel Title="Padder adds space" Border="@BoxBorder.Square" Expand="false">
-                            <Markup Content="Comfortable breathing room." />
-                        </Panel>
+                <Markup Content="Example 1" Decoration="@Decoration.Bold" />
+                <Columns Expand="true">
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_codeExamplePadding">
+                                <Rows>
+                                    @foreach (var line in _noPaddingCode)
+                                    {
+                                        <Markup Content="@line" />
+                                    }
+                                </Rows>
+                            </Padder>
+                        </Rows>
                     </Padder>
-                </Padder>
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_viewPadding">
+                                <Panel Title="No extra padding"
+                                       Border="@BoxBorder.Square"
+                                       Expand="false">
+                                    <Markup Content="Text touches the border." />
+                                </Panel>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                </Columns>
+                <Newline />
+                <Markup Content="Example 2" Decoration="@Decoration.Bold" />
+                <Columns Expand="true">
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_codeExamplePadding">
+                                <Rows>
+                                    @foreach (var line in _paddedCode)
+                                    {
+                                        <Markup Content="@line" />
+                                    }
+                                </Rows>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_viewPadding">
+                                <Padder Padding="@_innerPadding">
+                                    <Panel Title="Padder adds space"
+                                           Border="@BoxBorder.Square"
+                                           Expand="false">
+                                        <Markup Content="Comfortable breathing room." />
+                                    </Panel>
+                                </Padder>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                </Columns>
             </Rows>
         </Padder>
         <Markup Content="Source Code: Padder.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
@@ -53,10 +79,12 @@
     private static readonly Padding _innerPadding = new(1, 1, 1, 1);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
     private static readonly Padding _viewPadding = new(0, 1, 0, 1);
+    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
 
     private static readonly string[] _noPaddingCode =
     {
-        "<Panel Title=\"No extra padding\" Border=\"BoxBorder.Square\" Expand=\"false\">",
+        "<Panel Title=\"No extra padding\"",
+        "       Border=\"BoxBorder.Square\" Expand=\"false\">",
         "    <Markup Content=\"Text touches the border.\" />",
         "</Panel>",
     };
@@ -64,7 +92,8 @@
     private static readonly string[] _paddedCode =
     {
         "<Padder Padding=\"new(1, 1, 1, 1)\">",
-        "    <Panel Title=\"Padder adds space\" Border=\"BoxBorder.Square\" Expand=\"false\">",
+        "    <Panel Title=\"Padder adds space\"",
+        "           Border=\"BoxBorder.Square\" Expand=\"false\">",
         "        <Markup Content=\"Comfortable breathing room.\" />",
         "    </Panel>",
         "</Padder>",

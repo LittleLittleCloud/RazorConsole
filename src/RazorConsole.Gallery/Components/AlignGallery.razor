@@ -12,26 +12,37 @@
                     @for (var index = 0; index < _samples.Length; index++)
                     {
                         var sample = _samples[index];
-                        <Markup Content="@($"Example {index + 1} - Source Code")" Decoration="@Decoration.Bold" />
-                        <Padder Padding="@_codeExamplePadding">
-                            <Rows>
-                                @foreach (var line in sample.CodeLines)
-                                {
-                                    <Markup Content="@line" Foreground="@Color.DeepSkyBlue1" />
-                                }
-                            </Rows>
-                        </Padder>
-                        <Markup Content="@($"Example {index + 1} - View")" Decoration="@Decoration.Bold" />
-                        <Padder Padding="@_viewPadding">
-                            <Border BoxBorder="@BoxBorder.Rounded" Padding="@_alignPadding">
-                                <Align Width="18"
-                                       Height="5"
-                                       Horizontal="@sample.Horizontal"
-                                       Vertical="@sample.Vertical">
-                                    <Markup Content="@sample.Title" />
-                                </Align>
-                            </Border>
-                        </Padder>
+                        <Markup Content="@($"Example {index + 1}")" Decoration="@Decoration.Bold" />
+                        <Columns Expand="true">
+                            <Padder Padding="@_columnPadding">
+                                <Rows>
+                                    <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                                    <Padder Padding="@_codeExamplePadding">
+                                        <Rows>
+                                            @foreach (var line in sample.CodeLines)
+                                            {
+                                                <Markup Content="@line" />
+                                            }
+                                        </Rows>
+                                    </Padder>
+                                </Rows>
+                            </Padder>
+                            <Padder Padding="@_columnPadding">
+                                <Rows>
+                                    <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                                    <Padder Padding="@_viewPadding">
+                                        <Border BoxBorder="@BoxBorder.Rounded" Padding="@_alignPadding">
+                                            <Align Width="18"
+                                                   Height="5"
+                                                   Horizontal="@sample.Horizontal"
+                                                   Vertical="@sample.Vertical">
+                                                <Markup Content="@sample.Title" />
+                                            </Align>
+                                        </Border>
+                                    </Padder>
+                                </Rows>
+                            </Padder>
+                        </Columns>
                         <Newline />
                     }
                 </Rows>
@@ -47,6 +58,7 @@
     private static readonly Padding _alignPadding = new(1, 1, 1, 1);
     private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
     private static readonly Padding _viewPadding = new(0, 1, 0, 1);
+    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
 
     private sealed record AlignSample(string Title, HorizontalAlignment Horizontal, VerticalAlignment Vertical, string[] CodeLines);
 
@@ -54,19 +66,25 @@
     {
         new("Top / Left", HorizontalAlignment.Left, VerticalAlignment.Top, new[]
         {
-            "<Align Width=\"18\" Height=\"5\" Horizontal=\"HorizontalAlignment.Left\" Vertical=\"VerticalAlignment.Top\">",
+            "<Align Width=\"18\" Height=\"5\"",
+            "       Horizontal=\"HorizontalAlignment.Left\"",
+            "       Vertical=\"VerticalAlignment.Top\">",
             "    <Markup Content=\"Top / Left\" />",
             "</Align>",
         }),
         new("Center", HorizontalAlignment.Center, VerticalAlignment.Middle, new[]
         {
-            "<Align Width=\"18\" Height=\"5\" Horizontal=\"HorizontalAlignment.Center\" Vertical=\"VerticalAlignment.Middle\">",
+            "<Align Width=\"18\" Height=\"5\"",
+            "       Horizontal=\"HorizontalAlignment.Center\"",
+            "       Vertical=\"VerticalAlignment.Middle\">",
             "    <Markup Content=\"Center\" />",
             "</Align>",
         }),
         new("Bottom / Right", HorizontalAlignment.Right, VerticalAlignment.Bottom, new[]
         {
-            "<Align Width=\"18\" Height=\"5\" Horizontal=\"HorizontalAlignment.Right\" Vertical=\"VerticalAlignment.Bottom\">",
+            "<Align Width=\"18\" Height=\"5\"",
+            "       Horizontal=\"HorizontalAlignment.Right\"",
+            "       Vertical=\"VerticalAlignment.Bottom\">",
             "    <Markup Content=\"Bottom / Right\" />",
             "</Align>",
         }),
