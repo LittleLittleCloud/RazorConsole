@@ -60,6 +60,22 @@
             </Padder>
         </Padder>
 
+        <Padder Padding="@FieldPadding">
+            <Select Options="@_colorOptions"
+                    Value="@_favoriteColor"
+                    ValueChanged="OnFavoriteColorChangedAsync"
+                    Placeholder="Choose a favorite color"
+                    OnSelected="OnFavoriteColorSelectedAsync"
+                    OnClear="OnFavoriteColorClearedAsync"
+                    Expand="true" />
+
+            <Padder Padding="@HelperPadding">
+                <Markup Content="@_favoriteColorStatus"
+                        Foreground="@_favoriteColorStatusColor"
+                        Decoration="@_favoriteColorStatusDecoration" />
+            </Padder>
+        </Padder>
+
         <Padder Padding="@StatusRowPadding">
             <Columns>
                 <Markup Content="@_statusMessage" Foreground="@_statusColor" Decoration="@_statusDecoration" />
@@ -108,6 +124,7 @@
     private string _emailValue = string.Empty;
     private string _passwordValue = string.Empty;
     private string _ageValue = string.Empty;
+    private string? _favoriteColor;
 
     private string _emailHelper = "We'll send confirmations to this address.";
     private Color _emailHelperColor = Color.Grey70;
@@ -121,11 +138,23 @@
     private Color _ageHelperColor = Color.Grey70;
     private Decoration _ageHelperDecoration = Decoration.Italic;
 
+    private string _favoriteColorStatus = "Pick your favorite color.";
+    private Color _favoriteColorStatusColor = Color.Grey70;
+    private Decoration _favoriteColorStatusDecoration = Decoration.Italic;
+
     private string _statusMessage = "Complete all fields and select Submit.";
     private Color _statusColor = Color.Grey70;
     private Decoration _statusDecoration = Decoration.Italic;
 
     private RegistrationSubmission? _latestSubmission;
+    private readonly string[] _colorOptions = new[]
+    {
+        "Crimson Red",
+        "Azure Blue",
+        "Emerald Green",
+        "Vibrant Violet",
+        "Sunny Yellow",
+    };
 
     private Task OnEmailChangedAsync(string? value)
     {
@@ -191,6 +220,7 @@
         _emailValue = string.Empty;
         _passwordValue = string.Empty;
         _ageValue = string.Empty;
+        _favoriteColor = null;
 
         _emailHelper = "We'll send confirmations to this address.";
         _emailHelperColor = Color.Grey70;
@@ -209,7 +239,48 @@
         _statusDecoration = Decoration.Italic;
 
         _latestSubmission = null;
+        ResetFavoriteColorStatus();
         StateHasChanged();
+    }
+
+    private Task OnFavoriteColorChangedAsync(string? value)
+    {
+        _favoriteColor = value;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnFavoriteColorSelectedAsync(string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            _favoriteColor = value;
+            _favoriteColorStatus = $"Favorite color set to {value}.";
+            _favoriteColorStatusColor = Color.Chartreuse1;
+            _favoriteColorStatusDecoration = Decoration.Bold;
+        }
+        else
+        {
+            ResetFavoriteColorStatus();
+        }
+
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnFavoriteColorClearedAsync()
+    {
+        _favoriteColor = null;
+        ResetFavoriteColorStatus();
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private void ResetFavoriteColorStatus()
+    {
+        _favoriteColorStatus = "Pick your favorite color.";
+        _favoriteColorStatusColor = Color.Grey70;
+        _favoriteColorStatusDecoration = Decoration.Italic;
     }
 
     private void UpdateEmailHelper()
