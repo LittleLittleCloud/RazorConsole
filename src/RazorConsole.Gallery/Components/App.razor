@@ -4,9 +4,20 @@
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Components
 @using Spectre.Console
+<Figlet Content="Component Gallery" />
+<Align Horizontal="@HorizontalAlignment.Center">
+@* app bar *@
 
-<Panel Title="Component Gallery" Border="@BoxBorder.Double" Expand="true">
-    <Grid Expand="true">
+    <Rows>
+        <Markup Content="Tab / Ctrl+Tab to change focus • Enter to select • Type to input • Control+C to exit" Foreground="@Color.Grey58" />
+        <Columns>
+            <Markup Content="Repo link: RazorConsole" Foreground="@Color.DeepSkyBlue1" Decoration="Decoration.Underline" link="https://github.com/LittleLittleCloud/RazorConsole" />
+            <Markup Content="Give us a star ⭐😺🔥" Foreground="@Color.LightYellow3" />
+        </Columns>
+    </Rows>
+</Align>
+<Panel Expand="true">
+    <Grid Columns="2" Expand="true">
         <Padder Padding="@_navigationPadding">
             <Rows>
                 @foreach (var tab in _tabs)
@@ -20,50 +31,51 @@
                 }
             </Rows>
         </Padder>
-            @switch (_activeTab)
-            {
-                case "align":
-                    <AlignGallery />
-                    break;
-                case "border":
-                    <BorderGallery />
-                    break;
-                case "columns":
-                    <ColumnsGallery />
-                    break;
-                case "grid":
-                    <GridGallery />
-                    break;
-                case "markup":
-                    <MarkupGallery />
-                    break;
-                case "newline":
-                    <NewlineGallery />
-                    break;
-                case "padder":
-                    <PadderGallery />
-                    break;
-                case "panel":
-                    <PanelGallery />
-                    break;
-                case "rows":
-                    <RowsGallery />
-                    break;
-                case "select":
-                    <SelectGallery />
-                    break;
-                case "spinner":
-                    <SpinnerGallery />
-                    break;
-                case "textbutton":
-                    <TextButtonGallery />
-                    break;
-                case "textinput":
-                    <TextInputGallery />
-                    break;
-            }
+        @switch (_activeTab)
+        {
+            case "align":
+                <AlignGallery />
+                break;
+            case "border":
+                <BorderGallery />
+                break;
+            case "columns":
+                <ColumnsGallery />
+                break;
+            case "grid":
+                <GridGallery />
+                break;
+            case "markup":
+                <MarkupGallery />
+                break;
+            case "newline":
+                <NewlineGallery />
+                break;
+            case "padder":
+                <PadderGallery />
+                break;
+            case "panel":
+                <PanelGallery />
+                break;
+            case "rows":
+                <RowsGallery />
+                break;
+            case "select":
+                <SelectGallery />
+                break;
+            case "spinner":
+                <SpinnerGallery />
+                break;
+            case "textbutton":
+                <TextButtonGallery />
+                break;
+            case "textinput":
+                <TextInputGallery />
+                break;
+        }
     </Grid>
 </Panel>
+
 
 @code {
     private readonly (string Key, string Label)[] _tabs = new[]

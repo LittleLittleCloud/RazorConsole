@@ -30,6 +30,7 @@ internal sealed partial class VdomSpectreTranslator
         typeof(GridElementTranslator),
         typeof(PadderElementTranslator),
         typeof(AlignElementTranslator),
+typeof(FigletElementTranslator),
         typeof(HtmlDivElementTranslator),
         typeof(FailToRenderElementTranslator),
     };

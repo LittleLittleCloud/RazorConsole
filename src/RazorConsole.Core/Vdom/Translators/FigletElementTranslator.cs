@@ -4,7 +4,6 @@ using System.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using RazorConsole.Core.Components;
 using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
