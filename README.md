@@ -42,7 +42,8 @@ dotnet add package RazorConsole
 // Program.cs
 await AppHost.RunAsync<Counter>();
 ```
-<img src="./assets/counter.gif" alt="Counter component demonstration" style="width: 100%; height: auto;" />
+
+![Counter component demonstration](./assets/counter.gif)
 
 ## Component Gallery
 
