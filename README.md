@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 </div>
 
-> Build interactive console applications with .NET Razor components.
+> Build interactive console applications with .NET Razor and Spectre.Console
 
 ## Install
 
