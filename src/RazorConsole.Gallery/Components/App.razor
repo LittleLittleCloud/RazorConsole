@@ -9,19 +9,46 @@
 @using RazorConsole.Core.Focus
 @using Spectre.Console
 @using RazorConsole.Gallery.Components
-<Panel Border="@BoxBorder.Double">
+<Panel Border="@BoxBorder.Double" Title="Component Gallery">
+    <Columns Expand="true">
+        <Rows>
+            <TextButton Content="Spinner" OnClick="SelectSpinner" />
+            <TextButton Content="Align" OnClick="SelectAlign" />
+        </Rows>
+        <Panel Width="100" Border="@BoxBorder.None">
+            @if (_activeTab == "spinner")
+            {
+                <SpinnerGallery />
+            }
+            @if (_activeTab == "align")
+            {
+                <InputGallery />}
+
+        </Panel>
+    </Columns>
     @* <Counter />
-    <Newline />
-    <Timer />
-    <Newline />
-    <SpinnerGallery />
-    <Newline />
-    <TextGallery /> *@
-    <InputGallery />
+        <Newline />
+        <Timer />   
+        <Newline />
+        <SpinnerGallery />
+        <Newline />
+        <TextGallery /> *@
+    @*<InputGallery />*@
     @* <Newline />
-    <GridGallery /> *@
+        <GridGallery /> *@
 </Panel>
 
 @code {
-    private Padding padding => new Padding(2, 2, 2, 2);
+    private string[] _tabs = ["spinner", "text", "input", "grid"];
+    private string _activeTab = "spinner";
+
+    private void SelectSpinner()
+    {
+        _activeTab = "spinner";
+    }
+
+    private void SelectAlign()
+    {
+        _activeTab = "align";
+    }
 }

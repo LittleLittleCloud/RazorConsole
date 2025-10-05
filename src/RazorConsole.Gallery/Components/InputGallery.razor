@@ -4,8 +4,6 @@
 @using RazorConsole.Components
 @using Spectre.Console
 
-<Panel Title="Account Registration" Border="@BoxBorder.Rounded" Expand="true">
-    <Padder Padding="@PanelPadding">
         <Markup Content="Fill in the details below to create a sample account."
                 Foreground="@Color.Grey70" />
 
@@ -92,15 +90,13 @@
                 </Padder>
             </Columns>
         </Padder>
-    </Padder>
-</Panel>
 
 @if (_latestSubmission is not null)
 {
     <Newline />
 
     <Panel Title="Latest Submission" Border="@BoxBorder.Double" Expand="true">
-        <Padder Padding="@PanelPadding">
+        <Padder>
             <Markup Content="@($"Email: {Spectre.Console.Markup.Escape(_latestSubmission.Email)}")" Decoration="@Decoration.Bold" />
             <Newline />
             <Markup Content="@($"Age: {_latestSubmission.Age}")" />
@@ -114,7 +110,6 @@
 }
 
 @code {
-    private static readonly Padding PanelPadding = new Padding(1, 1, 1, 1);
     private static readonly Padding FieldPadding = new Padding(0, 1, 0, 0);
     private static readonly Padding HelperPadding = new Padding(1, 0, 0, 0);
     private static readonly Padding StatusRowPadding = new Padding(0, 1, 0, 0);

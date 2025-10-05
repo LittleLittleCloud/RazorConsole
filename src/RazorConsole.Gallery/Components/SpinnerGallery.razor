@@ -1,20 +1,18 @@
 @using RazorConsole.Components
 @using Spectre.Console
 
-<Panel Title="Spinner Gallery" Border="@BoxBorder.Rounded" Expand="false">
     <Columns>
         <Markup Content="Visit " />
         <Markup Content="https://spectreconsole.net/appendix/spinners" link="https://spectreconsole.net/appendix/spinners" />
         <Markup Content=" for all available spinners." />
     </Columns>
-        <Grid Columns="2" Expand="false">
-            @foreach (var sample in _spinnerSamples)
-            {
-                <Markup Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Bold" Content="@sample.Name" />
-                <Spinner @key="sample.Name" SpinnerType="@sample.Spinner" />
-            }
-        </Grid>
-</Panel>
+    <Grid Columns="2" Expand="false">
+        @foreach (var sample in _spinnerSamples)
+        {
+            <Markup Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Bold" Content="@sample.Name" />
+            <Spinner @key="sample.Name" SpinnerType="@sample.Spinner" />
+        }
+    </Grid>
 
 @code {
     private readonly (string Name, global::Spectre.Console.Spinner Spinner)[] _spinnerSamples =
