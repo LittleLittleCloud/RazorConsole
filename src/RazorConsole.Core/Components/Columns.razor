@@ -5,39 +5,18 @@
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
 @using System.Composition
-@inherits RenderableConverterComponentBase<ColumnsRenderableConverter>
-@attribute [Export(typeof(RenderableConverterComponentBase<ColumnsRenderableConverter>))]
 
-<div data-columns="true"
-    data-columns-expand="@ExpandAttribute"
-    data-columns-padding="@PaddingAttribute"
-    @attributes="RemainingAttributes">
+<div class="columns"
+    data-expand="@ExpandAttribute">
     @ChildContent
 </div>
 
 @code {
-    [Parameter]
-    public bool Expand { get; set; }
+    private string ExpandAttribute => Expand ? "true" : "false";
 
     [Parameter]
-    public Padding? Padding { get; set; }
+    public bool Expand { get; set; } = false;
 
-    private string? ExpandAttribute => Expand ? "true" : null;
-
-    private string? PaddingAttribute
-    {
-        get
-        {
-            if (Padding is not { } padding)
-            {
-                return null;
-            }
-
-            return string.Join(",",
-                padding.Left.ToString(CultureInfo.InvariantCulture),
-                padding.Top.ToString(CultureInfo.InvariantCulture),
-                padding.Right.ToString(CultureInfo.InvariantCulture),
-                padding.Bottom.ToString(CultureInfo.InvariantCulture));
-        }
-    }
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
 }

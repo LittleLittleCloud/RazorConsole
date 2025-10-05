@@ -4,24 +4,21 @@
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
 @using System.Composition
-@inherits RenderableConverterComponentBase<PanelRenderableConverter>
-@attribute [Export(typeof(RenderableConverterComponentBase<PanelRenderableConverter>))]
 
-<div data-border="panel"
-     data-header="@Header"
-     data-header-color="@HeaderColor"
-    data-border-color="@BorderColor"
-    @attributes="RemainingAttributes">
+<Panel Border="@BoxBorder" BorderColor="@BorderColor" Padding="@Padding" Expand="false">
     @ChildContent
-</div>
+</Panel>
 
 @code {
     [Parameter]
-    public string? Header { get; set; }
-
-    [Parameter]
-    public Color? HeaderColor { get; set; }
+    public RenderFragment? ChildContent { get; set; }
 
     [Parameter]
     public Color? BorderColor { get; set; }
+
+    [Parameter]
+    public BoxBorder BoxBorder { get; set; } = BoxBorder.Rounded;
+
+    [Parameter]
+    public Padding Padding { get; set; } = new(0, 0, 0, 0);
 }

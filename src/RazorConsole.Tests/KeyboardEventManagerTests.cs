@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Core.Controllers;
+using RazorConsole.Core.Focus;
+using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.ComponentMarkup;
-using RazorConsole.Core.Rendering.Focus;
-using RazorConsole.Core.Rendering.Input;
-using RazorConsole.Core.Rendering.Vdom;
+using RazorConsole.Core.Vdom;
 using Spectre.Console.Rendering;
 using Xunit;
 
@@ -89,6 +89,130 @@ public class KeyboardEventManagerTests
         Assert.Empty(harness.Dispatcher.Events);
     }
 
+    [Fact]
+    public async Task HandleKeyAsync_PrintableKey_DispatchesKeyboardLifecycleEvents()
+    {
+        await using var harness = await KeyboardHarness.CreateAsync(
+            new FocusElementSpec(
+                key: "input",
+                value: string.Empty,
+                events: new Dictionary<string, ulong>
+                {
+                    ["onkeydown"] = 10,
+                    ["onkeypress"] = 11,
+                    ["onkeyup"] = 12,
+                    ["oninput"] = 13,
+                }));
+
+        var character = new ConsoleKeyInfo('a', ConsoleKey.A, shift: false, alt: false, control: false);
+        await harness.Manager.HandleKeyAsync(character, CancellationToken.None);
+
+        Assert.Collection(
+            harness.Dispatcher.Events,
+            dispatched =>
+            {
+                Assert.Equal(10UL, dispatched.HandlerId);
+                var args = Assert.IsType<KeyboardEventArgs>(dispatched.Args);
+                Assert.Equal("keydown", args.Type);
+                Assert.Equal("a", args.Key);
+                Assert.Equal("KeyA", args.Code);
+            },
+            dispatched =>
+            {
+                Assert.Equal(11UL, dispatched.HandlerId);
+                var args = Assert.IsType<KeyboardEventArgs>(dispatched.Args);
+                Assert.Equal("keypress", args.Type);
+                Assert.Equal("a", args.Key);
+                Assert.Equal("KeyA", args.Code);
+            },
+            dispatched =>
+            {
+                Assert.Equal(13UL, dispatched.HandlerId);
+                var change = Assert.IsType<ChangeEventArgs>(dispatched.Args);
+                Assert.Equal("a", change.Value);
+            },
+            dispatched =>
+            {
+                Assert.Equal(12UL, dispatched.HandlerId);
+                var args = Assert.IsType<KeyboardEventArgs>(dispatched.Args);
+                Assert.Equal("keyup", args.Type);
+                Assert.Equal("a", args.Key);
+                Assert.Equal("KeyA", args.Code);
+            });
+    }
+
+    [Fact]
+    public async Task HandleKeyAsync_Tab_DispatchesKeyEventsWithFallback()
+    {
+        await using var harness = await KeyboardHarness.CreateAsync(
+            new FocusElementSpec(
+                key: "first",
+                events: new Dictionary<string, ulong>
+                {
+                    ["onkeydown"] = 21,
+                    ["onkeyup"] = 22,
+                }),
+            new FocusElementSpec("second"));
+
+        var tab = new ConsoleKeyInfo('\t', ConsoleKey.Tab, shift: false, alt: false, control: false);
+        await harness.Manager.HandleKeyAsync(tab, CancellationToken.None);
+
+        Assert.Equal("second", harness.FocusManager.CurrentFocusKey);
+
+        Assert.Collection(
+            harness.Dispatcher.Events,
+            dispatched =>
+            {
+                Assert.Equal(21UL, dispatched.HandlerId);
+                var args = Assert.IsType<KeyboardEventArgs>(dispatched.Args);
+                Assert.Equal("keydown", args.Type);
+                Assert.Equal("Tab", args.Key);
+            },
+            dispatched =>
+            {
+                Assert.Equal(22UL, dispatched.HandlerId);
+                var args = Assert.IsType<KeyboardEventArgs>(dispatched.Args);
+                Assert.Equal("keyup", args.Type);
+                Assert.Equal("Tab", args.Key);
+            });
+    }
+
+    [Fact]
+    public async Task FocusChange_ClearsBufferedInput()
+    {
+        await using var harness = await KeyboardHarness.CreateAsync(
+            new FocusElementSpec(
+                key: "first",
+                value: string.Empty,
+                events: new Dictionary<string, ulong>
+                {
+                    ["oninput"] = 101,
+                }),
+            new FocusElementSpec(
+                key: "second",
+                value: string.Empty,
+                events: new Dictionary<string, ulong>
+                {
+                    ["oninput"] = 201,
+                }));
+
+        var firstChar = new ConsoleKeyInfo('x', ConsoleKey.X, shift: false, alt: false, control: false);
+        await harness.Manager.HandleKeyAsync(firstChar, CancellationToken.None);
+
+        harness.Dispatcher.Reset();
+
+        await harness.FocusManager.FocusNextAsync(harness.FocusToken);
+        await harness.FocusManager.FocusPreviousAsync(harness.FocusToken);
+
+        var nextChar = new ConsoleKeyInfo('b', ConsoleKey.B, shift: false, alt: false, control: false);
+        await harness.Manager.HandleKeyAsync(nextChar, CancellationToken.None);
+
+        var @event = Assert.Single(harness.Dispatcher.Events);
+        Assert.Equal(101UL, @event.HandlerId);
+        var change = Assert.IsType<ChangeEventArgs>(@event.Args);
+        Assert.Equal("b", change.Value);
+    }
+
     private sealed class KeyboardHarness : IAsyncDisposable
     {
         private readonly ConsoleRenderer _renderer;
@@ -117,6 +241,8 @@ public class KeyboardEventManagerTests
 
         public TestKeyboardEventDispatcher Dispatcher { get; }
 
+        public CancellationToken FocusToken => _session.Token;
+
         public static async Task<KeyboardHarness> CreateAsync(params FocusElementSpec[] elements)
         {
             if (elements is null || elements.Length == 0)
@@ -135,6 +261,11 @@ public class KeyboardEventManagerTests
             var context = ConsoleLiveDisplayContext.CreateForTesting(canvas, renderer, view);
 
             var session = focusManager.BeginSession(context, view, CancellationToken.None);
+            if (view.VdomRoot is not null)
+            {
+                var snapshot = new ConsoleRenderer.RenderSnapshot(view.VdomRoot, view.Renderable, view.AnimatedRenderables);
+                ((IObserver<ConsoleRenderer.RenderSnapshot>)focusManager).OnNext(snapshot);
+            }
             await session.InitializationTask.ConfigureAwait(false);
 
             return new KeyboardHarness(focusManager, manager, dispatcher, renderer, context, session);
@@ -201,6 +332,9 @@ public class KeyboardEventManagerTests
         private readonly List<DispatchedEvent> _events = new();
 
         public IReadOnlyList<DispatchedEvent> Events => _events;
+
+        public void Reset()
+            => _events.Clear();
 
         public Task DispatchAsync(ulong handlerId, EventArgs eventArgs, CancellationToken cancellationToken)
         {

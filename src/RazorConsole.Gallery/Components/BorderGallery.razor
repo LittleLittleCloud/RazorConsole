@@ -1,0 +1,81 @@
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Padder Padding="@_outerPadding">
+    <Rows>
+        <Markup Content="Border wraps child content with a Spectre.Console panel using the configured border style, color, and padding." Foreground="@Color.Grey70" />
+        <Newline />
+        <Markup Content="Examples" Decoration="@Decoration.Bold" />
+        <Padder Padding="@_examplePadding">
+            <Rows>
+                @for (var index = 0; index < _examples.Length; index++)
+                {
+                    var example = _examples[index];
+                    <Markup Content="@($"Example {index + 1}")" Decoration="@Decoration.Bold" />
+                    <Columns Expand="true">
+                        <Padder Padding="@_columnPadding">
+                            <Rows>
+                                <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                                <Padder Padding="@_codeExamplePadding">
+                                    <Rows>
+                                        @foreach (var line in example.CodeLines)
+                                        {
+                                            <Markup Content="@line" />
+                                        }
+                                    </Rows>
+                                </Padder>
+                            </Rows>
+                        </Padder>
+                        <Padder Padding="@_columnPadding">
+                            <Rows>
+                                <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                                <Padder Padding="@_viewPadding">
+                                    <Border BoxBorder="@example.Border"
+                                            BorderColor="@example.BorderColor"
+                                            Padding="@_innerPadding">
+                                        <Markup Content="@example.Description" />
+                                    </Border>
+                                </Padder>
+                            </Rows>
+                        </Padder>
+                    </Columns>
+                    <Newline />
+                }
+            </Rows>
+        </Padder>
+        <Markup Content="Source Code: Border.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+    </Rows>
+</Padder>
+
+@code {
+    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
+    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _innerPadding = new(1, 0, 1, 0);
+    private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
+    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
+
+    private sealed record BorderExample(string Description, BoxBorder Border, Color BorderColor, string[] CodeLines);
+
+    private static readonly BorderExample[] _examples =
+    {
+        new("Rounded border with padding.", BoxBorder.Rounded, Color.Chartreuse1, new[]
+        {
+            "<Border BoxBorder=\"BoxBorder.Rounded\"",
+            "       BorderColor=\"Color.Chartreuse1\"",
+            "       Padding=\"new(1, 0, 1, 0)\">",
+            "    <Markup Content=\"Rounded border with padding.\" />",
+            "</Border>",
+        }),
+        new("Double border and custom color.", BoxBorder.Double, Color.DeepSkyBlue1, new[]
+        {
+            "<Border BoxBorder=\"BoxBorder.Double\"",
+            "       BorderColor=\"Color.DeepSkyBlue1\"",
+            "       Padding=\"new(1, 0, 1, 0)\">",
+            "    <Markup Content=\"Double border and custom color.\" />",
+            "</Border>",
+        }),
+    };
+
+    private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Border.razor";
+}

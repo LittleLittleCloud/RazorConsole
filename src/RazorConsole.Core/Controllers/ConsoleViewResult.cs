@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.ComponentMarkup;
-using RazorConsole.Core.Rendering.Vdom;
+using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 

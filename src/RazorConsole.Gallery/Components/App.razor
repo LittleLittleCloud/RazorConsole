@@ -1,0 +1,102 @@
+@namespace RazorConsole.Gallery.Components
+
+@using System
+@using Microsoft.AspNetCore.Components
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Panel Title="Component Gallery" Border="@BoxBorder.Double" Expand="true">
+    <Grid Expand="true">
+        <Padder Padding="@_navigationPadding">
+            <Rows>
+                @foreach (var tab in _tabs)
+                {
+                    <Padder Padding="@_navigationItemPadding">
+                        <TextButton Content="@tab.Label"
+                                    BackgroundColor="@(IsActive(tab.Key) ? Color.Grey37 : Color.Black)"
+                                    FocusedColor="@Color.DeepSkyBlue1"
+                                    OnClick="@(() => SelectTab(tab.Key))" />
+                    </Padder>
+                }
+            </Rows>
+        </Padder>
+            @switch (_activeTab)
+            {
+                case "align":
+                    <AlignGallery />
+                    break;
+                case "border":
+                    <BorderGallery />
+                    break;
+                case "columns":
+                    <ColumnsGallery />
+                    break;
+                case "grid":
+                    <GridGallery />
+                    break;
+                case "markup":
+                    <MarkupGallery />
+                    break;
+                case "newline":
+                    <NewlineGallery />
+                    break;
+                case "padder":
+                    <PadderGallery />
+                    break;
+                case "panel":
+                    <PanelGallery />
+                    break;
+                case "rows":
+                    <RowsGallery />
+                    break;
+                case "select":
+                    <SelectGallery />
+                    break;
+                case "spinner":
+                    <SpinnerGallery />
+                    break;
+                case "textbutton":
+                    <TextButtonGallery />
+                    break;
+                case "textinput":
+                    <TextInputGallery />
+                    break;
+            }
+    </Grid>
+</Panel>
+
+@code {
+    private readonly (string Key, string Label)[] _tabs = new[]
+    {
+        ("align", "Align"),
+        ("border", "Border"),
+        ("columns", "Columns"),
+        ("grid", "Grid"),
+        ("markup", "Markup"),
+        ("newline", "Newline"),
+        ("padder", "Padder"),
+        ("panel", "Panel"),
+        ("rows", "Rows"),
+        ("select", "Select"),
+        ("spinner", "Spinner"),
+        ("textbutton", "Text Button"),
+        ("textinput", "Text Input"),
+    };
+
+    private string _activeTab = "align";
+
+    private readonly Padding _navigationPadding = new Padding(1, 1, 1, 1);
+    private readonly Padding _navigationItemPadding = new Padding(0, 0, 0, 1);
+    private readonly Padding _contentPadding = new Padding(1, 0, 1, 0);
+
+    private void SelectTab(string key)
+    {
+        if (!IsActive(key))
+        {
+            _activeTab = key;
+            StateHasChanged();
+        }
+    }
+
+    private bool IsActive(string key) => string.Equals(_activeTab, key, StringComparison.Ordinal);
+}

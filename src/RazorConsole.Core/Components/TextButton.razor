@@ -1,0 +1,32 @@
+@namespace RazorConsole.Components
+
+<div @onfocus="OnFocus" @onfocusout="OnFocusOut" @onclick="OnClick">
+    <Markup Content="@Content" Background="@backgroundColor" />
+</div>
+
+@code {
+    private Spectre.Console.Color backgroundColor = Spectre.Console.Color.Default;
+    [Parameter]
+    public Spectre.Console.Color FocusedColor { get; set; } = Spectre.Console.Color.Yellow;
+
+    [Parameter]
+    public Spectre.Console.Color BackgroundColor { get; set; } = Spectre.Console.Color.Default;
+
+    [Parameter]
+    public string Content { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    private void OnFocus(FocusEventArgs e)
+    {
+        backgroundColor = FocusedColor;
+        StateHasChanged();
+    }
+
+    private void OnFocusOut(FocusEventArgs e)
+    {
+        backgroundColor = BackgroundColor;
+        StateHasChanged();
+    }
+}

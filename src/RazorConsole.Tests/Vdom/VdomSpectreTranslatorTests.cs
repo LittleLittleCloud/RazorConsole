@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Vdom;
+using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 using Xunit;
@@ -89,7 +91,7 @@ public class VdomSpectreTranslatorTests
 
         var node = Element("div", panel =>
         {
-            panel.SetAttribute("data-panel", "true");
+            panel.SetAttribute("class", "panel");
             panel.SetAttribute("data-panel-border", "rounded");
             panel.SetAttribute("data-panel-padding", "1 1 1 1");
             panel.SetAttribute("data-header", "Title");
@@ -111,7 +113,7 @@ public class VdomSpectreTranslatorTests
     {
         var child = Element("span", span =>
         {
-            span.SetAttribute("data-text", "true");
+            span.SetAttribute("class", "row");
             span.AddChild(Text("Row content"));
         });
 
@@ -149,31 +151,6 @@ public class VdomSpectreTranslatorTests
     }
 
     [Fact]
-    public void Translate_ColumnsNode_ReturnsPadderWrappedColumnsWhenSpacingProvided()
-    {
-        var child = Element("span", span =>
-        {
-            span.SetAttribute("data-text", "true");
-            span.AddChild(Text("Col1"));
-        });
-
-        var node = Element("div", columns =>
-        {
-            columns.SetAttribute("data-columns", "true");
-            columns.SetAttribute("data-spacing", "2");
-            columns.AddChild(child);
-        });
-
-        var translator = new VdomSpectreTranslator();
-
-        var success = translator.TryTranslate(node, out var renderable, out var animations);
-
-        Assert.True(success);
-        Assert.IsType<Padder>(renderable);
-        Assert.Empty(animations);
-    }
-
-    [Fact]
     public void Translate_GridNode_ReturnsGridRenderable()
     {
         var nodes = new List<VNode>
@@ -192,7 +169,7 @@ public class VdomSpectreTranslatorTests
 
         var node = Element("div", grid =>
         {
-            grid.SetAttribute("data-grid", "true");
+            grid.SetAttribute("class", "grid");
             grid.SetAttribute("data-columns", "2");
             foreach (var child in nodes)
             {
@@ -238,7 +215,7 @@ public class VdomSpectreTranslatorTests
 
         var node = Element("div", padder =>
         {
-            padder.SetAttribute("data-padder", "true");
+            padder.SetAttribute("class", "padder");
             padder.SetAttribute("data-padding", "1");
             padder.AddChild(child);
         });
@@ -257,7 +234,7 @@ public class VdomSpectreTranslatorTests
     {
         var node = Element("div", newline =>
         {
-            newline.SetAttribute("data-newline", "true");
+            newline.SetAttribute("class", "newline");
             newline.SetAttribute("data-count", "2");
         });
 
@@ -275,6 +252,7 @@ public class VdomSpectreTranslatorTests
     {
         var node = Element("div", spinner =>
         {
+            spinner.SetAttribute("class", "spinner");
             spinner.SetAttribute("data-spinner", "true");
             spinner.SetAttribute("data-message", "Loading");
             spinner.SetAttribute("data-style", "yellow");
@@ -296,13 +274,13 @@ public class VdomSpectreTranslatorTests
     {
         var child = Element("span", span =>
         {
-            span.SetAttribute("data-text", "true");
+            span.SetAttribute("class", "text");
             span.AddChild(Text("Aligned"));
         });
 
         var node = Element("div", align =>
         {
-            align.SetAttribute("data-align", "true");
+            align.SetAttribute("class", "align");
             align.SetAttribute("data-horizontal", "center");
             align.SetAttribute("data-vertical", "middle");
             align.SetAttribute("data-width", "40");
@@ -315,7 +293,7 @@ public class VdomSpectreTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
         Assert.True(success);
-        Assert.IsType<Align>(renderable);
+        Assert.IsType<MeasuredAlign>(renderable);
         Assert.Empty(animations);
     }
 

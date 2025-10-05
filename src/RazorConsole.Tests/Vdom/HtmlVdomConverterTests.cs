@@ -1,4 +1,4 @@
-using RazorConsole.Core.Rendering.Vdom;
+using RazorConsole.Core.Vdom;
 using Xunit;
 
 namespace RazorConsole.Tests.Vdom;

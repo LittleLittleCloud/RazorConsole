@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using RazorConsole.Core.Controllers;
+using RazorConsole.Core.Focus;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.ComponentMarkup;
-using RazorConsole.Core.Rendering.Focus;
-using RazorConsole.Core.Rendering.Vdom;
+using RazorConsole.Core.Vdom;
 using Spectre.Console.Rendering;
 
 namespace RazorConsole.Tests;
@@ -29,8 +30,126 @@ public sealed class FocusManagerTests
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 
+        PushInitialSnapshot(manager, initial);
+
         Assert.True(manager.HasFocusables);
         Assert.Equal("first", manager.CurrentFocusKey);
+    }
+
+    [Fact]
+    public async Task FocusPreviousAsync_WrapsAround()
+    {
+        var manager = new FocusManager();
+        var keys = new[] { "first", "second", "third" };
+        var initial = CreateView(keys, focusedKey: null);
+
+        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
+            new TestCanvas(),
+            initial,
+            new VdomDiffService(),
+            (parameters, _) => Task.FromResult(CreateView(keys, manager.CurrentFocusKey)));
+        using var session = manager.BeginSession(context, initial, CancellationToken.None);
+        await session.InitializationTask;
+
+        PushInitialSnapshot(manager, initial);
+
+        await manager.FocusNextAsync(session.Token);
+        await manager.FocusNextAsync(session.Token);
+        Assert.Equal("third", manager.CurrentFocusKey);
+
+        var changed = await manager.FocusPreviousAsync(session.Token);
+
+        Assert.True(changed);
+        Assert.Equal("second", manager.CurrentFocusKey);
+    }
+
+    [Fact]
+    public async Task BeginSession_SelectsElementWithInteractiveEventsWhenNoFocusableAttribute()
+    {
+        var manager = new FocusManager();
+
+        var interactive = VNode.CreateElement("button");
+        interactive.SetAttribute("data-focus-key", "interactive");
+        interactive.SetEvent("onclick", 1UL);
+        interactive.AddChild(VNode.CreateText("Click"));
+
+        var root = VNode.CreateElement("div");
+        root.AddChild(interactive);
+
+        var view = ConsoleViewResult.Create(
+            "interactive",
+            root,
+            new FakeRenderable("interactive"),
+            Array.Empty<IAnimatedConsoleRenderable>());
+
+        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
+            new TestCanvas(),
+            view,
+            new VdomDiffService(),
+            (parameters, _) => Task.FromResult(view));
+
+        using var session = manager.BeginSession(context, view, CancellationToken.None);
+        await session.InitializationTask;
+
+        PushInitialSnapshot(manager, view);
+
+        Assert.True(manager.HasFocusables);
+        Assert.Equal("interactive", manager.CurrentFocusKey);
+    }
+
+    [Fact]
+    public async Task FocusChange_DispatchesFocusEvents()
+    {
+        var dispatcher = new TestFocusEventDispatcher();
+        var manager = new FocusManager(dispatcher);
+
+        var first = VNode.CreateElement("input");
+        first.SetAttribute("data-focus-key", "first");
+        first.SetEvent("onfocus", 1UL);
+        first.SetEvent("onfocusin", 2UL);
+        first.SetEvent("onfocusout", 3UL);
+
+        var second = VNode.CreateElement("input");
+        second.SetAttribute("data-focus-key", "second");
+        second.SetEvent("onfocus", 4UL);
+        second.SetEvent("onfocusin", 5UL);
+        second.SetEvent("onfocusout", 6UL);
+
+        var root = VNode.CreateElement("div");
+        root.AddChild(first);
+        root.AddChild(second);
+
+        var view = ConsoleViewResult.Create(
+            "focus",
+            root,
+            new FakeRenderable("focus"),
+            Array.Empty<IAnimatedConsoleRenderable>());
+
+        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
+            new TestCanvas(),
+            view,
+            new VdomDiffService(),
+            (parameters, _) => Task.FromResult(view));
+
+        using var session = manager.BeginSession(context, view, CancellationToken.None);
+        await session.InitializationTask;
+
+        PushInitialSnapshot(manager, view);
+
+        Assert.Collection(
+            dispatcher.Events,
+            e => Assert.Equal(("focusin", 2UL), e),
+            e => Assert.Equal(("focus", 1UL), e));
+
+        dispatcher.Events.Clear();
+
+        await manager.FocusNextAsync(session.Token);
+
+        Assert.Collection(
+            dispatcher.Events,
+            e => Assert.Equal(("focusout", 3UL), e),
+            e => Assert.Equal(("focusin", 5UL), e),
+            e => Assert.Equal(("focus", 4UL), e));
     }
 
     [Fact]
@@ -55,6 +174,11 @@ public sealed class FocusManagerTests
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 
+        PushInitialSnapshot(manager, initial);
+
+        Assert.True(manager.HasFocusables);
+        Assert.Equal("first", manager.CurrentFocusKey);
+
         renderCount = 0;
         var changed = await manager.FocusNextAsync(session.Token);
 
@@ -63,29 +187,15 @@ public sealed class FocusManagerTests
         Assert.True(renderCount >= 1);
     }
 
-    [Fact]
-    public async Task FocusPreviousAsync_WrapsAround()
+    private static void PushInitialSnapshot(FocusManager manager, ConsoleViewResult view)
     {
-        var manager = new FocusManager();
-        var keys = new[] { "first", "second", "third" };
-        var initial = CreateView(keys, focusedKey: null);
+        if (view.VdomRoot is null)
+        {
+            return;
+        }
 
-        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
-            new TestCanvas(),
-            initial,
-            new VdomDiffService(),
-            (parameters, _) => Task.FromResult(CreateView(keys, manager.CurrentFocusKey)));
-        using var session = manager.BeginSession(context, initial, CancellationToken.None);
-        await session.InitializationTask;
-
-        await manager.FocusNextAsync(session.Token);
-        await manager.FocusNextAsync(session.Token);
-        Assert.Equal("third", manager.CurrentFocusKey);
-
-        var changed = await manager.FocusPreviousAsync(session.Token);
-
-        Assert.True(changed);
-        Assert.Equal("second", manager.CurrentFocusKey);
+        var snapshot = new ConsoleRenderer.RenderSnapshot(view.VdomRoot, view.Renderable, view.AnimatedRenderables);
+        ((IObserver<ConsoleRenderer.RenderSnapshot>)manager).OnNext(snapshot);
     }
 
     private static ConsoleViewResult CreateView(IReadOnlyList<string> keys, string? focusedKey)
@@ -160,5 +270,22 @@ public sealed class FocusManagerTests
 
         public Task SetParametersAsync(ParameterView parameters)
             => Task.CompletedTask;
+    }
+
+    private sealed class TestFocusEventDispatcher : IFocusEventDispatcher
+    {
+        public List<(string EventType, ulong HandlerId)> Events { get; } = new();
+
+        public Task DispatchAsync(ulong handlerId, EventArgs eventArgs, CancellationToken cancellationToken)
+        {
+            var type = eventArgs switch
+            {
+                FocusEventArgs focus => focus.Type ?? string.Empty,
+                _ => eventArgs.GetType().Name,
+            };
+
+            Events.Add((type, handlerId));
+            return Task.CompletedTask;
+        }
     }
 }

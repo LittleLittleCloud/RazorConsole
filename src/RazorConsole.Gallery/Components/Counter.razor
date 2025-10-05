@@ -1,21 +1,14 @@
-<p>Current count: @currentCount</p>
-<button data-focusable="true" @onclick="IncrementCount" @oninput="OnInput" @onchange="OnChange">Click me</button>
+<Columns>
+    <p>Current count: @currentCount</p>
+    <TextButton Content="Click me" OnClick="IncrementCount" BackgroundColor="@Spectre.Console.Color.Grey" />
+</Columns>
+
 
 @code {
     private int currentCount = 0;
-
     private void IncrementCount()
     {
         currentCount++;
-        
         StateHasChanged();
-    }
-
-    private void OnInput(ChangeEventArgs e)
-    {
-    }
-
-    private void OnChange(ChangeEventArgs e)
-    {
     }
 }

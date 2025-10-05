@@ -3,17 +3,17 @@
 @using Microsoft.AspNetCore.Components
 @using System.Composition
 
-<div data-rows="true"
+<div class="row"
     data-expand="@ExpandAttribute">
     @ChildContent
 </div>
 
 @code {
     [Parameter]
-    public bool Expand { get; set; }
+    public bool Expand { get; set; } = false;
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    private string? ExpandAttribute => Expand ? "true" : null;
+    private string? ExpandAttribute => Expand ? "true" : "false";
 }

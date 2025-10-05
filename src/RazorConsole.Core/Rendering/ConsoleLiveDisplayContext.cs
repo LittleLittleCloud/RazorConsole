@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering.ComponentMarkup;
-using RazorConsole.Core.Rendering.Vdom;
+using RazorConsole.Core.Vdom;
 using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering;
@@ -91,7 +91,7 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
 
             bool updated;
 
-            if (previousRoot is not null && currentRoot is not null)
+            if (previousRoot is not null && currentRoot is not null && _diffService is not null)
             {
                 var diff = _diffService.Diff(previousRoot, currentRoot);
                 if (!diff.HasChanges)

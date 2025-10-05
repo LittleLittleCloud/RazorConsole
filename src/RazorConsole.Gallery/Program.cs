@@ -2,9 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RazorConsole.Components;
 using RazorConsole.Core;
 using RazorConsole.Gallery.Components;
-using RazorConsole.Gallery.Models;
-
-await AppHost.RunAsync<Counter>(null, builder =>
+await AppHost.RunAsync<App>(null, builder =>
 {
     builder.Configure(options =>
     {

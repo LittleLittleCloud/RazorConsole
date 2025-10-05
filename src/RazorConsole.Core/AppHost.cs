@@ -12,10 +12,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Core.Controllers;
+using RazorConsole.Core.Focus;
+using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
-using RazorConsole.Core.Rendering.Focus;
-using RazorConsole.Core.Rendering.Input;
-using RazorConsole.Core.Rendering.Vdom;
+using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -120,9 +120,11 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<ILoggerFactory>(_ => NullLoggerFactory.Instance);
         services.TryAddSingleton<ConsoleRenderer>();
         services.TryAddSingleton<VdomDiffService>();
-        services.TryAddSingleton<FocusManager>();
+        services.TryAddSingleton<RendererKeyboardEventDispatcher>();
+        services.TryAddSingleton<IKeyboardEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
+        services.TryAddSingleton<IFocusEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
+        services.TryAddSingleton<FocusManager>(sp => new FocusManager(sp.GetService<IFocusEventDispatcher>()));
         services.TryAddSingleton<LiveDisplayContextAccessor>();
-        services.TryAddSingleton<IKeyboardEventDispatcher, RendererKeyboardEventDispatcher>();
         services.TryAddSingleton<KeyboardEventManager>();
     }
 }
@@ -136,6 +138,8 @@ public sealed class ConsoleAppOptions
     /// Gets or sets whether the console should be cleared before writing output.
     /// </summary>
     public bool AutoClearConsole { get; set; } = true;
+
+    public ConsoleLiveDisplayOptions ConsoleLiveDisplayOptions { get; } = ConsoleLiveDisplayOptions.Default;
 
     /// <summary>
     /// Callback invoked after a component has been rendered.
@@ -219,18 +223,20 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
             var view = await RenderComponentAsync(parameters, shutdownToken).ConfigureAwait(false);
 
             var currentParameters = parameters;
-            var focusManager = _serviceProvider.GetService<FocusManager>();
+            var focusManager = _serviceProvider.GetRequiredService<FocusManager>();
             var keyboardManager = _serviceProvider.GetService<KeyboardEventManager>();
 
             var callback = _options.AfterRenderAsync ?? ConsoleAppOptions.DefaultAfterRenderAsync;
             if (SupportsLiveDisplay())
             {
                 var liveDisplay = AnsiConsole.Live(view.Renderable);
-                liveDisplay.AutoClear = true;
+                liveDisplay.AutoClear = _options.ConsoleLiveDisplayOptions.AutoClear;
+                liveDisplay.Overflow = _options.ConsoleLiveDisplayOptions.Overflow;
+
                 await liveDisplay.StartAsync(async liveContext =>
                 {
                     shutdownToken.ThrowIfCancellationRequested();
-
+                    using var _ = _consoleRenderer.Subscribe(focusManager);
                     using var context = ConsoleLiveDisplayContext.Create<TComponent>(liveContext, view, _consoleRenderer);
                     _liveContextAccessor?.Attach(context);
                     FocusManager.FocusSession? session = null;
@@ -238,7 +244,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 
                     try
                     {
-                        if (keyboardManager is not null && focusManager is not null && !Console.IsInputRedirected)
+                        if (keyboardManager is not null && !Console.IsInputRedirected)
                         {
                             session = focusManager.BeginSession(context, view, shutdownToken);
                             await session.InitializationTask.ConfigureAwait(false);

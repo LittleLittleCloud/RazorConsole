@@ -6,25 +6,25 @@
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using Spectre.Console
 @using System.Composition
-@inherits RenderableConverterComponentBase<PanelRenderableConverter>
-@attribute [Export(typeof(RenderableConverterComponentBase<PanelRenderableConverter>))]
 
-<div data-panel="true"
-    data-header="@TitleAttribute"
-    data-header-color="@HeaderColorAttribute"
-    data-border-color="@BorderColorAttribute"
-     data-panel-expand="@ExpandAttribute"
-     data-panel-border="@BorderAttribute"
-     data-panel-padding="@PaddingAttribute"
-     data-panel-height="@HeightAttribute"
-     data-panel-width="@WidthAttribute"
-     @attributes="RemainingAttributes">
+<div class="panel"
+     data-header="@TitleAttribute"
+     data-header-color="@HeaderColorAttribute"
+     data-border-color="@BorderColorAttribute"
+     data-expand="@ExpandAttribute"
+     data-border="@BorderAttribute"
+     data-padding="@PaddingAttribute"
+     data-height="@HeightAttribute"
+     data-width="@WidthAttribute">
     @ChildContent
 </div>
 
 @code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
     private static readonly IReadOnlyDictionary<BoxBorder, string> BorderNames = new Dictionary<BoxBorder, string>
-    {
+{
         { BoxBorder.Square, "square" },
         { BoxBorder.Rounded, "rounded" },
         { BoxBorder.Double, "double" },
@@ -81,7 +81,7 @@
         }
     }
 
-    private string? ExpandAttribute => Expand ? "true" : null;
+    private string ExpandAttribute => Expand ? "true" : "false";
 
     private string? PaddingAttribute
     {

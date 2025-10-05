@@ -1,0 +1,412 @@
+@namespace RazorConsole.Components
+
+@using System
+@using System.Collections.Generic
+@using System.Globalization
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components
+@using RazorConsole.Components
+@using Microsoft.AspNetCore.Components.Web
+@using Spectre.Console
+
+<div
+     @onfocus="OnFocus"
+     @onfocusout="OnFocusOut"
+     @onclick="ToggleDropdownAsync"
+     @onkeydown="OnKeyDown">
+    <Panel BorderColor="@_inputBorderColor" Border="@BorderStyle" Expand="@Expand">
+        <Columns>
+            <Markup Content="@DisplayValue"
+                    Foreground="@DisplayForeground"
+                    Decoration="@DisplayDecoration" />
+        </Columns>
+    </Panel>
+
+    @if (_isOpen)
+    {
+        <Rows>
+            @if (Options.Length == 0)
+            {
+                    <Markup Content="@EmptyLabel"
+                            Foreground="@EmptyForeground"
+                            Decoration="@EmptyDecoration" />
+            }
+            else
+            {
+                @foreach (var option in Options)
+                {
+                    var isHighlighted = string.Equals(option, _highlightedValue, StringComparison.Ordinal);
+                    var indicator = isHighlighted ? ">" : " ";
+                        <Columns>
+                            <Markup Content="@($" {indicator}")" />
+                            <Markup Content="@option"
+                                    Foreground="@(isHighlighted ? SelectedOptionForeground : OptionForeground)"
+                                    Decoration="@(isHighlighted ? SelectedOptionDecoration : OptionDecoration)" />
+                        </Columns>
+                }
+            }
+        </Rows>
+    }
+</div>
+
+@code {
+    private readonly string _focusKey = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+    private bool _isOpen;
+    private string? _selectedValue;
+    private string? _highlightedValue;
+    private string? _lastSuppliedValue;
+
+    [Parameter]
+    public string[] Options
+    {
+        get => _options;
+        set => _options = value ?? Array.Empty<string>();
+    }
+
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter]
+    public string Placeholder { get; set; } = "Select an option";
+
+    [Parameter]
+    public EventCallback<string?> OnSelected { get; set; }
+
+    [Parameter]
+    public EventCallback OnClear { get; set; }
+
+    [Parameter]
+    public bool Expand { get; set; }
+
+    [Parameter]
+    public int? FocusOrder { get; set; }
+
+    [Parameter]
+    public BoxBorder BorderStyle { get; set; } = BoxBorder.Rounded;
+
+    [Parameter]
+    public Color PlaceholderColor { get; set; } = Color.Grey70;
+
+    [Parameter]
+    public Decoration PlaceholderDecoration { get; set; } = Decoration.Italic | Decoration.Dim;
+
+    [Parameter]
+    public Color ValueColor { get; set; } = Color.White;
+
+    [Parameter]
+    public Decoration ValueDecoration { get; set; } = Decoration.None;
+
+    [Parameter]
+    public string EmptyLabel { get; set; } = "No options available";
+
+    [Parameter]
+    public Color EmptyForeground { get; set; } = Color.Grey70;
+
+    [Parameter]
+    public Decoration EmptyDecoration { get; set; } = Decoration.Italic;
+
+    [Parameter]
+    public Color OptionForeground { get; set; } = Color.White;
+
+    [Parameter]
+    public Decoration OptionDecoration { get; set; } = Decoration.None;
+
+    [Parameter]
+    public Color SelectedOptionForeground { get; set; } = Color.Chartreuse1;
+
+    [Parameter]
+    public Decoration SelectedOptionDecoration { get; set; } = Decoration.Bold;
+
+    private string[] _options = Array.Empty<string>();
+
+    private bool HasSelection => !string.IsNullOrEmpty(_selectedValue);
+
+    private Color _inputBorderColor = Color.Grey37;
+
+    private string DisplayValue => HasSelection ? _selectedValue ?? string.Empty : Placeholder ?? string.Empty;
+
+    private Color DisplayForeground => HasSelection ? ValueColor : PlaceholderColor;
+
+    private Decoration DisplayDecoration => HasSelection ? ValueDecoration : PlaceholderDecoration;
+
+    protected override void OnParametersSet()
+    {
+        var incomingValue = Value;
+        if (!string.Equals(incomingValue, _lastSuppliedValue, StringComparison.Ordinal))
+        {
+            _selectedValue = incomingValue;
+            _lastSuppliedValue = incomingValue;
+        }
+
+        SyncHighlightedValue();
+    }
+
+    private async Task ToggleDropdownAsync()
+    {
+        if (_isOpen)
+        {
+            EnsureHighlightedValue();
+            _isOpen = false;
+        }
+        else
+        {
+            _isOpen = true;
+        }
+
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+    }
+
+    private async Task SelectOptionAsync(string option)
+    {
+        _selectedValue = option;
+        _highlightedValue = option;
+        _lastSuppliedValue = option;
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(option).ConfigureAwait(false);
+        }
+
+        if (OnSelected.HasDelegate)
+        {
+            await OnSelected.InvokeAsync(option).ConfigureAwait(false);
+        }
+
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+    }
+    private void OnFocus()
+    {
+        _inputBorderColor = Color.Yellow;
+    }
+
+    private void OnFocusOut()
+    {
+        _inputBorderColor = Color.Grey37;
+        _isOpen = false;
+        _highlightedValue = _selectedValue;
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs args)
+    {
+        if (args is null)
+        {
+            return;
+        }
+
+        var key = args.Key;
+
+        if (string.IsNullOrEmpty(key))
+        {
+            return;
+        }
+
+        if (IsToggleKey(key))
+        {
+            await ToggleDropdownAsync().ConfigureAwait(false);
+            return;
+        }
+
+        if (_options.Length == 0)
+        {
+            return;
+        }
+
+        if (IsCommitKey(key) && _isOpen && _highlightedValue is not null)
+        {
+            await SelectOptionAsync(_highlightedValue).ConfigureAwait(false);
+            return;
+        }
+
+        if (IsCancelKey(key) && _isOpen)
+        {
+            _isOpen = false;
+            _highlightedValue = _selectedValue;
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            return;
+        }
+
+        var selectionChanged = false;
+        var dropdownOpened = false;
+
+        if (IsDownKey(key))
+        {
+            selectionChanged = TryMoveSelection(1, out dropdownOpened);
+        }
+        else if (IsUpKey(key))
+        {
+            selectionChanged = TryMoveSelection(-1, out dropdownOpened);
+        }
+        else if (IsTypeAheadCandidate(key))
+        {
+            selectionChanged = TryTypeAhead(key[0], out dropdownOpened);
+        }
+
+        if (!selectionChanged && !dropdownOpened)
+        {
+            return;
+        }
+
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+    }
+
+    private bool TryMoveSelection(int offset, out bool opened)
+    {
+        opened = EnsureOpen();
+        EnsureHighlightedValue();
+
+        if (_options.Length == 0)
+        {
+            return false;
+        }
+
+        var currentIndex = _highlightedValue is null
+            ? -1
+            : Array.IndexOf(_options, _highlightedValue);
+
+        if (currentIndex < 0)
+        {
+            currentIndex = offset > 0 ? -1 : 0;
+        }
+
+        var nextIndex = currentIndex + offset;
+
+        if (nextIndex < 0)
+        {
+            nextIndex = _options.Length - 1;
+        }
+        else if (nextIndex >= _options.Length)
+        {
+            nextIndex = 0;
+        }
+
+        var nextValue = _options[nextIndex];
+
+        if (string.Equals(nextValue, _highlightedValue, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        _highlightedValue = nextValue;
+        return true;
+    }
+
+    private bool TryTypeAhead(char key, out bool opened)
+    {
+        opened = EnsureOpen();
+        EnsureHighlightedValue();
+
+        if (char.IsControl(key))
+        {
+            return false;
+        }
+
+        var startIndex = _highlightedValue is null
+            ? 0
+            : Array.IndexOf(_options, _highlightedValue);
+
+        var comparison = StringComparison.CurrentCultureIgnoreCase;
+        var prefix = key.ToString();
+
+        for (var i = 0; i < _options.Length; i++)
+        {
+            var candidateIndex = (startIndex + i + 1) % _options.Length;
+            var candidate = _options[candidateIndex];
+
+            if (!string.IsNullOrEmpty(candidate) && candidate.StartsWith(prefix, comparison))
+            {
+                if (!string.Equals(candidate, _highlightedValue, StringComparison.Ordinal))
+                {
+                    _highlightedValue = candidate;
+                    return true;
+                }
+
+                break;
+            }
+        }
+
+        return false;
+    }
+
+    private bool EnsureOpen()
+    {
+        if (_isOpen)
+        {
+            EnsureHighlightedValue();
+            return false;
+        }
+
+        _isOpen = true;
+
+        EnsureHighlightedValue();
+
+        return true;
+    }
+
+    private static bool IsTypeAheadCandidate(string value)
+        => value.Length == 1 && !char.IsControl(value[0]);
+
+    private static bool IsDownKey(string key)
+        => string.Equals(key, "DownArrow", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(key, "ArrowDown", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsUpKey(string key)
+        => string.Equals(key, "UpArrow", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(key, "ArrowUp", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsToggleKey(string key)
+        => string.Equals(key, " ", StringComparison.Ordinal)
+            || string.Equals(key, "Space", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(key, "Spacebar", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsCommitKey(string key)
+        => string.Equals(key, "Enter", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(key, "Return", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsCancelKey(string key)
+        => string.Equals(key, "Escape", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(key, "Esc", StringComparison.OrdinalIgnoreCase);
+
+    private void EnsureHighlightedValue()
+    {
+        if (_options.Length == 0)
+        {
+            _highlightedValue = null;
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(_highlightedValue))
+        {
+            var index = Array.IndexOf(_options, _highlightedValue);
+            if (index >= 0)
+            {
+                return;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(_selectedValue))
+        {
+            var selectedIndex = Array.IndexOf(_options, _selectedValue);
+            if (selectedIndex >= 0)
+            {
+                _highlightedValue = _selectedValue;
+                return;
+            }
+        }
+
+        _highlightedValue = _options[0];
+    }
+
+    private void SyncHighlightedValue()
+    {
+        if (_isOpen)
+        {
+            EnsureHighlightedValue();
+            return;
+        }
+
+        _highlightedValue = _selectedValue;
+    }
+}

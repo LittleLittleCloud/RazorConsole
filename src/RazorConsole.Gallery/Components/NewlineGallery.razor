@@ -1,0 +1,76 @@
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Padder Padding="@_outerPadding">
+    <Rows>
+        <Markup Content="Newline injects a line break into the render tree, letting you add intentional spacing between elements." Foreground="@Color.Grey70" />
+        <Newline />
+        <Markup Content="Examples" Decoration="@Decoration.Bold" />
+        <Padder Padding="@_examplePadding">
+            <Rows>
+                <Markup Content="Example 1" Decoration="@Decoration.Bold" />
+                <Columns Expand="true">
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_codeExamplePadding">
+                                <Rows>
+                                    @foreach (var line in _exampleCode)
+                                    {
+                                        <Markup Content="@line" />
+                                    }
+                                </Rows>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                            <Panel Title="Daily Checklist"
+                                   Border="@BoxBorder.Square"
+                                   Expand="false">
+                                <Rows>
+                                    <Markup Content="• Brew coffee" />
+                                    <Newline />
+                                    <Markup Content="• Review pull requests" />
+                                    <Newline />
+                                    <Newline />
+                                    <Markup Content="Break before stand-up"
+                                            Foreground="@Color.Grey70"
+                                            Decoration="@Decoration.Italic" />
+                                </Rows>
+                            </Panel>
+                        </Rows>
+                    </Padder>
+                </Columns>
+            </Rows>
+        </Padder>
+        <Markup Content="Source Code: Newline.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+    </Rows>
+</Padder>
+
+@code {
+    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
+    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
+
+    private static readonly string[] _exampleCode =
+    {
+        "<Panel Title=\"Daily Checklist\"",
+        "       Border=\"BoxBorder.Square\" Expand=\"false\">",
+    "    <Rows>",
+    "        <Markup Content=\"• Brew coffee\" />",
+    "        <Newline />",
+    "        <Markup Content=\"• Review pull requests\" />",
+    "        <Newline />",
+    "        <Newline />",
+    "        <Markup Content=\"Break before stand-up\"",
+    "               Foreground=\"Color.Grey70\"",
+    "               Decoration=\"Decoration.Italic\" />",
+    "    </Rows>",
+        "</Panel>",
+    };
+
+    private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Newline.razor";
+}

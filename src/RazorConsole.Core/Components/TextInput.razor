@@ -1,0 +1,258 @@
+@namespace RazorConsole.Components
+
+@using System
+@using System.Collections.Generic
+@using System.Globalization
+@using System.Linq.Expressions
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using RazorConsole.Components
+@using Spectre.Console
+
+<div class="text-input"
+    @attributes="AdditionalAttributes"
+    data-text-input="true"
+    data-focusable="@FocusableAttribute"
+    data-focus-key="@_generatedFocusKey"
+    data-focus-order="@FocusOrderAttribute"
+    data-expand="@ExpandAttribute"
+    data-placeholder="@PlaceholderAttribute"
+    data-mask-input="@MaskInputAttribute"
+    data-has-value="@HasValueAttribute"
+    value="@_currentValue"
+    @oninput="HandleInputAsync"
+    @onchange="HandleSubmitAsync"
+    @onfocus="HandleFocusAsync"
+    @onfocusout="HandleBlurAsync">
+    <Panel BorderColor="@CurrentBorderColor" Border="@BorderStyle" Padding="@BorderPadding" Expand="@Expand">
+        <Columns>
+            @if (!string.IsNullOrWhiteSpace(Label))
+            {
+                <Markup Content="@Label" Foreground="@LabelColor" Decoration="@LabelDecoration" />
+            }
+            <Padder Padding="@ContentPadding">
+                <Markup Content="@DisplayContent"
+                        Foreground="@DisplayForeground"
+                        Decoration="@DisplayDecoration" />
+            </Padder>
+        </Columns>
+    </Panel>
+</div>
+@code {
+    private readonly string _generatedFocusKey = Guid.NewGuid().ToString("N");
+    private bool _isFocused;
+    private string _currentValue = string.Empty;
+    private string _lastSetValue = string.Empty;
+
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<string?>>? ValueExpression { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> OnInput { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+    [Parameter]
+    public EventCallback<FocusEventArgs> OnBlur { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public Color LabelColor { get; set; } = Color.White;
+
+    [Parameter]
+    public Decoration LabelDecoration { get; set; } = Decoration.None;
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    [Parameter]
+    public Color ValueColor { get; set; } = Color.White;
+
+    [Parameter]
+    public Color PlaceholderColor { get; set; } = Color.Grey;
+
+    [Parameter]
+    public Decoration PlaceholderDecoration { get; set; } = Decoration.Dim | Decoration.Italic;
+
+    [Parameter]
+    public Color BorderColor { get; set; } = Color.Grey37;
+
+    [Parameter]
+    public Color FocusedBorderColor { get; set; } = Color.Yellow;
+
+    [Parameter]
+    public Color DisabledBorderColor { get; set; } = Color.Grey19;
+
+    [Parameter]
+    public BoxBorder BorderStyle { get; set; } = BoxBorder.Rounded;
+
+    [Parameter]
+    public Padding BorderPadding { get; set; } = new Padding(0, 0, 0, 0);
+
+    [Parameter]
+    public Padding ContentPadding { get; set; } = new Padding(1, 0, 1, 0);
+
+    [Parameter]
+    public bool Expand { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool MaskInput { get; set; }
+
+    [Parameter]
+    public int? FocusOrder { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+    private string FocusableAttribute => Disabled ? "false" : "true";
+
+    private string? FocusOrderAttribute => FocusOrder.HasValue
+        ? FocusOrder.Value.ToString(CultureInfo.InvariantCulture)
+        : null;
+
+    private string ExpandAttribute => Expand ? "true" : "false";
+
+    private string? PlaceholderAttribute => string.IsNullOrWhiteSpace(Placeholder) ? null : Placeholder;
+
+    private string HasValueAttribute => HasValue ? "true" : "false";
+
+    private string MaskInputAttribute => MaskInput ? "true" : "false";
+
+    private bool HasValue => _currentValue.Length > 0;
+
+    private Color CurrentBorderColor => Disabled
+        ? DisabledBorderColor
+        : _isFocused ? FocusedBorderColor : BorderColor;
+
+    private string DisplayContent
+    {
+        get
+        {
+            if (!HasValue)
+            {
+                return Placeholder ?? string.Empty;
+            }
+
+            if (!MaskInput)
+            {
+                return _currentValue;
+            }
+
+            return new string('•', _currentValue.Length);
+        }
+    }
+
+    private Color DisplayForeground => HasValue ? ValueColor : PlaceholderColor;
+
+    private Decoration DisplayDecoration => HasValue ? Decoration.None : PlaceholderDecoration;
+
+    protected override void OnParametersSet()
+    {
+        var incoming = Value ?? string.Empty;
+        if (!string.Equals(incoming, _lastSetValue, StringComparison.Ordinal))
+        {
+            _currentValue = incoming;
+            _lastSetValue = incoming;
+        }
+    }
+
+    private async Task HandleInputAsync(ChangeEventArgs args)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        var newValue = ExtractValue(args) ?? string.Empty;
+        _currentValue = newValue;
+        _lastSetValue = newValue;
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(newValue).ConfigureAwait(false);
+        }
+
+        if (OnInput.HasDelegate)
+        {
+            await OnInput.InvokeAsync(newValue).ConfigureAwait(false);
+        }
+
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+    }
+
+    private async Task HandleSubmitAsync(ChangeEventArgs args)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        var submittedValue = ExtractValue(args);
+        _currentValue = submittedValue ?? string.Empty;
+        _lastSetValue = _currentValue;
+
+        if (OnSubmit.HasDelegate)
+        {
+            await OnSubmit.InvokeAsync(submittedValue).ConfigureAwait(false);
+        }
+    }
+
+    private async Task HandleFocusAsync(FocusEventArgs args)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        _isFocused = true;
+
+        if (OnFocus.HasDelegate)
+        {
+            await OnFocus.InvokeAsync(args).ConfigureAwait(false);
+        }
+
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+    }
+
+    private async Task HandleBlurAsync(FocusEventArgs args)
+    {
+        _isFocused = false;
+
+        if (OnBlur.HasDelegate)
+        {
+            await OnBlur.InvokeAsync(args).ConfigureAwait(false);
+        }
+
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+    }
+
+    private static string? ExtractValue(ChangeEventArgs? args)
+    {
+        if (args?.Value is null)
+        {
+            return null;
+        }
+
+        return args.Value switch
+        {
+            string text => text,
+            _ => args.Value.ToString(),
+        };
+    }
+}

@@ -1,19 +1,29 @@
 @namespace RazorConsole.Components
 
 @using Microsoft.AspNetCore.Components
-@using RazorConsole.Core.Rendering.ComponentMarkup
+@using Spectre.Console
+@using System.Collections.Generic
 @using System.Composition
-@inherits RenderableConverterComponentBase<SpinnerRenderableConverter>
-@attribute [Export(typeof(RenderableConverterComponentBase<SpinnerRenderableConverter>))]
+@using System.Reflection
+@using System.Runtime.CompilerServices
 
-<div data-spinner="true"
-     data-message="@Message"
-     data-style="@Style"
-     data-spinner-type="@SpinnerType"
-    data-auto-dismiss="@AutoDismiss"
-    @attributes="RemainingAttributes"></div>
+<div class="spinner"
+     data-spinner="true"
+     data-spinner-type="@SpinnerTypeAttribute"
+     data-message="@MessageAttribute"
+     data-style="@StyleAttribute"
+     data-auto-dismiss="@AutoDismissAttribute">
+</div>
 
 @code {
+    private static readonly IReadOnlyDictionary<global::Spectre.Console.Spinner, string> SpinnerNames = BuildSpinnerNameMap();
+
+    [Parameter]
+    public global::Spectre.Console.Spinner SpinnerType { get; set; } = global::Spectre.Console.Spinner.Known.Dots;
+
+    [Parameter]
+    public string? SpinnerName { get; set; }
+
     [Parameter]
     public string? Message { get; set; }
 
@@ -21,8 +31,58 @@
     public string? Style { get; set; }
 
     [Parameter]
-    public global::Spectre.Console.Spinner SpinnerType { get; set; } = global::Spectre.Console.Spinner.Known.Dots;
-
-    [Parameter]
     public bool AutoDismiss { get; set; }
+
+    private string? SpinnerTypeAttribute => !string.IsNullOrWhiteSpace(SpinnerName)
+        ? SpinnerName
+        : TryResolveSpinnerName(SpinnerType);
+
+    private string? MessageAttribute => string.IsNullOrWhiteSpace(Message) ? null : Message;
+
+    private string? StyleAttribute => string.IsNullOrWhiteSpace(Style) ? null : Style;
+
+    private string? AutoDismissAttribute => AutoDismiss ? "true" : null;
+
+    private static IReadOnlyDictionary<global::Spectre.Console.Spinner, string> BuildSpinnerNameMap()
+    {
+        var dictionary = new Dictionary<global::Spectre.Console.Spinner, string>(SpinnerReferenceEqualityComparer.Instance);
+        foreach (var property in typeof(global::Spectre.Console.Spinner.Known).GetProperties(BindingFlags.Public | BindingFlags.Static))
+        {
+            if (property.PropertyType != typeof(global::Spectre.Console.Spinner))
+            {
+                continue;
+            }
+
+            if (property.GetValue(null) is not global::Spectre.Console.Spinner spinner)
+            {
+                continue;
+            }
+
+            if (!dictionary.ContainsKey(spinner))
+            {
+                dictionary.Add(spinner, property.Name);
+            }
+        }
+
+        return dictionary;
+    }
+
+    private static string? TryResolveSpinnerName(global::Spectre.Console.Spinner spinner)
+    {
+        if (SpinnerNames.TryGetValue(spinner, out var name))
+        {
+            return name;
+        }
+
+        return null;
+    }
+
+    private sealed class SpinnerReferenceEqualityComparer : IEqualityComparer<global::Spectre.Console.Spinner>
+    {
+        public static readonly SpinnerReferenceEqualityComparer Instance = new();
+
+        public bool Equals(global::Spectre.Console.Spinner? x, global::Spectre.Console.Spinner? y) => ReferenceEquals(x, y);
+
+        public int GetHashCode(global::Spectre.Console.Spinner obj) => RuntimeHelpers.GetHashCode(obj);
+    }
 }

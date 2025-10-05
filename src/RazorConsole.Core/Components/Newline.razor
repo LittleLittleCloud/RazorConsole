@@ -3,24 +3,4 @@
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Core.Rendering.ComponentMarkup
 @using System.Composition
-@inherits RenderableConverterComponentBase<NewlineRenderableConverter>
-@attribute [Export(typeof(RenderableConverterComponentBase<NewlineRenderableConverter>))]
-
-<div data-newline="true"
-    data-count="@Count"
-    @attributes="RemainingAttributes"></div>
-
-@code {
-    private const int DefaultCount = 1;
-
-    [Parameter]
-    public int Count { get; set; } = DefaultCount;
-
-    protected override void OnParametersSet()
-    {
-        if (Count < 0)
-        {
-            Count = 0;
-        }
-    }
-}
+<Markup Content="@Environment.NewLine" />

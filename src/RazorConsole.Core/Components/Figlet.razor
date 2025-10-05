@@ -1,0 +1,17 @@
+<div
+    class="figlet"
+    data-content="@Content"
+     data-justified ="@justifyAttribute"
+     />
+
+@code {
+    private string justifyAttribute => Justify.ToString();
+    private string colorAttribute => Color.ToString();
+
+    [Parameter]
+    public string Content { get; set; } = string.Empty;
+
+    [Parameter]
+    public Spectre.Console.Justify Justify { get; set; } = Spectre.Console.Justify.Center;
+    public Spectre.Console.Color Color { get; set; } = Spectre.Console.Color.Default;
+}

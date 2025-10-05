@@ -1,0 +1,133 @@
+@using System.Threading.Tasks
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Padder Padding="@_outerPadding">
+    <Rows>
+        <Markup Content="Select shows a focusable dropdown with keyboard navigation, callbacks for changes, and styling hooks for each option." Foreground="@Color.Grey70" />
+        <Newline />
+        <Markup Content="Examples" Decoration="@Decoration.Bold" />
+        <Padder Padding="@_examplePadding">
+            <Rows>
+                <Markup Content="Example 1" Decoration="@Decoration.Bold" />
+                <Columns Expand="true">
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_codeExamplePadding">
+                                <Rows>
+                                    @foreach (var line in _exampleCode)
+                                    {
+                                        <Markup Content="@line" />
+                                    }
+                                </Rows>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Demo View" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_viewPadding">
+                                <Rows>
+                                    <Select Options="@_componentOptions"
+                                            Placeholder="Choose a component"
+                                            Value="@_selected"
+                                            ValueChanged="OnValueChangedAsync"
+                                            OnSelected="OnSelectedAsync"
+                                            OnClear="OnClearedAsync"
+                                            Expand="true" />
+                                    <Markup Content="@_status"
+                                            Foreground="@_statusColor"
+                                            Decoration="@_statusDecoration" />
+                                </Rows>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                </Columns>
+                <Markup Content="Source Code: Select.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+            </Rows>
+        </Padder>
+    </Rows>
+</Padder>
+
+@code {
+    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
+    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
+    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
+
+    private readonly string[] _componentOptions = new[]
+    {
+        "Align",
+        "Border",
+        "Columns",
+        "Panel",
+        "Select",
+        "Text Input",
+    };
+
+    private string? _selected;
+    private string _status = "Choose a component to inspect.";
+    private Color _statusColor = Color.Grey70;
+    private Decoration _statusDecoration = Decoration.Italic;
+
+    private Task OnValueChangedAsync(string? value)
+    {
+        _selected = value;
+        UpdateStatus(value, Color.DeepSkyBlue1, Decoration.None, "Highlighted");
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnSelectedAsync(string? value)
+    {
+        _selected = value;
+        UpdateStatus(value, Color.Chartreuse1, Decoration.Bold, "Selected");
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnClearedAsync()
+    {
+        _selected = null;
+        _status = "Selection cleared.";
+        _statusColor = Color.Grey70;
+        _statusDecoration = Decoration.Italic;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private void UpdateStatus(string? value, Color color, Decoration decoration, string prefix)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            _status = "No component is selected.";
+            _statusColor = Color.Grey70;
+            _statusDecoration = Decoration.Italic;
+            return;
+        }
+
+        _status = $"{prefix}: {value}.";
+        _statusColor = color;
+        _statusDecoration = decoration;
+    }
+
+    private static readonly string[] _exampleCode =
+    {
+        "<Rows>",
+        "    <Select Options=\"@_componentOptions\"",
+        "            Placeholder=\"Choose a component\"",
+        "            Value=\"@_selected\"",
+        "            ValueChanged=\"OnValueChangedAsync\"",
+        "            OnSelected=\"OnSelectedAsync\"",
+        "            OnClear=\"OnClearedAsync\"",
+        "            Expand=\"true\" />",
+        "    <Markup Content=\"@_status\"",
+        "           Foreground=\"@_statusColor\"",
+        "           Decoration=\"@_statusDecoration\" />",
+        "</Rows>",
+    };
+
+    private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Select.razor";
+}
