@@ -1,6 +1,9 @@
 <div align="center">
 
 # RazorConsole
+
+[![NuGet](https://img.shields.io/nuget/v/RazorConsole.Core.svg)](https://www.nuget.org/packages/RazorConsole.Core)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 </div>
 
 > Build interactive console applications with .NET Razor components.
@@ -14,17 +17,25 @@ dotnet add package RazorConsole
 ## Usage
 ```csharp
 // Counter.razor
-<p>Current count: @currentCount</p>
-<button data-focusable="true" @onclick="IncrementCount">Click me</button>
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using RazorConsole.Components
+
+<Columns>
+    <p>Current count</p>
+    <Markup Content="@currentCount.ToString()" Foreground="@Spectre.Console.Color.Green" />
+</Columns>
+<TextButton Content="Click me"
+            OnClick="IncrementCount"
+            BackgroundColor="@Spectre.Console.Color.Grey"
+            FocusedColor="@Spectre.Console.Color.Blue" />
+
 
 @code {
     private int currentCount = 0;
-
     private void IncrementCount()
     {
         currentCount++;
-        
-        StateHasChanged();
     }
 }
 
@@ -32,6 +43,7 @@ dotnet add package RazorConsole
 await AppHost.RunAsync<Counter>();
 ```
 <img src="./assets/counter.gif" alt="Counter component demonstration" style="width: 100%; height: auto;" />
+
 ## Component Gallery
 
 Explore the built-in components interactively with the RazorConsole Component Gallery. Install the tool globally and launch it from any terminal:
@@ -41,6 +53,8 @@ dotnet tool install --global RazorConsole.Gallery --version 0.0.1
 ```
 
 After installation, run `razorconsole-gallery` to open the showcase and browse component examples rendered in the console. The gallery includes quick links back to this README for more details.
+
+![Component Gallery](./assets/gallery.gif)
 
 ## Community & support
 

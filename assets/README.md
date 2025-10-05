@@ -1,0 +1,1 @@
+how to record a terminal session: https://mohammdowais.medium.com/how-to-record-terminal-in-a-windows-computer-c140feb9a6e3
