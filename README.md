@@ -50,7 +50,7 @@ await AppHost.RunAsync<Counter>();
 Explore the built-in components interactively with the RazorConsole Component Gallery. Install the tool globally and launch it from any terminal:
 
 ```bash
-dotnet tool install --global RazorConsole.Gallery --version 0.0.1
+dotnet tool install --global RazorConsole.Gallery --version 0.0.2-alpha.181b79
 ```
 
 After installation, run `razorconsole-gallery` to open the showcase and browse component examples rendered in the console. The gallery includes quick links back to this README for more details.
