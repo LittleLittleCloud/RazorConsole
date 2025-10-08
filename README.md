@@ -45,6 +45,31 @@ await AppHost.RunAsync<Counter>();
 
 ![Image](https://github.com/user-attachments/assets/24d8cc11-6428-4886-93c1-873e45b47c74)
 
+## Features
+
+### Keyboard Events
+RazorConsole supports full keyboard event handling including `onkeydown`, `onkeypress`, `onkeyup`, and `oninput`. Use Tab to navigate between focusable elements and Enter to activate buttons.
+
+### Mouse Events (Experimental)
+Mouse input support is available for terminals that support it. To enable mouse events:
+
+```csharp
+var app = AppHost.Create<MyComponent>(builder =>
+{
+    builder.Configure(options =>
+    {
+        options.EnableMouseInput = true;
+    });
+});
+await app.RunAsync();
+```
+
+**Note:** Mouse support requires platform-specific terminal capabilities:
+- **Windows:** Windows Terminal or ConHost with mouse input enabled
+- **Linux/macOS:** Terminal emulators supporting xterm mouse tracking (most modern terminals)
+
+Currently, `onclick` events are triggered by pressing Enter on focused elements. Native mouse click support is under development. See [design-doc/mouse-events.md](design-doc/mouse-events.md) for details.
+
 ## Component Gallery
 
 Explore the built-in components interactively with the RazorConsole Component Gallery. Install the tool globally and launch it from any terminal:

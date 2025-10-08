@@ -123,6 +123,9 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<FocusManager>(sp => new FocusManager(sp.GetService<IFocusEventDispatcher>()));
         services.TryAddSingleton<LiveDisplayContextAccessor>();
         services.TryAddSingleton<KeyboardEventManager>();
+        services.TryAddSingleton<RendererMouseEventDispatcher>();
+        services.TryAddSingleton<IMouseEventDispatcher>(sp => sp.GetRequiredService<RendererMouseEventDispatcher>());
+        services.TryAddSingleton<MouseEventManager>();
     }
 }
 
@@ -135,6 +138,20 @@ public sealed class ConsoleAppOptions
     /// Gets or sets whether the console should be cleared before writing output.
     /// </summary>
     public bool AutoClearConsole { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether mouse input should be enabled in the console.
+    /// </summary>
+    /// <remarks>
+    /// When enabled, the application will attempt to capture mouse events from the console.
+    /// This requires platform-specific support:
+    /// - Windows: Uses Windows Console API with ENABLE_MOUSE_INPUT mode
+    /// - Linux/macOS: Uses ANSI escape sequences for xterm mouse tracking
+    /// 
+    /// Not all terminals support mouse input. The application will gracefully degrade
+    /// if mouse input is not available.
+    /// </remarks>
+    public bool EnableMouseInput { get; set; } = false;
 
     public ConsoleLiveDisplayOptions ConsoleLiveDisplayOptions { get; } = ConsoleLiveDisplayOptions.Default;
 
@@ -216,6 +233,13 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
             var currentParameters = parameters;
             var focusManager = _serviceProvider.GetRequiredService<FocusManager>();
             var keyboardManager = _serviceProvider.GetService<KeyboardEventManager>();
+            var mouseManager = _serviceProvider.GetService<MouseEventManager>();
+
+            // Configure mouse manager if enabled
+            if (mouseManager is not null && _options.EnableMouseInput)
+            {
+                mouseManager.IsEnabled = true;
+            }
 
             var callback = _options.AfterRenderAsync ?? ConsoleAppOptions.DefaultAfterRenderAsync;
             if (SupportsLiveDisplay())
@@ -232,6 +256,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                     _liveContextAccessor?.Attach(context);
                     FocusManager.FocusSession? session = null;
                     Task? keyListener = null;
+                    Task? mouseListener = null;
 
                     try
                     {
@@ -242,6 +267,11 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                             keyListener = keyboardManager.RunAsync(session.Token);
                         }
 
+                        if (mouseManager is not null && mouseManager.IsEnabled && !Console.IsInputRedirected)
+                        {
+                            mouseListener = mouseManager.RunAsync(session?.Token ?? shutdownToken);
+                        }
+
                         await callback(context, view, shutdownToken).ConfigureAwait(false);
                         await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
 
@@ -250,6 +280,17 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                             try
                             {
                                 await keyListener.ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                            }
+                        }
+
+                        if (mouseListener is not null)
+                        {
+                            try
+                            {
+                                await mouseListener.ConfigureAwait(false);
                             }
                             catch (OperationCanceledException)
                             {
@@ -277,6 +318,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 
             FocusManager.FocusSession? fallbackSession = null;
             Task? fallbackKeyListener = null;
+            Task? fallbackMouseListener = null;
 
             try
             {
@@ -291,6 +333,11 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                             ? keyboardManager.RunAsync(fallbackSession.Token)
                             : ListenForFocusKeysAsync(focusManager, fallbackSession.Token);
                     }
+
+                    if (mouseManager is not null && mouseManager.IsEnabled && !Console.IsInputRedirected)
+                    {
+                        fallbackMouseListener = mouseManager.RunAsync(fallbackSession.Token);
+                    }
                 }
 
                 await callback(fallbackContext, view, shutdownToken).ConfigureAwait(false);
@@ -301,6 +348,17 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                     try
                     {
                         await fallbackKeyListener.ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                }
+
+                if (fallbackMouseListener is not null)
+                {
+                    try
+                    {
+                        await fallbackMouseListener.ConfigureAwait(false);
                     }
                     catch (OperationCanceledException)
                     {
