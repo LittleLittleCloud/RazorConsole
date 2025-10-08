@@ -1,0 +1,157 @@
+@using System.Threading.Tasks
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Padder Padding="@_outerPadding">
+    <Rows>
+        <Markup Content="Mouse Events demonstrates how to handle click events in RazorConsole." 
+                Foreground="@Color.Grey70" />
+        
+        <Padder Padding="@_examplePadding">
+            <Rows>
+                <Markup Content="Current Support: Keyboard-triggered Clicks" 
+                        Decoration="@Decoration.Bold" />
+                
+                <Padder Padding="@_infoPadding">
+                    <Rows>
+                        <Markup Content="• Use Tab to navigate between elements" 
+                                Foreground="@Color.Grey70" />
+                        <Markup Content="• Press Enter to trigger onclick events" 
+                                Foreground="@Color.Grey70" />
+                        <Markup Content="• Works with any element that has click handler" 
+                                Foreground="@Color.Grey70" />
+                    </Rows>
+                </Padder>
+                
+                <Grid Columns="2" Expand="true">
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_codeExamplePadding">
+                                <Rows>
+                                    @foreach (var line in _exampleCode)
+                                    {
+                                        <Markup Content="@line" />
+                                    }
+                                </Rows>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                    
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Interactive Demo" Decoration="@Decoration.Bold" />
+                            <Padder Padding="@_viewPadding">
+                                <Rows>
+                                    <TextButton Content="@_buttonLabel"
+                                                BackgroundColor="@_buttonColor"
+                                                FocusedColor="@Color.Cyan1"
+                                                OnClick="HandleClickAsync" />
+                                    
+                                    <Markup Content="@_statusMessage" 
+                                            Foreground="@_statusColor" 
+                                            Decoration="@_statusDecoration" />
+                                </Rows>
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                </Grid>
+                
+                <Padder Padding="@_futurePadding">
+                    <Rows>
+                        <Markup Content="Future: Native Mouse Input" 
+                                Decoration="@Decoration.Bold" 
+                                Foreground="@Color.Yellow" />
+                        
+                        <Padder Padding="@_infoPadding">
+                            <Rows>
+                                <Markup Content="Native mouse support is in development. To enable:" 
+                                        Foreground="@Color.Grey70" />
+                                
+                                <Padder Padding="@_codePadding">
+                                    <Rows>
+                                        @foreach (var line in _futureCode)
+                                        {
+                                            <Markup Content="@line" Foreground="@Color.Grey50" />
+                                        }
+                                    </Rows>
+                                </Padder>
+                                
+                                <Markup Content="Platform requirements:" 
+                                        Foreground="@Color.Grey70" />
+                                <Markup Content="• Windows: Windows Terminal or ConHost with mouse support" 
+                                        Foreground="@Color.Grey50" />
+                                <Markup Content="• Linux/macOS: xterm-compatible terminal emulator" 
+                                        Foreground="@Color.Grey50" />
+                            </Rows>
+                        </Padder>
+                    </Rows>
+                </Padder>
+                
+                <Markup Content="Documentation: design-doc/mouse-events.md" 
+                        Foreground="@Color.DeepSkyBlue1" 
+                        Decoration="@Decoration.Underline" 
+                        link="@DocumentationUrl" />
+            </Rows>
+        </Padder>
+    </Rows>
+</Padder>
+
+@code {
+    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
+    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _infoPadding = new(2, 1, 0, 0);
+    private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
+    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
+    private static readonly Padding _futurePadding = new(0, 2, 0, 0);
+    private static readonly Padding _codePadding = new(2, 1, 0, 0);
+
+    private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/design-doc/mouse-events.md";
+
+    private static readonly string[] _exampleCode =
+    {
+        "<TextButton Content=\"Click Me\"",
+        "            OnClick=\"HandleClick\"",
+        "            BackgroundColor=\"Color.Grey\"",
+        "            FocusedColor=\"Color.Cyan1\" />",
+        "",
+        "@code {",
+        "    private void HandleClick()",
+        "    {",
+        "        // Triggered when Enter is pressed",
+        "    }",
+        "}",
+    };
+
+    private static readonly string[] _futureCode =
+    {
+        "var app = AppHost.Create<MyComponent>(builder =>",
+        "{",
+        "    builder.Configure(options =>",
+        "    {",
+        "        options.EnableMouseInput = true;",
+        "    });",
+        "});",
+        "await app.RunAsync();",
+    };
+
+    private int _clickCount = 0;
+    private string _buttonLabel = "Click Me!";
+    private string _statusMessage = "Press Tab to focus, then Enter to click";
+    private Color _statusColor = Color.Grey70;
+    private Decoration _statusDecoration = Decoration.Italic;
+    private Color _buttonColor = Color.Grey19;
+
+    private Task HandleClickAsync()
+    {
+        _clickCount++;
+        _buttonLabel = $"Clicked {_clickCount}x";
+        _statusMessage = $"Button clicked at {DateTime.Now:HH:mm:ss} (Total: {_clickCount})";
+        _statusColor = Color.Green;
+        _statusDecoration = Decoration.Bold;
+        _buttonColor = _clickCount % 2 == 0 ? Color.Grey19 : Color.DarkOliveGreen3;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+}
