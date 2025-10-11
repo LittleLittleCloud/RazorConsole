@@ -20,7 +20,7 @@ internal sealed partial class VdomSpectreTranslator
                 return false;
             }
 
-            if (!node.Attributes.TryGetValue("data-syntax-highlighter", out var marker) || !string.Equals(marker, "true", StringComparison.OrdinalIgnoreCase))
+            if (!node.Attributes.TryGetValue("class", out var @class) || !string.Equals(@class, "syntax-highlighter", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

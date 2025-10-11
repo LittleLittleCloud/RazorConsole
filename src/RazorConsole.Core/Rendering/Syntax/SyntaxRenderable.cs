@@ -10,37 +10,31 @@ namespace RazorConsole.Core.Rendering.Syntax;
 public sealed class SyntaxRenderable : Renderable
 {
     private readonly SyntaxHighlightRenderModel _model;
-    private IRenderable? _cachedRenderable;
+    private readonly Lazy<IRenderable> _renderable;
 
     public SyntaxRenderable(SyntaxHighlightRenderModel model)
     {
         _model = model ?? throw new ArgumentNullException(nameof(model));
+        _renderable = new Lazy<IRenderable>(CreateRenderable);
     }
 
     protected override Measurement Measure(RenderOptions options, int maxWidth)
-        => BuildRenderable().Measure(options, maxWidth);
+        => _renderable.Value.Measure(options, maxWidth);
 
     protected override IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
-        => BuildRenderable().Render(options, maxWidth);
+        => _renderable.Value.Render(options, maxWidth);
 
-    private IRenderable BuildRenderable()
+    private IRenderable CreateRenderable()
     {
-        if (_cachedRenderable is not null)
-        {
-            return _cachedRenderable;
-        }
-
         if (_model.Lines.Count == 0)
         {
-            _cachedRenderable = new Markup(_model.PlaceholderMarkup);
-            return _cachedRenderable;
+            return new Markup(_model.PlaceholderMarkup);
         }
 
         if (!_model.ShowLineNumbers)
         {
             var markup = string.Join(Environment.NewLine, _model.Lines);
-            _cachedRenderable = new Markup(markup);
-            return _cachedRenderable;
+            return new Markup(markup);
         }
 
         var gutterMarkup = _model.LineNumberStyleMarkup;
@@ -57,15 +51,10 @@ public sealed class SyntaxRenderable : Renderable
                 : $"[{gutterMarkup}]{Markup.Escape(lineNumber)}[/]";
 
             var lineMarkup = _model.Lines[index];
-            if (string.IsNullOrEmpty(lineMarkup))
-            {
-                lineMarkup = " ";
-            }
 
             grid.AddRow(new Markup(numberMarkup), new Markup(lineMarkup));
         }
 
-        _cachedRenderable = grid;
         return grid;
     }
 }
