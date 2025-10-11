@@ -51,7 +51,7 @@ public sealed class SyntaxHighlightingService
         var language = _languageRegistry.GetLanguage(request.Language);
         var theme = _themeRegistry.GetTheme(request.Theme);
         var markup = _formatter.Format(request.Code, language, theme, options);
-    var normalized = NormalizeLines(markup);
+        var normalized = NormalizeLines(markup);
 
         return new SyntaxHighlightRenderModel(normalized, request.ShowLineNumbers, options.LineNumberStyle.ToMarkup(), options.PlaceholderMarkup);
     }

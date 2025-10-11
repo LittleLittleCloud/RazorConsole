@@ -61,19 +61,19 @@ public sealed class ColorCodeLanguageRegistry : ISyntaxLanguageRegistry
         Register("text", _plainText);
         Register("plaintext", _plainText);
         Register("plain", _plainText);
-    Register("csharp", Languages.FindById(LanguageId.CSharp));
-    Register("cs", Languages.FindById(LanguageId.CSharp));
-    Register("razor", Languages.Html); // Razor currently tokenizes as HTML/C# hybrid
-    Register("html", Languages.Html);
-    Register("json", Languages.FindById(LanguageId.Json));
-    Register("xml", Languages.Xml);
-    Register("sql", Languages.Sql);
-    Register("js", Languages.JavaScript);
-    Register("javascript", Languages.JavaScript);
-    Register("ts", Languages.FindById(LanguageId.TypeScript));
-    Register("typescript", Languages.FindById(LanguageId.TypeScript));
-    Register("css", Languages.Css);
-    Register("powershell", Languages.PowerShell);
+        Register("csharp", Languages.FindById(LanguageId.CSharp));
+        Register("cs", Languages.FindById(LanguageId.CSharp));
+        Register("razor", Languages.Html); // Razor currently tokenizes as HTML/C# hybrid
+        Register("html", Languages.Html);
+        Register("json", Languages.FindById(LanguageId.Json));
+        Register("xml", Languages.Xml);
+        Register("sql", Languages.Sql);
+        Register("js", Languages.JavaScript);
+        Register("javascript", Languages.JavaScript);
+        Register("ts", Languages.FindById(LanguageId.TypeScript));
+        Register("typescript", Languages.FindById(LanguageId.TypeScript));
+        Register("css", Languages.Css);
+        Register("powershell", Languages.PowerShell);
         Register("ps", Languages.PowerShell);
         Register("python", Languages.Python);
         Register("md", Languages.Markdown);

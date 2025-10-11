@@ -44,10 +44,10 @@ public sealed class SpectreMarkupFormatter : CodeColorizerBase
             throw new ArgumentNullException(nameof(options));
         }
 
-    _builder = new StringBuilder(sourceCode.Length * 2);
+        _builder = new StringBuilder(sourceCode.Length * 2);
         _currentTheme = theme;
         _options = options;
-    _styleMarkupCache.Clear();
+        _styleMarkupCache.Clear();
 
         languageParser.Parse(sourceCode, language, Write);
 
@@ -136,7 +136,7 @@ public sealed class SpectreMarkupFormatter : CodeColorizerBase
             return;
         }
 
-    if (style == SpectreStyle.Plain)
+        if (style == SpectreStyle.Plain)
         {
             _builder.Append(escaped);
             return;
