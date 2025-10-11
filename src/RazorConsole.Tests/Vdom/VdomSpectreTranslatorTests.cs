@@ -53,7 +53,7 @@ public class VdomSpectreTranslatorTests
 
         var node = Element("div", div =>
         {
-            div.SetAttribute("data-syntax-highlighter", "true");
+            div.SetAttribute("class", "syntax-highlighter");
             div.SetAttribute("data-payload", payload);
         });
 
