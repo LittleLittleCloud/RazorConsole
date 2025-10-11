@@ -11,6 +11,8 @@
   <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
   <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+  <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
+  <PackageVersion Include="NuGet.Versioning" Version="6.7.0" />
     <PackageVersion Include="Spectre.Console" Version="0.51.1" />
   <PackageVersion Include="System.Composition" Version="8.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

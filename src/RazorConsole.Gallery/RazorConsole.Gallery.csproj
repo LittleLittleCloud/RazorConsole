@@ -12,6 +12,8 @@
   <ItemGroup>
     <ProjectReference Include="..\RazorConsole.Core\RazorConsole.Core.csproj" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
+  <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 
