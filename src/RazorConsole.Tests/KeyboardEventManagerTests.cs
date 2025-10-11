@@ -258,7 +258,7 @@ public class KeyboardEventManagerTests
             var renderer = new ConsoleRenderer(services, NullLoggerFactory.Instance);
             var canvas = new NoopCanvas();
             var view = BuildView(elements);
-            var context = ConsoleLiveDisplayContext.CreateForTesting(canvas, renderer, view);
+            var context = new ConsoleLiveDisplayContext(canvas, renderer, view);
 
             var session = focusManager.BeginSession(context, view, CancellationToken.None);
             if (view.VdomRoot is not null)

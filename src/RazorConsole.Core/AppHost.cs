@@ -122,7 +122,6 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<IKeyboardEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
         services.TryAddSingleton<IFocusEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
         services.TryAddSingleton<FocusManager>(sp => new FocusManager(sp.GetService<IFocusEventDispatcher>()));
-        services.TryAddSingleton<LiveDisplayContextAccessor>();
         services.TryAddSingleton<KeyboardEventManager>();
         services.TryAddSingleton<ISyntaxLanguageRegistry, ColorCodeLanguageRegistry>();
         services.TryAddSingleton<ISyntaxThemeRegistry, SyntaxThemeRegistry>();
@@ -164,7 +163,6 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
     private readonly ServiceProvider _serviceProvider;
     private readonly ConsoleAppOptions _options;
     private readonly VdomDiffService _diffService;
-    private readonly LiveDisplayContextAccessor? _liveContextAccessor;
     private readonly ConsoleRenderer _consoleRenderer;
     private readonly SemaphoreSlim _renderLock = new(1, 1);
     private bool _disposed;
@@ -179,7 +177,6 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         _serviceProvider = builder.BuildServiceProvider();
         _options = builder.Options;
         _diffService = _serviceProvider.GetRequiredService<VdomDiffService>();
-        _liveContextAccessor = _serviceProvider.GetService<LiveDisplayContextAccessor>();
         _consoleRenderer = _serviceProvider.GetRequiredService<ConsoleRenderer>();
     }
 
@@ -233,8 +230,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 {
                     shutdownToken.ThrowIfCancellationRequested();
                     using var _ = _consoleRenderer.Subscribe(focusManager);
-                    using var context = ConsoleLiveDisplayContext.Create<TComponent>(liveContext, view, _consoleRenderer);
-                    _liveContextAccessor?.Attach(context);
+                    using var context = ConsoleLiveDisplayContext.Create(liveContext, view, _consoleRenderer);
                     FocusManager.FocusSession? session = null;
                     Task? keyListener = null;
 
@@ -264,7 +260,6 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                     finally
                     {
                         session?.Dispose();
-                        _liveContextAccessor?.Detach(context);
                     }
                 }).ConfigureAwait(false);
 
@@ -276,8 +271,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
                 AnsiConsole.Clear();
             }
 
-            using var fallbackContext = ConsoleLiveDisplayContext.CreateForTesting<TComponent>(new FallbackLiveDisplayCanvas(), _consoleRenderer, view);
-            _liveContextAccessor?.Attach(fallbackContext);
+            using var fallbackContext = new ConsoleLiveDisplayContext(new FallbackLiveDisplayCanvas(), _consoleRenderer, view);
             fallbackContext.UpdateRenderable(view.Renderable);
 
             FocusManager.FocusSession? fallbackSession = null;
@@ -315,7 +309,6 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
             finally
             {
                 fallbackSession?.Dispose();
-                _liveContextAccessor?.Detach(fallbackContext);
             }
         }
         finally

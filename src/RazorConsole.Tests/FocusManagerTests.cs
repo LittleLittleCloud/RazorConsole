@@ -22,11 +22,10 @@ public sealed class FocusManagerTests
         var keys = new[] { "first", "second" };
         var initial = CreateView(keys, focusedKey: null);
 
-        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
+        using var context = ConsoleLiveDisplayContext.CreateForTesting(
             new TestCanvas(),
             initial,
-            new VdomDiffService(),
-            (parameters, _) => Task.FromResult(CreateView(keys, manager.CurrentFocusKey)));
+            new VdomDiffService());
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 
@@ -43,11 +42,10 @@ public sealed class FocusManagerTests
         var keys = new[] { "first", "second", "third" };
         var initial = CreateView(keys, focusedKey: null);
 
-        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
+        using var context = ConsoleLiveDisplayContext.CreateForTesting(
             new TestCanvas(),
             initial,
-            new VdomDiffService(),
-            (parameters, _) => Task.FromResult(CreateView(keys, manager.CurrentFocusKey)));
+            new VdomDiffService());
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 
@@ -82,11 +80,10 @@ public sealed class FocusManagerTests
             new FakeRenderable("interactive"),
             Array.Empty<IAnimatedConsoleRenderable>());
 
-        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
+        using var context = ConsoleLiveDisplayContext.CreateForTesting(
             new TestCanvas(),
             view,
-            new VdomDiffService(),
-            (parameters, _) => Task.FromResult(view));
+            new VdomDiffService());
 
         using var session = manager.BeginSession(context, view, CancellationToken.None);
         await session.InitializationTask;
@@ -125,11 +122,10 @@ public sealed class FocusManagerTests
             new FakeRenderable("focus"),
             Array.Empty<IAnimatedConsoleRenderable>());
 
-        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
+        using var context = ConsoleLiveDisplayContext.CreateForTesting(
             new TestCanvas(),
             view,
-            new VdomDiffService(),
-            (parameters, _) => Task.FromResult(view));
+            new VdomDiffService());
 
         using var session = manager.BeginSession(context, view, CancellationToken.None);
         await session.InitializationTask;
@@ -158,19 +154,11 @@ public sealed class FocusManagerTests
         var manager = new FocusManager();
         var keys = new[] { "first", "second", "third" };
         var initial = CreateView(keys, focusedKey: null);
-        var renderCount = 0;
 
-        Task<ConsoleViewResult> RenderAsync(object? _, CancellationToken __)
-        {
-            Interlocked.Increment(ref renderCount);
-            return Task.FromResult(CreateView(keys, manager.CurrentFocusKey));
-        }
-
-        using var context = ConsoleLiveDisplayContext.CreateForTesting<FakeComponent>(
+        using var context = ConsoleLiveDisplayContext.CreateForTesting(
             new TestCanvas(),
             initial,
-            new VdomDiffService(),
-            RenderAsync);
+            new VdomDiffService());
         using var session = manager.BeginSession(context, initial, CancellationToken.None);
         await session.InitializationTask;
 
@@ -179,12 +167,10 @@ public sealed class FocusManagerTests
         Assert.True(manager.HasFocusables);
         Assert.Equal("first", manager.CurrentFocusKey);
 
-        renderCount = 0;
         var changed = await manager.FocusNextAsync(session.Token);
 
         Assert.True(changed);
         Assert.Equal("second", manager.CurrentFocusKey);
-        Assert.True(renderCount >= 1);
     }
 
     private static void PushInitialSnapshot(FocusManager manager, ConsoleViewResult view)

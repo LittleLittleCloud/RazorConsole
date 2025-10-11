@@ -289,23 +289,6 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
             return;
         }
 
-        var context = _context;
-        if (context is not null)
-        {
-            try
-            {
-                await context.UpdateModelAsync(null, token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                return;
-            }
-            catch
-            {
-                // Ignore rendering failures during focus changes.
-            }
-        }
-
         FocusChanged?.Invoke(this, new FocusChangedEventArgs(target.Key));
 
         await DispatchFocusEventsAsync(previousTarget, target, token).ConfigureAwait(false);

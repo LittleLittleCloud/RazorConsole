@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -20,23 +16,17 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
 {
     private readonly ILiveDisplayCanvas _canvas;
     private readonly object _sync = new();
-    private readonly ConsoleRenderer? _ownedRenderer;
     private readonly VdomDiffService _diffService;
-    private readonly Func<object?, CancellationToken, Task<ConsoleViewResult>>? _renderCallback;
     private bool _disposed;
     private ConsoleViewResult? _currentView;
     private IDisposable? _snapshotSubscription;
     private List<AnimationSubscription>? _animationSubscriptions;
-    private object? _lastParameters;
 
     internal ConsoleLiveDisplayContext(
         ILiveDisplayCanvas canvas,
-        ConsoleViewResult? initialView,
         ConsoleRenderer renderer,
-        bool ownsRenderer = false,
-        VdomDiffService? diffService = null,
-        Func<object?, CancellationToken, Task<ConsoleViewResult>>? renderCallback = null,
-        object? initialParameters = null)
+        ConsoleViewResult? initialView = null,
+        VdomDiffService? diffService = null)
     {
         _canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
         if (initialView is not null)
@@ -45,29 +35,11 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
         }
 
         _snapshotSubscription = renderer.Subscribe(this);
-        if (ownsRenderer)
-        {
-            _ownedRenderer = renderer;
-        }
-
         _diffService = diffService ?? new VdomDiffService();
-        _renderCallback = renderCallback;
-        _lastParameters = initialParameters;
 
         if (initialView is not null)
         {
             UpdateAnimations(initialView.AnimatedRenderables);
-        }
-    }
-
-    internal ConsoleViewResult? CurrentView
-    {
-        get
-        {
-            lock (_sync)
-            {
-                return _currentView;
-            }
         }
     }
 
@@ -135,37 +107,6 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
         }
     }
 
-    /// <summary>
-    /// Forces a refresh of the live display.
-    /// </summary>
-    public void Refresh() => _canvas.Refresh();
-
-    /// <summary>
-    /// Re-renders the underlying component using the provided parameters and updates the live display.
-    /// </summary>
-    /// <param name="parameters">Parameter object passed to the component. Passing <see langword="null"/> reuses the previous parameters.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns><see langword="true"/> when the view was updated; otherwise <see langword="false"/>.</returns>
-    public async Task<bool> UpdateModelAsync(object? parameters, CancellationToken cancellationToken = default)
-    {
-        var callback = _renderCallback;
-        if (callback is null)
-        {
-            return false;
-        }
-
-        var effectiveParameters = parameters ?? _lastParameters;
-
-        var view = await callback(effectiveParameters, cancellationToken).ConfigureAwait(false);
-        if (view is null)
-        {
-            return false;
-        }
-
-        _lastParameters = effectiveParameters;
-        return UpdateView(view);
-    }
-
     public void Dispose()
     {
         if (_disposed)
@@ -174,88 +115,25 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
         }
         DisposeAnimations();
         _snapshotSubscription?.Dispose();
-#pragma warning disable BL0006
-        _ownedRenderer?.Dispose();
-#pragma warning restore BL0006
-
         _disposed = true;
     }
 
-    internal static ConsoleLiveDisplayContext Create<TComponent>(
+    internal static ConsoleLiveDisplayContext Create(
         Spectre.Console.LiveDisplayContext context,
         ConsoleViewResult initialView,
         ConsoleRenderer renderer)
-        where TComponent : IComponent
         => new(
             new LiveDisplayCanvasAdapter(context),
-            initialView,
-            renderer);
-
-    internal static ConsoleLiveDisplayContext CreateForTesting(
-        ILiveDisplayCanvas canvas,
-        ConsoleRenderer renderer,
-        ConsoleViewResult? initialView = null)
-        => new(canvas, initialView, renderer);
-
-    internal static ConsoleLiveDisplayContext CreateForTesting(
-        ILiveDisplayCanvas canvas,
-        ConsoleViewResult? initialView = null)
-    {
-        var renderer = CreateRenderer();
-        return new ConsoleLiveDisplayContext(canvas, initialView, renderer, ownsRenderer: true);
-    }
-
-    internal static ConsoleLiveDisplayContext CreateForTesting<TComponent>(
-        ILiveDisplayCanvas canvas,
-        ConsoleRenderer renderer,
-        ConsoleViewResult? initialView)
-        where TComponent : IComponent
-        => new(
-            canvas,
-            initialView,
-            renderer);
+            renderer,
+            initialView);
 
     internal static ConsoleLiveDisplayContext CreateForTesting(
         ILiveDisplayCanvas canvas,
         ConsoleViewResult? initialView,
-        VdomDiffService diffService,
-        Func<object?, CancellationToken, Task<ConsoleViewResult>> renderCallback,
-        object? initialParameters = null)
+        VdomDiffService? diffService)
     {
-        if (diffService is null)
-        {
-            throw new ArgumentNullException(nameof(diffService));
-        }
-
-        if (renderCallback is null)
-        {
-            throw new ArgumentNullException(nameof(renderCallback));
-        }
-
         var renderer = CreateRenderer();
-        return new ConsoleLiveDisplayContext(canvas, initialView, renderer, ownsRenderer: true, diffService: diffService, renderCallback: renderCallback, initialParameters: initialParameters);
-    }
-
-    internal static ConsoleLiveDisplayContext CreateForTesting<TComponent>(
-        ILiveDisplayCanvas canvas,
-        ConsoleViewResult? initialView,
-        VdomDiffService diffService,
-        Func<object?, CancellationToken, Task<ConsoleViewResult>> renderCallback,
-        object? initialParameters = null)
-        where TComponent : IComponent
-    {
-        if (diffService is null)
-        {
-            throw new ArgumentNullException(nameof(diffService));
-        }
-
-        if (renderCallback is null)
-        {
-            throw new ArgumentNullException(nameof(renderCallback));
-        }
-
-        var renderer = CreateRenderer();
-        return new ConsoleLiveDisplayContext(canvas, initialView, renderer, ownsRenderer: true, diffService: diffService, renderCallback: renderCallback, initialParameters: initialParameters);
+        return new ConsoleLiveDisplayContext(canvas, renderer, initialView, diffService: diffService);
     }
 
     public void OnCompleted()
