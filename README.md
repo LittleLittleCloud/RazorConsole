@@ -79,6 +79,11 @@ After installation, run `razorconsole-gallery` to open the showcase and browse c
 
 ![Component Gallery](./assets/gallery.png)
 
+## HotReload
+
+RazorConsole supports hotreload via metadata update handler so you can apply UI changes on the fly.
+
+
 ## Community & support
 
 - File issues using the GitHub **Issues** tab.
