@@ -9,6 +9,7 @@
   <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="System.Composition" />
+    <PackageReference Include="ColorCode.Core" />
   </ItemGroup>
   <Import Project="$(RepoRoot)/nuget/nuget-package.props" />
 

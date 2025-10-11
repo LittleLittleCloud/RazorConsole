@@ -1,0 +1,82 @@
+@using RazorConsole.Components
+@using RazorConsole.Core.Rendering.Syntax
+@using Spectre.Console
+@using ConsoleMarkup = Spectre.Console.Markup
+
+<Padder Padding="@_outerPadding">
+    <Rows>
+        <Markup Content="The SyntaxHighlighter component renders source code using ColorCode scopes and Spectre styles." Foreground="@Color.Grey70" />
+        <Padder Padding="@_examplePadding">
+            <Rows>
+                <Markup Content="Component Usage" Decoration="@Decoration.Bold" />
+                <Grid Columns="2" Expand="true">
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            @foreach (var line in _usageSnippet)
+                            {
+                                <Markup Content="@ConsoleMarkup.Escape(line)" Foreground="@Color.Grey78" />
+                            }
+                        </Rows>
+                    </Padder>
+                    <Padder Padding="@_columnPadding">
+                        <Rows>
+                            <Markup Content="Default theme with line numbers" Foreground="@Color.DeepSkyBlue1" />
+                            <Padder Padding="@_codePadding">
+                                <SyntaxHighlighter Code="@_diagnosticsSample"
+                                                   Language="csharp"
+                                                   ShowLineNumbers="true"
+                                                   TabWidth="4" />
+                            </Padder>
+                            <Markup Content="Compact sample without line numbers" Foreground="@Color.DeepSkyBlue1" />
+                            <Padder Padding="@_codePadding">
+                                <SyntaxHighlighter Code="@_diagnosticsSample"
+                                                   Language="csharp"
+                                                   ShowLineNumbers="false"
+                                                   Options="@_compactOptions" />
+                            </Padder>
+                        </Rows>
+                    </Padder>
+                </Grid>
+            </Rows>
+        </Padder>
+        <Markup Content="Register additional themes or languages through services.AddSyntaxHighlighting()." Foreground="@Color.Grey58" />
+        <Markup Content="Source Code: SyntaxHighlighter.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+    </Rows>
+</Padder>
+
+@code {
+    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
+    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
+    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
+    private static readonly Padding _codePadding = new(0, 1, 0, 1);
+
+    private static readonly string[] _usageSnippet =
+    {
+        "<SyntaxHighlighter Code=\"@_diagnosticsSample\"",
+        "                   Language=\"csharp\"",
+        "                   ShowLineNumbers=\"true\"",
+        "                   TabWidth=\"4\" />",
+    };
+
+    private const string _diagnosticsSample = @"using Spectre.Console;
+
+public static class DiagnosticsDemo
+{
+    public static void Render()
+    {
+        var panel = new Panel(""[green]Healthy![/]"")
+        {
+            Padding = new Padding(1, 0, 1, 0),
+        };
+
+        AnsiConsole.Write(panel);
+    }
+}";
+
+    private static readonly SyntaxOptions _compactOptions = SyntaxOptions.Default with
+    {
+        TabWidth = 2,
+    };
+
+    private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/SyntaxHighlighter.razor";
+}
