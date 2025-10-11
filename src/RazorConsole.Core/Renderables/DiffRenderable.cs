@@ -4,9 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RazorConsole.Core.Utilities;
 using Spectre.Console;
 using Spectre.Console.Rendering;
-using RazorConsole.Core.Utilities;
 using static RazorConsole.Core.Utilities.AnsiSequences;
 namespace RazorConsole.Core.Renderables;
 
@@ -115,7 +115,7 @@ internal class DiffRenderable : Renderable
 
                 yield return Segment.Control(NEL());
             }
-            
+
             // Update the previous lines for next comparison
             _previousLines = CloneLines(segmentLines);
             _shape = shape;
@@ -135,7 +135,7 @@ internal class DiffRenderable : Renderable
         {
             var segment1 = line1[i];
             var segment2 = line2[i];
-            
+
             if (!SegmentsAreEqual(segment1, segment2))
             {
                 return false;
