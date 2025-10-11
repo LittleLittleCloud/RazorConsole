@@ -2,68 +2,42 @@
 @using RazorConsole.Components
 @using Spectre.Console
 
-<Padder Padding="@_outerPadding">
-    <Rows>
-        <Markup Content="TextInput captures user text, supports masking, focus styling, and change/submit callbacks." Foreground="@Color.Grey70" />
-        <Padder Padding="@_examplePadding">
-            <Rows>
-                <Markup Content="Example 1" Decoration="@Decoration.Bold" />
-                <Grid Columns="2" Expand="true">
-                    <Padder Padding="@_columnPadding">
-                        <Rows>
-                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
-                            <Padder Padding="@_codeExamplePadding">
-                                <Rows>
-                                    @foreach (var line in _exampleCode)
-                                    {
-                                        <Markup Content="@line" />
-                                    }
-                                </Rows>
-                            </Padder>
-                        </Rows>
-                    </Padder>
-                    <Padder Padding="@_columnPadding">
-                        <Rows>
-                            <Markup Content="Demo View" Decoration="@Decoration.Bold" />
-                            <Padder Padding="@_viewPadding">
-                                <Rows>
-                                    <TextInput Label="First Name"
-                                               Value="@_firstName"
-                                               ValueChanged="OnFirstNameChangedAsync"
-                                               Placeholder="Ada"
-                                               FocusedBorderColor="@Color.DeepSkyBlue1"
-                                               BorderPadding="@_inputPadding"
-                                               Expand="true" />
-                                    <TextInput Label="Secret Note"
-                                               Value="@_secretNote"
-                                               ValueChanged="OnSecretChangedAsync"
-                                               Placeholder="Classified"
-                                               MaskInput="true"
-                                               FocusedBorderColor="@Color.MediumOrchid"
-                                               BorderPadding="@_inputPadding"
-                                               Expand="true" />
-                                    <Markup Content="@PreviewText" />
-                                    <Markup Content="@SecretLengthText"
-                                            Foreground="@Color.Grey70"
-                                            Decoration="@Decoration.Italic" />
-                                </Rows>
-                            </Padder>
-                        </Rows>
-                    </Padder>
-                </Grid>
-                <Markup Content="Source Code: TextInput.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
-            </Rows>
-        </Padder>
-    </Rows>
-</Padder>
+<Rows>
+    <Markup Content="TextInput captures user text, supports masking, focus styling, and change/submit callbacks." Foreground="@Color.Grey70" />
+    <Markup Content="Source Code: TextInput.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+    <Newline />
+    <Panel Title="Code" Border="BoxBorder.Rounded" Expand="true">
+        <SyntaxHighlighter Language="razor"
+                           Code="@_exampleCode"
+                           ShowLineNumbers="true" />
+    </Panel>
+    <Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
+        <Rows>
+            <TextInput Label="First Name"
+                       Value="@_firstName"
+                       ValueChanged="OnFirstNameChangedAsync"
+                       Placeholder="Ada"
+                       FocusedBorderColor="@Color.DeepSkyBlue1"
+                       BorderPadding="@_inputPadding"
+                       Expand="true" />
+            <TextInput Label="Secret Note"
+                       Value="@_secretNote"
+                       ValueChanged="OnSecretChangedAsync"
+                       Placeholder="Classified"
+                       MaskInput="true"
+                       FocusedBorderColor="@Color.MediumOrchid"
+                       BorderPadding="@_inputPadding"
+                       Expand="true" />
+            <Markup Content="@PreviewText" />
+            <Markup Content="@SecretLengthText"
+                    Foreground="@Color.Grey70"
+                    Decoration="@Decoration.Italic" />
+        </Rows>
+    </Panel>
+</Rows>
 
 @code {
-    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
-    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
     private static readonly Padding _inputPadding = new(1, 0, 1, 0);
-    private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
-    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
-    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
 
     private string _firstName = string.Empty;
     private string _secretNote = string.Empty;
@@ -88,30 +62,27 @@
         return Task.CompletedTask;
     }
 
-    private static readonly string[] _exampleCode =
-    {
-        "<Rows>",
-        "    <TextInput Label=\"First Name\"",
-        "               Value=\"@_firstName\"",
-        "               ValueChanged=\"OnFirstNameChangedAsync\"",
-        "               Placeholder=\"Ada\"",
-        "               FocusedBorderColor=\"Color.DeepSkyBlue1\"",
-        "               BorderPadding=\"new(1, 0, 1, 0)\"",
-        "               Expand=\"true\" />",
-        "    <TextInput Label=\"Secret Note\"",
-        "               Value=\"@_secretNote\"",
-        "               ValueChanged=\"OnSecretChangedAsync\"",
-        "               Placeholder=\"Classified\"",
-        "               MaskInput=\"true\"",
-        "               FocusedBorderColor=\"Color.MediumOrchid\"",
-        "               BorderPadding=\"new(1, 0, 1, 0)\"",
-        "               Expand=\"true\" />",
-        "    <Markup Content=\"@PreviewText\" />",
-        "    <Markup Content=\"@SecretLengthText\"",
-        "           Foreground=\"Color.Grey70\"",
-        "           Decoration=\"Decoration.Italic\" />",
-        "</Rows>",
-    };
+    private static readonly string _exampleCode = @"<Rows>
+    <TextInput Label=""First Name""
+               Value=""@_firstName""
+               ValueChanged=""OnFirstNameChangedAsync""
+               Placeholder=""Ada""
+               FocusedBorderColor=""Color.DeepSkyBlue1""
+               BorderPadding=""new(1, 0, 1, 0)""
+               Expand=""true"" />
+    <TextInput Label=""Secret Note""
+               Value=""@_secretNote""
+               ValueChanged=""OnSecretChangedAsync""
+               Placeholder=""Classified""
+               MaskInput=""true""
+               FocusedBorderColor=""Color.MediumOrchid""
+               BorderPadding=""new(1, 0, 1, 0)""
+               Expand=""true"" />
+    <Markup Content=""@PreviewText"" />
+    <Markup Content=""@SecretLengthText""
+           Foreground=""Color.Grey70""
+           Decoration=""Decoration.Italic"" />
+</Rows>".Trim();
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/TextInput.razor";
 }

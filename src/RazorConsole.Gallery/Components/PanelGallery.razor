@@ -1,104 +1,48 @@
 @using RazorConsole.Components
 @using Spectre.Console
 
-<Padder Padding="@_outerPadding">
-    <Rows>
-        <Markup Content="Panel surfaces information inside a framed container with optional title, padding, size, and border configuration." Foreground="@Color.Grey70" />
-        <Padder Padding="@_examplePadding">
-            <Rows>
-                <Markup Content="Example 1" Decoration="@Decoration.Bold" />
-                <Grid Columns="2" Expand="true">
-                    <Padder Padding="@_columnPadding">
-                        <Rows>
-                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
-                            <Padder Padding="@_codeExamplePadding">
-                                <Rows>
-                                    @foreach (var line in _exampleCode)
-                                    {
-                                        <Markup Content="@line" />
-                                    }
-                                </Rows>
-                            </Padder>
-                        </Rows>
-                    </Padder>
-                    <Padder Padding="@_columnPadding">
-                        <Rows>
-                            <Markup Content="Demo View" Decoration="@Decoration.Bold" />
-                            <Padder Padding="@_viewPadding">
-                                <Columns Expand="true">
-                                    <Panel Title="Release"
-                                           TitleColor="@Color.Chartreuse1"
-                                           Border="@BoxBorder.Double"
-                                           BorderColor="@Color.Chartreuse1"
-                                           Expand="false"
-                                           Width="28">
-                                        <Padder Padding="@_innerPadding">
-                                            <Markup Content="Version 1.4.0" />
-                                            <Newline />
-                                            <Markup Content="Ready for publication"
-                                                    Foreground="@Color.Chartreuse1"
-                                                    Decoration="@Decoration.Bold" />
-                                        </Padder>
-                                    </Panel>
-                                    <Panel Title="Notes"
-                                           Border="@BoxBorder.Square"
-                                           Expand="true"
-                                           Padding="@_notesPadding">
-                                        <Rows>
-                                            <Markup Content="Panels can expand to fill remaining space"
-                                                    Foreground="@Color.DeepSkyBlue1" />
-                                            <Markup Content="or honor explicit width constraints."
-                                                    Foreground="@Color.DeepSkyBlue1" />
-                                        </Rows>
-                                    </Panel>
-                                </Columns>
-                            </Padder>
-                        </Rows>
-                    </Padder>
-                </Grid>
-            </Rows>
-        </Padder>
-        <Markup Content="Source Code: Panel.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
-    </Rows>
-</Padder>
+<Rows>
+    <Markup Content="Panel surfaces information inside a framed container with optional title, padding, size, and border configuration." Foreground="@Color.Grey70" />
+    <Markup Content="Source Code: Panel.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+    <Newline />
+    <Panel Title="Code" Border="BoxBorder.Rounded" Expand="true">
+        <SyntaxHighlighter Language="razor"
+                           Code="@_exampleCode"
+                           ShowLineNumbers="true" />
+    </Panel>
+    <Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
+        <Columns>
+            <Panel Title="Release"
+                   TitleColor="@Color.Chartreuse1"
+                   Border="@BoxBorder.Double"
+                   BorderColor="@Color.Chartreuse1"
+                   Expand="false"
+                   Width="28">
+                    <Markup Content="Version 1.4.0" />
+                    <Newline />
+                    <Markup Content="Ready for publication"
+                            Foreground="@Color.Chartreuse1"
+                            Decoration="@Decoration.Bold" />
+            </Panel>
+        </Columns>
+    </Panel>
+</Rows>
 
 @code {
-    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
-    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
-    private static readonly Padding _innerPadding = new(1, 1, 1, 1);
-    private static readonly Padding _notesPadding = new(1, 0, 1, 0);
-    private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
-    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
-    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
-
-    private static readonly string[] _exampleCode =
-    {
-        "<Columns Expand=\"true\">",
-        "    <Panel Title=\"Release\"",
-        "           TitleColor=\"Color.Chartreuse1\"",
-        "           Border=\"BoxBorder.Double\"",
-        "           BorderColor=\"Color.Chartreuse1\"",
-        "           Expand=\"false\" Width=\"28\">",
-        "        <Padder Padding=\"new(1, 1, 1, 1)\">",
-        "            <Markup Content=\"Version 1.4.0\" />",
-        "            <Newline />",
-        "            <Markup Content=\"Ready for publication\"",
-        "                   Foreground=\"Color.Chartreuse1\"",
-        "                   Decoration=\"Decoration.Bold\" />",
-        "        </Padder>",
-        "    </Panel>",
-        "    <Panel Title=\"Notes\"",
-        "           Border=\"BoxBorder.Square\" Expand=\"true\"",
-        "           Padding=\"new(1, 0, 1, 0)\">",
-        "        <Rows>",
-        "            <Markup Content=\"Panels can expand to fill remaining space\"",
-        "                   Foreground=\"Color.DeepSkyBlue1\" />",
-        "            <Markup Content=\"or honor explicit width constraints.\"",
-        "                   Foreground=\"Color.DeepSkyBlue1\" />",
-        "        </Rows>",
-        "    </Panel>",
-        "</Columns>",
-    };
+    private static readonly string _exampleCode = @"
+<Columns Expand=""true"">
+    <Panel Title=""Release""
+           TitleColor=""Color.Chartreuse1""
+           Border=""BoxBorder.Double""
+           BorderColor=""Color.Chartreuse1""
+           Expand=""false"" Width=""28"">
+        <Markup Content=""Version 1.4.0"" />
+        <Newline />
+        <Markup Content=""Ready for publication""
+               Foreground=""Color.Chartreuse1""
+               Decoration=""Decoration.Bold"" />
+    </Panel>
+</Columns>".Trim();
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Panel.razor";
 }
