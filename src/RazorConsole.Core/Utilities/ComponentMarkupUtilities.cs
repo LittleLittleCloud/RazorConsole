@@ -9,14 +9,6 @@ namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
 internal static class ComponentMarkupUtilities
 {
-    public static int GetIntAttribute(XElement element, string attributeName, int fallback)
-    {
-        var raw = element.Attribute(attributeName)?.Value;
-        return int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
-            ? value
-            : fallback;
-    }
-
     public static string CreateStyledMarkup(string? style, string content, bool requiresEscape)
     {
         if (requiresEscape)
@@ -47,14 +39,5 @@ internal static class ComponentMarkupUtilities
         }
 
         return Spinner.Known.Dots;
-    }
-
-    public static string ResolveSpinnerGlyph(string? spinnerType)
-    {
-        static string FirstFrame(Spinner spinner)
-            => spinner.Frames?.FirstOrDefault() ?? "⠋";
-
-        var spinner = ResolveSpinner(spinnerType);
-        return FirstFrame(spinner);
     }
 }

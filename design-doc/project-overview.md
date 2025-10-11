@@ -4,6 +4,7 @@ The project should contains the following files structure:
   workflows/ - CI/CD workflows
 design-doc/
   project-overview.md - This document
+  syntax-highlighter.md - Syntax highlighter component design
 src/
   RazorConsole.Core - Core library with rendering logic and Razor components
   RazorConsole.Gallery - Sample RazorConsole app

@@ -15,6 +15,7 @@ using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Focus;
 using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
+using RazorConsole.Core.Rendering.Syntax;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -123,6 +124,10 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<FocusManager>(sp => new FocusManager(sp.GetService<IFocusEventDispatcher>()));
         services.TryAddSingleton<LiveDisplayContextAccessor>();
         services.TryAddSingleton<KeyboardEventManager>();
+        services.TryAddSingleton<ISyntaxLanguageRegistry, ColorCodeLanguageRegistry>();
+        services.TryAddSingleton<ISyntaxThemeRegistry, SyntaxThemeRegistry>();
+        services.TryAddSingleton<SpectreMarkupFormatter>();
+        services.TryAddSingleton<SyntaxHighlightingService>();
     }
 }
 

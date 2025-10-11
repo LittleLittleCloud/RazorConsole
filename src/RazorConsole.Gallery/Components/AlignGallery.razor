@@ -2,78 +2,68 @@
 @using Spectre.Console
 
 <Rows>
-    <Padder Padding="@_outerPadding">
-        <Rows>
-            <Markup Content="Align positions child content horizontally and vertically inside a fixed region."Foreground="@Color.Grey70" />
-            <Markup Content="Example 1" Decoration="@Decoration.Bold" />
-            <Padder Padding="@_examplePadding">
-                <Grid Columns="2" Expand="true">
-                    <Markup Content="Source Code" Decoration="@Decoration.Bold" />
-                    <Markup Content="Demo View" Decoration="@Decoration.Bold" />
-                    @for (var index = 0; index < _samples.Length; index++)
-                    {
-                        var sample = _samples[index];
-                        <Padder Padding="@_codeExamplePadding">
-                            <Rows>
-                                @foreach (var line in sample.CodeLines)
-                                {
-                                    <Markup Content="@line" />
-                                }
-                            </Rows>
-                        </Padder>
-                        <Border BoxBorder="@BoxBorder.Rounded" Padding="@_alignPadding">
-                            <Align Width="18" Height="5" Horizontal="@sample.Horizontal" Vertical="@sample.Vertical">
-                                <Markup Content="@sample.Title" />
-                            </Align>
-                        </Border>
-                    }
-                </Grid>
-            </Padder>
-            <Markup Content="Source Code: Align.razor" Foreground="@Color.DeepSkyBlue1"
-                Decoration="@Decoration.Underline" link="@DocumentationUrl" />
-        </Rows>
-    </Padder>
+    <Markup Content="Align positions child content horizontally and vertically inside a fixed region." Foreground="@Color.Grey70" />
+    <Markup Content="Source Code: Align.razor" Foreground="@Color.DeepSkyBlue1"
+            Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+    <Newline />
+	<Panel Title="Code" Border="BoxBorder.Rounded" Expand="true">
+		<SyntaxHighlighter Language="razor"
+						   Code="@_sampleCode"
+						   ShowLineNumbers="true" />
+	</Panel>
+	<Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
+		<Columns Expand = "true">
+			<Border>
+			<Align Width="18" Height="5"
+				   Horizontal="@(HorizontalAlignment.Left)"
+				   Vertical="@(VerticalAlignment.Top)">
+				<Markup Content="Top / Left" />
+			</Align>
+			</Border>
+			<Border>
+			<Align Width="18" Height="5"
+				   Horizontal="@(HorizontalAlignment.Center)"
+				   Vertical="@(VerticalAlignment.Middle)">
+				<Markup Content="Center" />
+			</Align>
+			</Border>
+			<Border>
+			<Align Width="18" Height="5"
+				   Horizontal="@(HorizontalAlignment.Right)"
+				   Vertical="@(VerticalAlignment.Bottom)">
+				<Markup Content="Bottom / Right" />
+			</Align>
+			</Border>
+		</Columns>
+	</Panel>
 </Rows>
 
 @code {
-    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
-    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
-    private static readonly Padding _alignPadding = new(1, 1, 1, 1);
-    private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
-    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
-    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
-
-    private sealed record AlignSample(string Title, HorizontalAlignment Horizontal, VerticalAlignment Vertical, string[]
-    CodeLines);
-
-    private static readonly AlignSample[] _samples =
-    {
-new("Top / Left", HorizontalAlignment.Left, VerticalAlignment.Top, new[]
-{
-"<Align Width=\"18\" Height=\"5\"",
-" Horizontal=\"HorizontalAlignment.Left\"",
-" Vertical=\"VerticalAlignment.Top\">",
-" <Markup Content=\"Top / Left\" />",
-"</Align>",
-}),
-new("Center", HorizontalAlignment.Center, VerticalAlignment.Middle, new[]
-{
-"<Align Width=\"18\" Height=\"5\"",
-" Horizontal=\"HorizontalAlignment.Center\"",
-" Vertical=\"VerticalAlignment.Middle\">",
-" <Markup Content=\"Center\" />",
-"</Align>",
-}),
-new("Bottom / Right", HorizontalAlignment.Right, VerticalAlignment.Bottom, new[]
-{
-"<Align Width=\"18\" Height=\"5\"",
-" Horizontal=\"HorizontalAlignment.Right\"",
-" Vertical=\"VerticalAlignment.Bottom\">",
-" <Markup Content=\"Bottom / Right\" />",
-"</Align>",
-}),
-};
+	private string _sampleCode = @"
+<Columns Expand=""true"">
+	<Border>
+	<Align Width=""18"" Height=""5""
+		   Horizontal=""@(HorizontalAlignment.Left)""
+		   Vertical=""@(VerticalAlignment.Top)"">
+		<Markup Content=""Top / Left"" />
+	</Align>
+	</Border>
+	<Border>
+	<Align Width=""18"" Height=""5""
+		   Horizontal=""@(HorizontalAlignment.Center)""
+		   Vertical=""@(VerticalAlignment.Middle)"">
+		<Markup Content=""Center"" />
+	</Align>
+	</Border>
+	<Border>
+	<Align Width=""18"" Height=""5""
+		   Horizontal=""@(HorizontalAlignment.Right)""
+		   Vertical=""@(VerticalAlignment.Bottom)"">
+		<Markup Content=""Bottom / Right"" />
+	</Align>
+	</Border>
+</Columns>".Trim();
 
     private const string DocumentationUrl =
-    "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Align.razor";
+        "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Align.razor";
 }

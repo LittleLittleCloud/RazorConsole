@@ -11,6 +11,8 @@
   <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
   <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+  <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
+  <PackageVersion Include="NuGet.Versioning" Version="6.7.0" />
     <PackageVersion Include="Spectre.Console" Version="0.51.1" />
   <PackageVersion Include="System.Composition" Version="8.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
@@ -18,6 +20,8 @@
     <PackageVersion Include="xunit.runner.console" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="ColorCode.Core" Version="2.0.15" />
+    
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
   </ItemGroup>

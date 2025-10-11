@@ -1,64 +1,33 @@
 @using RazorConsole.Components
 @using Spectre.Console
 
-<Padder Padding="@_outerPadding">
-    <Rows>
-        <Markup Content="Padder adds outer spacing around its child content without modifying the child component itself." Foreground="@Color.Grey70" />
-        <Padder Padding="@_examplePadding">
-            <Rows>
-                <Markup Content="Example 1" Decoration="@Decoration.Bold" />
-                <Grid Columns="2" Expand="true">
-                    <Padder Padding="@_columnPadding">
-                        <Rows>
-                            <Markup Content="Source Code" Decoration="@Decoration.Bold" />
-                            <Padder Padding="@_codeExamplePadding">
-                                <Rows>
-                                    @foreach (var line in _panelPaddedCode)
-                                    {
-                                        <Markup Content="@line" />
-                                    }
-                                </Rows>
-                            </Padder>
-                        </Rows>
-                    </Padder>
-                    <Padder Padding="@_columnPadding">
-                        <Rows>
-                            <Markup Content="Demo View" Decoration="@Decoration.Bold" />
-                            <Padder Padding="@_viewPadding">
-                                <Panel Title="Padder adds space"
-                                       Border="@BoxBorder.Square"
-                                       Expand="false">
-                                    <Padder Padding="@_innerPadding">
-                                        <Markup Content="Comfortable breathing room." />
-                                    </Padder>
-                                </Panel>
-                            </Padder>
-                        </Rows>
-                    </Padder>
-                </Grid>
-            </Rows>
-        </Padder>
-        <Markup Content="Source Code: Padder.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
-    </Rows>
-</Padder>
+<Rows>
+    <Markup Content="Padder adds outer spacing around its child content without modifying the child component itself." Foreground="@Color.Grey70" />
+    <Markup Content="Source Code: Padder.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+    <Newline />
+    <Panel Title="Code" Border="BoxBorder.Rounded" Expand="true">
+        <SyntaxHighlighter Language="razor"
+                           Code="@_panelPaddedCode"
+                           ShowLineNumbers="true" />
+    </Panel>
+    <Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
+        <Panel Title="Padder adds space"
+               Border="@BoxBorder.Square"
+               Expand="false">
+            <Padder Padding="new Padding(1, 1, 1, 1)">
+                <Markup Content="Comfortable breathing room." />
+            </Padder>
+        </Panel>
+    </Panel>
+</Rows>
 
 @code {
-    private static readonly Padding _outerPadding = new(1, 1, 1, 1);
-    private static readonly Padding _examplePadding = new(0, 1, 0, 0);
-    private static readonly Padding _innerPadding = new(1, 1, 1, 1);
-    private static readonly Padding _codeExamplePadding = new(0, 1, 0, 0);
-    private static readonly Padding _viewPadding = new(0, 1, 0, 1);
-    private static readonly Padding _columnPadding = new(0, 1, 0, 0);
-
-    private static readonly string[] _panelPaddedCode =
-    {
-        "<Panel Title=\"Padder adds space\"",
-        "       Border=\"BoxBorder.Square\" Expand=\"false\">",
-        "    <Padder Padding=\"new(1, 1, 1, 1)\">",
-        "        <Markup Content=\"Comfortable breathing room.\" />",
-        "    </Padder>",
-        "</Panel>",
-    };
+    private static readonly string _panelPaddedCode = @"<Panel Title=""Padder adds space""
+       Border=""BoxBorder.Square"" Expand=""false"">
+    <Padder Padding=""new(1, 1, 1, 1)"">
+        <Markup Content=""Comfortable breathing room."" />
+    </Padder>
+</Panel>".Trim();
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Padder.razor";
 }

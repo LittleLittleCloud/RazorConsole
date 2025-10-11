@@ -4,13 +4,32 @@
 @using Microsoft.AspNetCore.Components
 @using RazorConsole.Components
 @using Spectre.Console
+@using RazorConsole.Gallery.Services
+
+@inject INuGetUpgradeChecker UpgradeChecker
 <Figlet Content="Component Gallery" />
 <Align Horizontal="@HorizontalAlignment.Center">
 @* app bar *@
 
     <Rows>
         <Markup Content="Tab / Ctrl+Tab to change focus • Enter to select • Type to input • Control+C to exit" Foreground="@Color.Grey58" />
-        <Markup Content="Update to latest: dotnet tool update --global RazorConsole.Gallery" Foreground="@Color.SpringGreen3" />
+        @if (!string.IsNullOrEmpty(_versionSummary))
+        {
+            <Markup Content="@_versionSummary" Foreground="@Color.Grey70" />
+        }
+        @if (!string.IsNullOrEmpty(_statusMessage))
+        {
+            <Markup Content="@_statusMessage" Foreground="@Color.Chartreuse1" Decoration="@Decoration.Bold" />
+        }
+        @if (_upgradeResult?.HasUpgrade == true)
+        {
+            <Markup Content="@_upgradeBanner" Foreground="@Color.Gold3_1" Decoration="@(Decoration.Bold | Decoration.Italic)" />
+            @if (!string.IsNullOrEmpty(_upgradeLink))
+            {
+                <Markup Content="Open NuGet package page" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@_upgradeLink" />
+            }
+            <Markup Content="Update now: dotnet tool update --global RazorConsole.Gallery" Foreground="@Color.Gold3_1" />
+        }
         <Columns>
             <Markup Content="Repo link: RazorConsole" Foreground="@Color.DeepSkyBlue1" Decoration="Decoration.Underline" link="https://github.com/LittleLittleCloud/RazorConsole" />
             <Markup Content="README" Foreground="@Color.DeepSkyBlue1" Decoration="Decoration.Underline" link="https://github.com/LittleLittleCloud/RazorConsole/blob/main/README.md" />
@@ -33,6 +52,7 @@
                 }
             </Rows>
         </Padder>
+			<Padder Padding="@(new(0,1,0,0))">
         @switch (_activeTab)
         {
             case "align":
@@ -74,8 +94,12 @@
             case "textinput":
                 <TextInputGallery />
                 break;
+            case "syntax":
+                <SyntaxHighlighterGallery />
+                break;
         }
-    </Grid>
+			</Padder>
+    </Grid>	
 </Panel>
 
 
@@ -87,6 +111,7 @@
         ("columns", "Columns"),
         ("grid", "Grid"),
         ("markup", "Markup"),
+    ("syntax", "Syntax Highlight"),
         ("newline", "Newline"),
         ("padder", "Padder"),
         ("panel", "Panel"),
@@ -102,6 +127,11 @@
     private readonly Padding _navigationPadding = new Padding(1, 1, 1, 1);
     private readonly Padding _navigationItemPadding = new Padding(0, 0, 0, 1);
     private readonly Padding _contentPadding = new Padding(1, 0, 1, 0);
+    private UpgradeCheckResult? _upgradeResult;
+    private string? _upgradeBanner;
+    private string? _upgradeLink;
+    private string? _versionSummary;
+    private string? _statusMessage;
 
     private void SelectTab(string key)
     {
@@ -109,6 +139,39 @@
         {
             _activeTab = key;
             StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _upgradeResult = await UpgradeChecker.CheckForUpgradeAsync().ConfigureAwait(false);
+
+        if (_upgradeResult is null)
+        {
+            _versionSummary = "Version information is currently unavailable.";
+            return;
+        }
+
+        var currentVersion = string.IsNullOrWhiteSpace(_upgradeResult.CurrentVersion) ? "unknown" : _upgradeResult.CurrentVersion;
+        var latestVersion = string.IsNullOrWhiteSpace(_upgradeResult.LatestVersion) ? "unknown" : _upgradeResult.LatestVersion;
+
+        _versionSummary = $"Current version: {currentVersion} • Latest available: {latestVersion}";
+
+        if (_upgradeResult.HasUpgrade)
+        {
+            _upgradeBanner = $"New gallery version available: {latestVersion} (current {currentVersion}).";
+            _upgradeLink = _upgradeResult.PackageUri?.ToString();
+            _statusMessage = "Upgrade recommended.";
+            return;
+        }
+
+        if (!string.Equals(latestVersion, "unknown", StringComparison.OrdinalIgnoreCase))
+        {
+            _statusMessage = "You're already on the latest version.";
+        }
+        else
+        {
+            _statusMessage = "Latest version information is currently unavailable.";
         }
     }
 

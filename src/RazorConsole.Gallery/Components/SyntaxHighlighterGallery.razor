@@ -1,0 +1,62 @@
+@using RazorConsole.Components
+@using RazorConsole.Core.Rendering.Syntax
+@using Spectre.Console
+
+<Rows>
+    <Markup Content="The SyntaxHighlighter component renders source code using ColorCode scopes and Spectre styles." Foreground="@Color.Grey70" />
+    <Markup Content="Source Code: SyntaxHighlighter.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
+    <Newline />
+    <Panel Title="Code" Border="BoxBorder.Rounded" Expand="true">
+        <SyntaxHighlighter Language="razor"
+                           Code="@_defaultUsageCode"
+                           ShowLineNumbers="true" />
+    </Panel>
+    <Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
+		<SyntaxHighlighter Code="@("Console.WriteLine(\"hello world\")")"
+						   Language="csharp"
+						   ShowLineNumbers="true" />
+		<SyntaxHighlighter Code="@("print(\"hello world\")")"
+		 Language="python"
+						   ShowLineNumbers="true" />
+		<SyntaxHighlighter Code="@("{\"key\": \"value\"}")")
+		Language="json"
+						   ShowLineNumbers="true" />
+    </Panel>
+</Rows>
+
+@code {
+    private static readonly string _defaultUsageCode = @"
+<SyntaxHighlighter Code=""Console.WriteLine(""hello world"")""
+                   Language=""csharp""
+                   ShowLineNumbers=""true""/>
+<SyntaxHighlighter Code=""print(""hello world"")""
+                   Language=""python""
+                   ShowLineNumbers=""true""/>
+<SyntaxHighlighter Code=""{""key"": ""value""}""
+				   Language=""json""
+				   ShowLineNumbers=""true""/>
+".Trim();
+
+
+    private const string _diagnosticsSample = @"using Spectre.Console;
+
+public static class DiagnosticsDemo
+{
+    public static void Render()
+    {
+        var panel = new Panel(""[green]Healthy![/]"")
+        {
+            Padding = new Padding(1, 0, 1, 0),
+        };
+
+        AnsiConsole.Write(panel);
+    }
+}";
+
+    private static readonly SyntaxOptions _compactOptions = SyntaxOptions.Default with
+    {
+        TabWidth = 2,
+    };
+
+    private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/SyntaxHighlighter.razor";
+}

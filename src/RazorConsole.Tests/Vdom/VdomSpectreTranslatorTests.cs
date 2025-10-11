@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Rendering.ComponentMarkup;
+using RazorConsole.Core.Rendering.Syntax;
 using RazorConsole.Core.Rendering.Vdom;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
@@ -41,6 +42,27 @@ public class VdomSpectreTranslatorTests
 
         Assert.True(success);
         Assert.IsType<Markup>(renderable);
+        Assert.Empty(animations);
+    }
+
+    [Fact]
+    public void Translate_SyntaxHighlighterNode_ReturnsSyntaxRenderable()
+    {
+        var model = new SyntaxHighlightRenderModel(new[] { "[blue]Console.WriteLine()[/]" }, false, string.Empty, SyntaxOptions.Default.PlaceholderMarkup);
+        var payload = SyntaxHighlightingService.EncodePayload(model);
+
+        var node = Element("div", div =>
+        {
+            div.SetAttribute("class", "syntax-highlighter");
+            div.SetAttribute("data-payload", payload);
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.IsType<SyntaxRenderable>(renderable);
         Assert.Empty(animations);
     }
 

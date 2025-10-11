@@ -1,0 +1,56 @@
+@namespace RazorConsole.Components
+
+@using System
+@using System.Collections.Generic
+@using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.Syntax
+
+<div class="syntax-highlighter"
+    data-payload="@_payload"
+    @attributes="AdditionalAttributes" />
+
+@code {
+    private string _payload = string.Empty;
+
+    [Parameter]
+    public string Code { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Language { get; set; }
+
+    [Parameter]
+    public string? Theme { get; set; }
+
+    [Parameter]
+    public bool ShowLineNumbers { get; set; }
+
+    [Parameter]
+    public SyntaxOptions? Options { get; set; }
+
+    [Parameter]
+    public int? TabWidth { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+    [Inject]
+    internal SyntaxHighlightingService Highlighter { get; set; } = default!;
+
+    protected override void OnParametersSet()
+    {
+        if (Highlighter is null)
+        {
+            throw new InvalidOperationException("SyntaxHighlightingService has not been registered. Call services.AddSyntaxHighlighting().");
+        }
+
+        var options = Options ?? SyntaxOptions.Default;
+        if (TabWidth.HasValue && TabWidth.Value > 0)
+        {
+            options = options with { TabWidth = TabWidth.Value };
+        }
+
+        var request = new SyntaxHighlightRequest(Code ?? string.Empty, Language, Theme, ShowLineNumbers, options);
+        var model = Highlighter.Highlight(request);
+        _payload = SyntaxHighlightingService.EncodePayload(model);
+    }
+}
