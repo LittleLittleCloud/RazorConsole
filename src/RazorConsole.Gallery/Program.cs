@@ -1,11 +1,11 @@
+using System;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection;
 using RazorConsole.Components;
 using RazorConsole.Core;
 using RazorConsole.Gallery.Components;
 using RazorConsole.Gallery.Services;
 using Spectre.Console;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 
 await AppHost.RunAsync<App>(null, builder =>
 {
