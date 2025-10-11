@@ -17,10 +17,6 @@
         {
             <Markup Content="@_versionSummary" Foreground="@Color.Grey70" />
         }
-        @if (!string.IsNullOrEmpty(_statusMessage))
-        {
-            <Markup Content="@_statusMessage" Foreground="@Color.Chartreuse1" Decoration="@Decoration.Bold" />
-        }
         @if (_upgradeResult?.HasUpgrade == true)
         {
             <Markup Content="@_upgradeBanner" Foreground="@Color.Gold3_1" Decoration="@(Decoration.Bold | Decoration.Italic)" />
@@ -28,7 +24,6 @@
             {
                 <Markup Content="Open NuGet package page" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@_upgradeLink" />
             }
-            <Markup Content="Update now: dotnet tool update --global RazorConsole.Gallery" Foreground="@Color.Gold3_1" />
         }
         <Columns>
             <Markup Content="Repo link: RazorConsole" Foreground="@Color.DeepSkyBlue1" Decoration="Decoration.Underline" link="https://github.com/LittleLittleCloud/RazorConsole" />

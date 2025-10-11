@@ -125,7 +125,14 @@ internal sealed class NuGetUpgradeChecker : INuGetUpgradeChecker
 
             var currentVersion = parsed;
 
-            if (currentVersion >= latestVersion)
+            // Normalize latest version by removing "-alpha" prefix if present
+            var normalizedLatestVersionString = latestVersion.ToNormalizedString().Replace("-alpha.", "-");
+            if (!NuGetVersion.TryParse(normalizedLatestVersionString, out var normalizedLatestVersion))
+            {
+                normalizedLatestVersion = latestVersion;
+            }
+
+            if (currentVersion >= normalizedLatestVersion)
             {
                 return UpgradeCheckResult.WithoutUpdate(currentVersion.ToNormalizedString(), latestVersion.ToNormalizedString(), PackagePage);
             }
