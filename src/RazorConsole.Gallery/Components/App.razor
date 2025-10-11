@@ -121,12 +121,10 @@
 
     private readonly Padding _navigationPadding = new Padding(1, 1, 1, 1);
     private readonly Padding _navigationItemPadding = new Padding(0, 0, 0, 1);
-    private readonly Padding _contentPadding = new Padding(1, 0, 1, 0);
     private UpgradeCheckResult? _upgradeResult;
     private string? _upgradeBanner;
     private string? _upgradeLink;
     private string? _versionSummary;
-    private string? _statusMessage;
 
     private void SelectTab(string key)
     {
@@ -156,17 +154,7 @@
         {
             _upgradeBanner = $"New gallery version available: {latestVersion} (current {currentVersion}).";
             _upgradeLink = _upgradeResult.PackageUri?.ToString();
-            _statusMessage = "Upgrade recommended.";
             return;
-        }
-
-        if (!string.Equals(latestVersion, "unknown", StringComparison.OrdinalIgnoreCase))
-        {
-            _statusMessage = "You're already on the latest version.";
-        }
-        else
-        {
-            _statusMessage = "Latest version information is currently unavailable.";
         }
     }
 
