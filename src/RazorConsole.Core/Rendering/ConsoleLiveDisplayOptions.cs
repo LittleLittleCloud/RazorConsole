@@ -13,16 +13,6 @@ public sealed class ConsoleLiveDisplayOptions
     public bool AutoClear { get; set; }
 
     /// <summary>
-    /// Gets or sets the vertical overflow behaviour for the live display.
-    /// </summary>
-    public VerticalOverflow Overflow { get; set; } = VerticalOverflow.Ellipsis;
-
-    /// <summary>
-    /// Gets or sets the vertical overflow cropping strategy.
-    /// </summary>
-    public VerticalOverflowCropping Cropping { get; set; } = VerticalOverflowCropping.Bottom;
-
-    /// <summary>
     /// Creates a new instance with default settings.
     /// </summary>
     public static ConsoleLiveDisplayOptions Default => new();
@@ -31,7 +21,5 @@ public sealed class ConsoleLiveDisplayOptions
         => new()
         {
             AutoClear = AutoClear,
-            Overflow = Overflow,
-            Cropping = Cropping,
         };
 }

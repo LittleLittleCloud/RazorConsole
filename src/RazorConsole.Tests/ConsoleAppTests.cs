@@ -12,19 +12,6 @@ namespace RazorConsole.Tests;
 public sealed class ConsoleAppTests
 {
     [Fact]
-    public async Task Renderer_ReturnsConsoleViewResult()
-    {
-        await using var app = AppHost.Create<TestComponent>();
-
-        var view = await app.RenderComponentAsync(new { Message = "Hello" });
-
-        Assert.NotNull(view);
-        Assert.IsType<ConsoleViewResult>(view);
-        Assert.Contains("Hello", view.Html, StringComparison.Ordinal);
-        Assert.NotNull(view.Renderable);
-    }
-
-    [Fact]
     public async Task RunAsync_InvokesCustomAfterRenderCallback()
     {
         ConsoleViewResult? observed = null;

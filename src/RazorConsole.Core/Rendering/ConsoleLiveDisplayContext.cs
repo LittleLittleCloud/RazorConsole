@@ -118,15 +118,6 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
         _disposed = true;
     }
 
-    internal static ConsoleLiveDisplayContext Create(
-        Spectre.Console.LiveDisplayContext context,
-        ConsoleViewResult initialView,
-        ConsoleRenderer renderer)
-        => new(
-            new LiveDisplayCanvasAdapter(context),
-            renderer,
-            initialView);
-
     internal static ConsoleLiveDisplayContext CreateForTesting(
         ILiveDisplayCanvas canvas,
         ConsoleViewResult? initialView,
@@ -148,12 +139,12 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
     {
         try
         {
-            var view = ConsoleViewResult.FromSnapshot(value, null);
+            var view = ConsoleViewResult.FromSnapshot(value);
             UpdateView(view);
         }
         catch
         {
-            UpdateRenderable(value.Renderable);
+            // skip rendering errors from background updates
         }
     }
 

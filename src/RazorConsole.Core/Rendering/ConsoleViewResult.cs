@@ -17,14 +17,12 @@ public sealed class ConsoleViewResult
         string html,
         IRenderable renderable,
         IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables,
-        VNode? vdomRoot,
-        IObservable<ConsoleRenderer.RenderSnapshot>? snapshotStream)
+        VNode? vdomRoot)
     {
         Html = html ?? string.Empty;
         Renderable = renderable ?? throw new ArgumentNullException(nameof(renderable));
         AnimatedRenderables = animatedRenderables ?? Array.Empty<IAnimatedConsoleRenderable>();
         VdomRoot = vdomRoot;
-        SnapshotStream = snapshotStream;
     }
 
     /// <summary>
@@ -47,32 +45,15 @@ public sealed class ConsoleViewResult
     /// </summary>
     internal VNode? VdomRoot { get; }
 
-    /// <summary>
-    /// Gets the observable stream of render snapshots associated with this view, if any.
-    /// </summary>
-    internal IObservable<ConsoleRenderer.RenderSnapshot>? SnapshotStream { get; }
-
-    internal static ConsoleViewResult Create(
-        string html,
-        IRenderable renderable,
-        IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables,
-        IObservable<ConsoleRenderer.RenderSnapshot>? snapshotStream = null)
-    {
-        HtmlVdomConverter.TryConvert(html, out var root);
-        return Create(html, root, renderable, animatedRenderables, snapshotStream);
-    }
-
     internal static ConsoleViewResult Create(
         string html,
         VNode? vdomRoot,
         IRenderable renderable,
-        IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables,
-        IObservable<ConsoleRenderer.RenderSnapshot>? snapshotStream = null)
-        => new(html, renderable, animatedRenderables, vdomRoot, snapshotStream);
+        IReadOnlyCollection<IAnimatedConsoleRenderable> animatedRenderables)
+        => new(html, renderable, animatedRenderables, vdomRoot);
 
     internal static ConsoleViewResult FromSnapshot(
-        ConsoleRenderer.RenderSnapshot snapshot,
-        IObservable<ConsoleRenderer.RenderSnapshot>? snapshotStream)
+        ConsoleRenderer.RenderSnapshot snapshot)
     {
         if (snapshot.Renderable is null)
         {
@@ -80,6 +61,6 @@ public sealed class ConsoleViewResult
         }
 
         var html = VdomHtmlSerializer.Serialize(snapshot.Root);
-        return Create(html, snapshot.Root, snapshot.Renderable, snapshot.AnimatedRenderables, snapshotStream);
+        return Create(html, snapshot.Root, snapshot.Renderable, snapshot.AnimatedRenderables);
     }
 }

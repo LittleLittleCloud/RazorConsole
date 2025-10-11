@@ -19,6 +19,7 @@ using RazorConsole.Core.Rendering.Syntax;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
+using static System.Collections.Specialized.BitVector32;
 
 namespace RazorConsole.Core;
 
@@ -157,7 +158,7 @@ public sealed class ConsoleAppOptions
 /// Runs Razor components in a console context.
 /// </summary>
 /// <typeparam name="TComponent">Component type to render.</typeparam>
-public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
+public sealed partial class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
     where TComponent : IComponent
 {
     private readonly ServiceProvider _serviceProvider;
@@ -213,103 +214,35 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 
         try
         {
-            var view = await RenderComponentAsync(parameters, shutdownToken).ConfigureAwait(false);
-
+            var initialView = await RenderComponentInternalAsync(parameters, shutdownToken).ConfigureAwait(false);
             var currentParameters = parameters;
             var focusManager = _serviceProvider.GetRequiredService<FocusManager>();
-            var keyboardManager = _serviceProvider.GetService<KeyboardEventManager>();
-
+            var keyboardManager = _serviceProvider.GetRequiredService<KeyboardEventManager>();
             var callback = _options.AfterRenderAsync ?? ConsoleAppOptions.DefaultAfterRenderAsync;
-            if (SupportsLiveDisplay())
-            {
-                var liveDisplay = AnsiConsole.Live(view.Renderable);
-                liveDisplay.AutoClear = _options.ConsoleLiveDisplayOptions.AutoClear;
-                liveDisplay.Overflow = _options.ConsoleLiveDisplayOptions.Overflow;
-
-                await liveDisplay.StartAsync(async liveContext =>
-                {
-                    shutdownToken.ThrowIfCancellationRequested();
-                    using var _ = _consoleRenderer.Subscribe(focusManager);
-                    using var context = ConsoleLiveDisplayContext.Create(liveContext, view, _consoleRenderer);
-                    FocusManager.FocusSession? session = null;
-                    Task? keyListener = null;
-
-                    try
-                    {
-                        if (keyboardManager is not null && !Console.IsInputRedirected)
-                        {
-                            session = focusManager.BeginSession(context, view, shutdownToken);
-                            await session.InitializationTask.ConfigureAwait(false);
-                            keyListener = keyboardManager.RunAsync(session.Token);
-                        }
-
-                        await callback(context, view, shutdownToken).ConfigureAwait(false);
-                        await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
-
-                        if (keyListener is not null)
-                        {
-                            try
-                            {
-                                await keyListener.ConfigureAwait(false);
-                            }
-                            catch (OperationCanceledException)
-                            {
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        session?.Dispose();
-                    }
-                }).ConfigureAwait(false);
-
-                return;
-            }
 
             if (_options.AutoClearConsole)
             {
                 AnsiConsole.Clear();
             }
 
-            using var fallbackContext = new ConsoleLiveDisplayContext(new FallbackLiveDisplayCanvas(), _consoleRenderer, view);
-            fallbackContext.UpdateRenderable(view.Renderable);
+            using var liveContext = new ConsoleLiveDisplayContext(new LiveDisplayCanvas(), _consoleRenderer, null);
+            using var _ = _consoleRenderer.Subscribe(focusManager);
+            using var focusSession = focusManager.BeginSession(liveContext, initialView, shutdownToken);
+            await focusSession.InitializationTask.ConfigureAwait(false);
+            var keyListenerTask = keyboardManager.RunAsync(shutdownToken);
 
-            FocusManager.FocusSession? fallbackSession = null;
-            Task? fallbackKeyListener = null;
+            await callback(liveContext, initialView, shutdownToken).ConfigureAwait(false);
+            await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
 
             try
             {
-                if (focusManager is not null)
-                {
-                    fallbackSession = focusManager.BeginSession(fallbackContext, view, shutdownToken);
-                    await fallbackSession.InitializationTask.ConfigureAwait(false);
-
-                    if (!Console.IsInputRedirected)
-                    {
-                        fallbackKeyListener = keyboardManager is not null
-                            ? keyboardManager.RunAsync(fallbackSession.Token)
-                            : ListenForFocusKeysAsync(focusManager, fallbackSession.Token);
-                    }
-                }
-
-                await callback(fallbackContext, view, shutdownToken).ConfigureAwait(false);
-                await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
-
-                if (fallbackKeyListener is not null)
-                {
-                    try
-                    {
-                        await fallbackKeyListener.ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                    }
-                }
+                await keyListenerTask.ConfigureAwait(false);
             }
-            finally
+            catch (OperationCanceledException)
             {
-                fallbackSession?.Dispose();
             }
+
+            return;
         }
         finally
         {
@@ -356,18 +289,6 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         }
     }
 
-    private static bool SupportsLiveDisplay()
-    {
-        try
-        {
-            return !Console.IsOutputRedirected && !Console.IsErrorRedirected;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private static CancellationTokenSource CreateShutdownSource(CancellationToken cancellationToken, out CancellationToken shutdownToken, out bool registerCtrlC)
     {
         if (cancellationToken.CanBeCanceled)
@@ -406,68 +327,6 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         }
     }
 
-    private static async Task ListenForFocusKeysAsync(FocusManager focusManager, CancellationToken token)
-    {
-        if (focusManager is null)
-        {
-            throw new ArgumentNullException(nameof(focusManager));
-        }
-
-        while (!token.IsCancellationRequested)
-        {
-            try
-            {
-                if (!Console.KeyAvailable)
-                {
-                    await Task.Delay(50, token).ConfigureAwait(false);
-                    continue;
-                }
-
-                var keyInfo = Console.ReadKey(intercept: true);
-
-                if (keyInfo.Key != ConsoleKey.Tab)
-                {
-                    continue;
-                }
-
-                if ((keyInfo.Modifiers & ConsoleModifiers.Shift) != 0)
-                {
-                    await focusManager.FocusPreviousAsync(token).ConfigureAwait(false);
-                }
-                else
-                {
-                    await focusManager.FocusNextAsync(token).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (InvalidOperationException)
-            {
-                // Console input is not available (e.g., redirected). Stop listening.
-                break;
-            }
-            catch (IOException)
-            {
-                // Console input is not available. Stop listening.
-                break;
-            }
-            catch
-            {
-                // Minor glitches retrieving input should not terminate the loop immediately.
-                try
-                {
-                    await Task.Delay(200, token).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
-            }
-        }
-    }
-
     private static async Task WaitForExitAsync(CancellationToken token)
     {
         try
@@ -478,41 +337,6 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
         {
         }
     }
-
-    private sealed class FallbackLiveDisplayCanvas : ConsoleLiveDisplayContext.ILiveDisplayCanvas
-    {
-        private IRenderable? _current;
-
-        public void UpdateTarget(IRenderable? renderable)
-        {
-            _current = renderable;
-
-            if (renderable is not null)
-            {
-                AnsiConsole.Write(renderable);
-            }
-        }
-
-        public void Refresh()
-        {
-            if (_current is not null)
-            {
-                AnsiConsole.Write(_current);
-            }
-        }
-
-        public bool TryReplaceNode(IReadOnlyList<int> path, IRenderable renderable)
-            => false;
-
-        public bool TryUpdateText(IReadOnlyList<int> path, string? text)
-            => false;
-
-        public bool TryUpdateAttributes(IReadOnlyList<int> path, IReadOnlyDictionary<string, string?> attributes)
-            => false;
-    }
-
-    public Task<ConsoleViewResult> RenderComponentAsync(object? parameters = null, CancellationToken cancellationToken = default)
-        => RenderComponentInternalAsync(parameters, cancellationToken);
 
     private async Task<ConsoleViewResult> RenderComponentInternalAsync(object? parameters, CancellationToken cancellationToken)
     {
@@ -526,7 +350,7 @@ public sealed class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            return ConsoleViewResult.FromSnapshot(snapshot, _consoleRenderer);
+            return ConsoleViewResult.FromSnapshot(snapshot);
         }
         finally
         {
