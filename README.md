@@ -49,11 +49,21 @@ await AppHost.RunAsync<Counter>();
 
 RazorConsole ships with a catalog of ready-to-use components that wrap Spectre.Console constructs:
 
-- Layout: `Align`, `Columns`, `Rows`, `Grid`, `Padder`
-- Containers: `Panel`, `Border`
-- Content: `Markup`, `Figlet`, `Newline`
-- Inputs: `TextButton`, `TextInput`, `Select`
-- Utilities: `Spinner`, `SyntaxHighlighter`
+- `Align` – position child content horizontally and vertically within a fixed box.
+- `Border` – draw Spectre borders with customizable style, color, and padding.
+- `Columns` – arrange items side-by-side, optionally stretching to fill the console width.
+- `Figlet` – render big ASCII art text using FIGlet fonts.
+- `Grid` – build multi-row, multi-column layouts with precise cell control.
+- `Markup` – emit styled text with Spectre markup tags.
+- `Newline` – insert intentional spacing between renderables.
+- `Padder` – add outer padding around child content without altering the child itself.
+- `Panel` – frame content inside a titled container with border and padding options.
+- `Rows` – stack child content vertically with optional expansion behavior.
+- `Select` – present a focusable option list with keyboard navigation.
+- `Spinner` – show animated progress indicators using Spectre spinner presets.
+- `SyntaxHighlighter` – colorize code snippets using ColorCode themes.
+- `TextButton` – display clickable text with focus and pressed-state styling.
+- `TextInput` – capture user input with optional masking and change handlers.
 
 See [`design-doc/builtin-components.md`](design-doc/builtin-components.md) for the full reference, including parameters and customization tips.
 
