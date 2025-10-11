@@ -33,6 +33,7 @@
                 }
             </Rows>
         </Padder>
+			<Padder Padding="@(new(0,1,0,0))">
         @switch (_activeTab)
         {
             case "align":
@@ -78,6 +79,7 @@
                 <SyntaxHighlighterGallery />
                 break;
         }
+			</Padder>
     </Grid>
 </Panel>
 

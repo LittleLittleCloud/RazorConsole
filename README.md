@@ -45,6 +45,18 @@ await AppHost.RunAsync<Counter>();
 
 ![Image](https://github.com/user-attachments/assets/24d8cc11-6428-4886-93c1-873e45b47c74)
 
+## Built-in components
+
+RazorConsole ships with a catalog of ready-to-use components that wrap Spectre.Console constructs:
+
+- Layout: `Align`, `Columns`, `Rows`, `Grid`, `Padder`
+- Containers: `Panel`, `Border`
+- Content: `Markup`, `Figlet`, `Newline`
+- Inputs: `TextButton`, `TextInput`, `Select`
+- Utilities: `Spinner`, `SyntaxHighlighter`
+
+See [`design-doc/builtin-components.md`](design-doc/builtin-components.md) for the full reference, including parameters and customization tips.
+
 ## Component Gallery
 
 Explore the built-in components interactively with the RazorConsole Component Gallery. Install the tool globally and launch it from any terminal:
