@@ -70,6 +70,55 @@ await AppHost.RunAsync<Counter>();
 
 ![Image](https://github.com/user-attachments/assets/24d8cc11-6428-4886-93c1-873e45b47c74)
 
+### Table Component
+
+RazorConsole provides a powerful `SpectreTable` component for displaying structured data in a formatted table:
+
+```razor
+@using RazorConsole.Components
+@using Spectre.Console
+
+<SpectreTable Expand="true" Title="Sprint Dashboard" Border="TableBorder.Rounded">
+    <SpectreTHead>
+        <SpectreTR>
+            <SpectreTH Align="Justify.Left">Task</SpectreTH>
+            <SpectreTH Align="Justify.Center">Owner</SpectreTH>
+            <SpectreTH Align="Justify.Right">Status</SpectreTH>
+        </SpectreTR>
+    </SpectreTHead>
+    <SpectreTBody>
+        <SpectreTR>
+            <SpectreTD>Implement table translator</SpectreTD>
+            <SpectreTD>A. Razor</SpectreTD>
+            <SpectreTD>
+                <Markup Content="Done" Foreground="@Color.Aqua" />
+            </SpectreTD>
+        </SpectreTR>
+        <SpectreTR>
+            <SpectreTD>Update gallery</SpectreTD>
+            <SpectreTD>S. Spectre</SpectreTD>
+            <SpectreTD>
+                <Markup Content="In Progress" Foreground="@Color.Yellow" />
+            </SpectreTD>
+        </SpectreTR>
+        <SpectreTR>
+            <SpectreTD>Write docs</SpectreTD>
+            <SpectreTD>C. Console</SpectreTD>
+            <SpectreTD>
+                <Markup Content="Pending" Foreground="@Color.Grey" />
+            </SpectreTD>
+        </SpectreTR>
+    </SpectreTBody>
+</SpectreTable>
+```
+
+**Key features:**
+- **Headers and Body**: Use `SpectreTHead` for headers with `SpectreTH` cells, and `SpectreTBody` for data rows with `SpectreTD` cells
+- **Column Alignment**: Control text alignment per column using the `Align` parameter on header cells (`Justify.Left`, `Justify.Center`, `Justify.Right`)
+- **Borders**: Choose from various border styles including `Rounded`, `Heavy`, `Square`, `Double`, and more
+- **Rich Content**: Table cells can contain any RazorConsole component, including styled `Markup`, nested layouts, or interactive elements
+- **Sizing**: Use `Expand` to stretch the table to console width, or set a fixed `Width`
+
 For more complete sample applications, check out the [Examples](#examples) section below.
 
 ## ✨ Key Features
