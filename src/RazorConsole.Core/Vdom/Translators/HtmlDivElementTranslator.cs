@@ -31,9 +31,12 @@ internal sealed partial class VdomSpectreTranslator
                 return true;
             }
 
-            var rows = new Rows(children);
+            renderable = new Columns(children)
+            {
+                Expand = false,
+                Padding = new Padding(0, 0, 0, 0),
+            };
 
-            renderable = rows;
             return true;
         }
     }

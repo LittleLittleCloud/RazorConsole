@@ -17,7 +17,8 @@ internal sealed partial class VdomSpectreTranslator
 {
     private static readonly Type[] TranslatorOrder =
     {
-        typeof(TextElementTranslator),
+    typeof(TextElementTranslator),
+    typeof(HtmlInlineTextElementTranslator),
         typeof(ParagraphElementTranslator),
         typeof(SpacerElementTranslator),
         typeof(NewlineElementTranslator),
@@ -156,16 +157,20 @@ typeof(FigletElementTranslator),
     {
         renderables = new List<IRenderable>();
 
-        foreach (var child in children)
+        for (int i = 0; i < children.Count; ++i)
         {
+            var child = children[i];
             switch (child.Kind)
             {
                 case VNodeKind.Text:
-                    if (!string.IsNullOrWhiteSpace(child.Text))
+                    var normalized = NormalizeTextNode(child.Text);
+
+                    if (!normalized.HasContent)
                     {
-                        renderables.Add(new Markup(Markup.Escape(child.Text)));
+                        break;
                     }
 
+                    renderables.Add(new Markup(Markup.Escape($"{(normalized.LeadingWhitespace && i != 0 ? " " : "")}{normalized.Content}{(normalized.TrailingWhitespace ? " " : "")}")));
                     break;
                 default:
                     if (!context.TryTranslate(child, out var childRenderable) || childRenderable is null)
@@ -181,6 +186,72 @@ typeof(FigletElementTranslator),
 
         return true;
     }
+
+    private static NormalizedText NormalizeTextNode(string? raw)
+    {
+        if (string.IsNullOrEmpty(raw))
+        {
+            return new NormalizedText(string.Empty, false, false, false);
+        }
+
+        var span = raw.AsSpan();
+        var start = -1;
+        var end = -1;
+
+        for (var i = 0; i < span.Length; i++)
+        {
+            if (!char.IsWhiteSpace(span[i]))
+            {
+                start = i;
+                break;
+            }
+        }
+
+        if (start == -1)
+        {
+            return new NormalizedText(string.Empty, false, span.Length > 0, span.Length > 0);
+        }
+
+        for (var i = span.Length - 1; i >= 0; i--)
+        {
+            if (!char.IsWhiteSpace(span[i]))
+            {
+                end = i;
+                break;
+            }
+        }
+
+        var leadingWhitespace = start > 0;
+        var trailingWhitespace = end < span.Length - 1;
+
+        var builder = new StringBuilder(end - start + 1);
+        var previousWasWhitespace = false;
+
+        for (var i = start; i <= end; i++)
+        {
+            var ch = span[i];
+            if (char.IsWhiteSpace(ch))
+            {
+                if (!previousWasWhitespace)
+                {
+                    builder.Append(' ');
+                    previousWasWhitespace = true;
+                }
+
+                continue;
+            }
+
+            builder.Append(ch);
+            previousWasWhitespace = false;
+        }
+
+        var content = builder.ToString();
+        var hasContent = content.Length > 0;
+
+        return new NormalizedText(content, hasContent, leadingWhitespace, trailingWhitespace);
+    }
+
+    private readonly record struct NormalizedText(string Content, bool HasContent, bool LeadingWhitespace, bool TrailingWhitespace);
 
     private static IRenderable ComposeChildContent(IReadOnlyList<IRenderable> children)
     {
