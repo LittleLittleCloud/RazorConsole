@@ -26,7 +26,7 @@
     @onfocus="HandleFocusAsync"
     @onfocusout="HandleBlurAsync">
     <Panel BorderColor="@CurrentBorderColor" Border="@BorderStyle" Padding="@BorderPadding" Expand="@Expand">
-        <Columns>
+        <Columns Expand="@Expand">
             @if (!string.IsNullOrWhiteSpace(Label))
             {
                 <Markup Content="@Label" Foreground="@LabelColor" Decoration="@LabelDecoration" />

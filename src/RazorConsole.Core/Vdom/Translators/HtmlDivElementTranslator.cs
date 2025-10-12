@@ -31,6 +31,12 @@ internal sealed partial class VdomSpectreTranslator
                 return true;
             }
 
+            if (children.Count == 1)
+            {
+                renderable = children[0];
+                return true;
+            }
+
             renderable = new Columns(children)
             {
                 Expand = false,

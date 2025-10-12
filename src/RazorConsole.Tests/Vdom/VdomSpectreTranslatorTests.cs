@@ -132,7 +132,7 @@ public class VdomSpectreTranslatorTests
     }
 
     [Fact]
-    public void Translate_RowsNode_ReturnsColumnsRenderable()
+    public void Translate_RowsNode_ReturnsRowsRenderable()
     {
         var child = Element("span", span =>
         {
@@ -142,8 +142,9 @@ public class VdomSpectreTranslatorTests
 
         var node = Element("div", rows =>
         {
-            rows.SetAttribute("data-rows", "true");
+            rows.SetAttribute("class", "rows");
             rows.SetAttribute("data-expand", "true");
+            rows.AddChild(child);
             rows.AddChild(child);
         });
 
@@ -152,7 +153,7 @@ public class VdomSpectreTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
         Assert.True(success);
-        Assert.IsType<Columns>(renderable);
+        Assert.IsType<Rows>(renderable);
         Assert.Empty(animations);
     }
 
