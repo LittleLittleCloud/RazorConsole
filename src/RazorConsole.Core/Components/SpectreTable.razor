@@ -1,0 +1,121 @@
+@namespace RazorConsole.Components
+
+@using System.Collections.Generic
+@using System.Globalization
+@using Microsoft.AspNetCore.Components
+@using Spectre.Console
+
+<table class="table"
+	data-expand="@ExpandAttribute"
+	data-width="@WidthAttribute"
+	data-title="@TitleAttribute"
+	data-border="@BorderAttribute"
+	data-show-headers="@ShowHeadersAttribute"
+	@attributes="AdditionalAttributes">
+    @ChildContent
+</table>
+
+@code {
+	[Parameter]
+	public RenderFragment? ChildContent { get; set; }
+
+	[Parameter]
+	public bool Expand { get; set; }
+
+	[Parameter]
+	public int? Width { get; set; }
+
+	[Parameter]
+	public string? Title { get; set; }
+
+	[Parameter]
+	public TableBorder? Border { get; set; }
+
+	[Parameter]
+	public bool ShowHeaders { get; set; } = true;
+
+	[Parameter(CaptureUnmatchedValues = true)]
+	public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+	private string ExpandAttribute => Expand ? "true" : "false";
+
+	private string? WidthAttribute => Width.HasValue && Width.Value > 0
+		? Width.Value.ToString(CultureInfo.InvariantCulture)
+		: null;
+
+	private string? TitleAttribute => string.IsNullOrWhiteSpace(Title) ? null : Title;
+
+	private string? BorderAttribute => ToBorderAttribute(Border);
+
+	private static string? ToBorderAttribute(TableBorder? border)
+	{
+		if (border is null)
+		{
+			return null;
+		}
+
+		if (ReferenceEquals(border, TableBorder.Ascii))
+		{
+			return "ascii";
+		}
+
+		if (ReferenceEquals(border, TableBorder.Heavy))
+		{
+			return "heavy";
+		}
+
+		if (ReferenceEquals(border, TableBorder.Horizontal))
+		{
+			return "horizontal";
+		}
+
+		if (ReferenceEquals(border, TableBorder.Minimal))
+		{
+			return "minimal";
+		}
+
+		if (ReferenceEquals(border, TableBorder.MinimalDoubleHead))
+		{
+			return "minimaldoublehead";
+		}
+
+		if (ReferenceEquals(border, TableBorder.MinimalHeavyHead))
+		{
+			return "minimalheavyhead";
+		}
+
+		if (ReferenceEquals(border, TableBorder.Simple))
+		{
+			return "simple";
+		}
+
+		if (ReferenceEquals(border, TableBorder.SimpleHeavy))
+		{
+			return "simpleheavy";
+		}
+
+		if (ReferenceEquals(border, TableBorder.Square))
+		{
+			return "square";
+		}
+
+		if (ReferenceEquals(border, TableBorder.Double))
+		{
+			return "double";
+		}
+
+		if (ReferenceEquals(border, TableBorder.Rounded))
+		{
+			return "rounded";
+		}
+
+		if (ReferenceEquals(border, TableBorder.None))
+		{
+			return "none";
+		}
+
+		return null;
+	}
+
+	private string ShowHeadersAttribute => ShowHeaders ? "true" : "false";
+}

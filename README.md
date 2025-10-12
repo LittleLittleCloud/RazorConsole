@@ -83,7 +83,7 @@ Create engaging user experiences with interactive elements like buttons, text in
 Get started quickly with 15+ pre-built components covering layout, input, display, and navigation needs:
 - **Layout**: `Grid`, `Columns`, `Rows`, `Align`, `Padder`
 - **Input**: `TextInput`, `TextButton`, `Select`
-- **Display**: `Markup`, `Panel`, `Border`, `Figlet`, `SyntaxHighlighter`
+- **Display**: `Markup`, `Panel`, `Border`, `Figlet`, `SyntaxHighlighter`, `Table`
 - **Utilities**: `Spinner`, `Newline`
 
 For a full list of components and usage details, see the [Built-in Components](#built-in-components) section below.

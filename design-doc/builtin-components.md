@@ -4,6 +4,8 @@ This reference summarizes the Razor components that ship with RazorConsole. Each
 
 > **Tip:** Components marked with `RenderFragment? ChildContent` accept arbitrary nested markup.
 
+Current catalog: `Align`, `Border`, `Columns`, `Figlet`, `Grid`, `Markup`, `Newline`, `Padder`, `Panel`, `Rows`, `Select`, `Spinner`, `SyntaxHighlighter`, `Table`, `TextButton`, `TextInput`.
+
 ## Align
 Wraps child content in an alignment container.
 
@@ -168,6 +170,51 @@ The built-in `ColorCodeLanguageRegistry` ships with the following language keys 
 - `md`, `markdown`
 
 Register additional languages via `ISyntaxLanguageRegistry.Register` during application startup.
+
+## Table
+Turns semantic HTML table markup into a Spectre.Console `Table` renderable.
+
+> **Key idea:** Author tables with standard `<table>`, `<thead>`, `<tbody>`, `<tfoot>`, `<tr>`, `<th>`, and `<td>` tags. RazorConsole extracts structure and styling hints from attributes instead of introducing bespoke child components.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `class="table"` ⚠️ | — | — | Required hook so the translator recognizes the element. |
+| `data-expand` | `bool` | `false` | Stretch the rendered table to the available console width. |
+| `data-width` | `int?` | `null` | Fixed overall width in characters when greater than zero. |
+| `data-title` | `string?` | `null` | Optional caption rendered above the table. |
+| `data-border` | `TableBorderStyle` | `None` | Spectre border style (`None`, `Square`, `Rounded`, `Heavy`, etc.). |
+| `data-show-headers` | `bool` | `true` | Controls whether header rows are rendered when a `<thead>` is present. |
+
+### Cells and rows
+
+- Header cells use `<th>`; body cells use `<td>`. Both can contain any RazorConsole component (e.g., `<Markup>` or nested layout primitives).
+- Set per-column alignment with `data-align="left|center|right"` on `<th>` elements; body rows inherit from their corresponding header.
+
+### Example
+
+```razor
+<Table Expand="true" Title="Build status" Border="TableBorder.Heavy">
+	<thead>
+		<tr>
+			<th data-align="left">Stage</th>
+			<th data-align="center">Duration</th>
+			<th data-align="right">Result</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr data-style="fg=grey">
+			<td>Compile</td>
+			<td>00:12:41</td>
+			<td><Markup Content="[green]✔[/]" /></td>
+		</tr>
+		<tr data-style="fg=grey">
+			<td>Tests</td>
+			<td>00:24:03</td>
+			<td><Markup Content="[yellow]⚠[/]" /></td>
+		</tr>
+	</tbody>
+</Table>
+```
 
 ## TextButton
 Clickable text button that changes background while focused.

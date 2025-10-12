@@ -1,0 +1,16 @@
+@namespace RazorConsole.Components
+
+@using System.Collections.Generic
+@using Microsoft.AspNetCore.Components
+
+<tbody @attributes="AdditionalAttributes">
+    @ChildContent
+</tbody>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+}

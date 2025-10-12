@@ -1,0 +1,28 @@
+@namespace RazorConsole.Components
+
+@using System.Collections.Generic
+@using Microsoft.AspNetCore.Components
+@using Spectre.Console
+
+<td data-align="@AlignAttribute" @attributes="AdditionalAttributes">
+    @ChildContent
+</td>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public Justify? Align { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+    private string? AlignAttribute => Align switch
+    {
+        Justify.Left => "left",
+        Justify.Right => "right",
+        Justify.Center => "center",
+        _ => null,
+    };
+}

@@ -319,6 +319,67 @@ public class VdomSpectreTranslatorTests
         Assert.Empty(animations);
     }
 
+    [Fact]
+    public void Translate_TableNode_ReturnsTableRenderable()
+    {
+        var headerRow = Element("tr", tr =>
+        {
+            tr.AddChild(HeaderCell("Stage", "left"));
+            tr.AddChild(HeaderCell("Duration", "center"));
+            tr.AddChild(HeaderCell("Result", "right"));
+        });
+
+        var thead = Element("thead", head =>
+        {
+            head.AddChild(headerRow);
+        });
+
+        var bodyRow = Element("tr", tr =>
+        {
+            tr.SetAttribute("data-style", "fg=grey");
+            tr.AddChild(DataCell("Compile"));
+            tr.AddChild(DataCell("00:03:12"));
+            tr.AddChild(DataCell("✔"));
+        });
+
+        var tbody = Element("tbody", body =>
+        {
+            body.AddChild(bodyRow);
+        });
+
+        var tableNode = Element("table", table =>
+        {
+            table.SetAttribute("class", "table");
+            table.SetAttribute("data-expand", "true");
+            table.SetAttribute("data-title", "Build status");
+            table.AddChild(thead);
+            table.AddChild(tbody);
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(tableNode, out var renderable, out var animations);
+
+        Assert.True(success);
+        var table = Assert.IsType<Table>(renderable);
+        Assert.True(table.Expand);
+        Assert.True(table.ShowHeaders);
+        Assert.Equal(3, table.Columns.Count);
+        Assert.Equal(Justify.Right, table.Columns[2].Alignment);
+        Assert.Empty(animations);
+
+        static VNode HeaderCell(string content, string align) => Element("th", th =>
+        {
+            th.SetAttribute("data-align", align);
+            th.AddChild(Text(content));
+        });
+
+        static VNode DataCell(string content) => Element("td", td =>
+        {
+            td.AddChild(Text(content));
+        });
+    }
+
     private static VNode Element(string tagName, Action<VNode>? configure = null)
     {
         var node = VNode.CreateElement(tagName);
