@@ -1,0 +1,127 @@
+@namespace LLMAgentTUI.Components
+
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using Microsoft.AspNetCore.Components
+@using RazorConsole.Components
+@using Spectre.Console
+@using LLMAgentTUI.Services
+
+@inject IChatService ChatService
+
+<Figlet Content="LLM Agent" />
+
+<Align Horizontal="@HorizontalAlignment.Center">
+    <Rows>
+        <Markup Content="AI-Powered Console Chat • Tab to change focus • Enter to submit • Ctrl+C to exit" Foreground="@Color.Grey58" />
+    </Rows>
+</Align>
+
+<Panel Title="Chat" BorderColor="@Color.Blue" Expand="true">
+    <Rows>
+        <Padder Padding="@(new(1,1,1,1))">
+            <Rows>
+                @if (_messages.Count == 0)
+                {
+                    <Markup Content="[grey]No messages yet. Type a message below to start chatting.[/]" />
+                }
+                else
+                {
+                    foreach (var message in _messages)
+                    {
+                        <Padder Padding="@(new(0,0,0,1))">
+                            <Border BorderColor="@(message.IsUser ? Color.Green : Color.Blue)" BoxBorder="@BoxBorder.Rounded">
+                                <Padder Padding="@(new(1,0,1,0))">
+                                    <Rows>
+                                        <Markup Content="@($"[bold]{(message.IsUser ? "You" : "AI")}:[/]")" Foreground="@(message.IsUser ? Color.Green : Color.Blue)" />
+                                        <Markup Content="@message.Content" />
+                                    </Rows>
+                                </Padder>
+                            </Border>
+                        </Padder>
+                    }
+                }
+
+                @if (_isProcessing)
+                {
+                    <Padder Padding="@(new(0,0,0,1))">
+                        <Columns>
+                            <RazorConsole.Components.Spinner SpinnerType="@Spectre.Console.Spinner.Known.Dots" />
+                            <Markup Content="[italic grey]AI is thinking...[/]" />
+                        </Columns>
+                    </Padder>
+                }
+            </Rows>
+        </Padder>
+    </Rows>
+</Panel>
+
+<Panel Title="Input" BorderColor="@Color.Green" Expand="true">
+    <Padder Padding="@(new(1,0,1,0))">
+        <Rows>
+            <TextInput @bind-Value="_currentInput" Placeholder="Type your message here..." OnSubmit="SendMessage" />
+            <Padder Padding="@(new(0,1,0,0))">
+                <TextButton Content="Send" OnClick="SendMessage" BackgroundColor="@Color.Blue" FocusedColor="@Color.DodgerBlue1" />
+            </Padder>
+        </Rows>
+    </Padder>
+</Panel>
+
+@code {
+    private List<ChatMessage> _messages = new();
+    private string _currentInput = string.Empty;
+    private bool _isProcessing = false;
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(_currentInput))
+        {
+            return;
+        }
+
+        var userMessage = _currentInput.Trim();
+        _currentInput = string.Empty;
+
+        _messages.Add(new ChatMessage
+        {
+            Content = userMessage,
+            IsUser = true
+        });
+
+        StateHasChanged();
+
+        _isProcessing = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await ChatService.SendMessageAsync(userMessage);
+
+            _messages.Add(new ChatMessage
+            {
+                Content = response,
+                IsUser = false
+            });
+        }
+        catch (Exception ex)
+        {
+            _messages.Add(new ChatMessage
+            {
+                Content = $"[red]Error: {ex.Message}[/]",
+                IsUser = false
+            });
+        }
+        finally
+        {
+            _isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    public class ChatMessage
+    {
+        public required string Content { get; set; }
+        public bool IsUser { get; set; }
+    }
+}
