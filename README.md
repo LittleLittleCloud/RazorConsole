@@ -70,6 +70,7 @@ await AppHost.RunAsync<Counter>();
 
 ![Image](https://github.com/user-attachments/assets/24d8cc11-6428-4886-93c1-873e45b47c74)
 
+For more complete sample applications, check out the [Examples](#examples) section below.
 
 ## ✨ Key Features
 
