@@ -131,6 +131,21 @@ After installation, run `razorconsole-gallery` to open the showcase and browse c
 
 ![Component Gallery](./assets/gallery.png)
 
+## Examples
+
+Check out the [`examples/`](examples/) folder for complete sample applications that demonstrate RazorConsole in action:
+
+### LLM Agent TUI
+
+A Claude Code-inspired chat interface that demonstrates:
+- Integration with Microsoft.Extensions.AI SDK
+- Support for multiple LLM providers (OpenAI, Ollama)
+- Interactive chat with conversation history
+- Real-time message updates and loading states
+- Professional TUI design with panels and styled components
+
+See [`examples/LLMAgentTUI/`](examples/LLMAgentTUI/) for the complete implementation and setup instructions.
+
 ## HotReload
 
 RazorConsole supports hotreload via metadata update handler so you can apply UI changes on the fly.
