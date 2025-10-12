@@ -487,6 +487,72 @@ public class VdomSpectreTranslatorTests
         AssertMarkupText(markup);
     }
 
+    [Fact]
+    public void Translate_UnorderedList_ReturnsRowsWithBullets()
+    {
+        var node = Element("ul", ul =>
+        {
+            ul.AddChild(Element("li", li =>
+            {
+                li.AddChild(Text("First item"));
+            }));
+            ul.AddChild(Element("li", li =>
+            {
+                li.AddChild(Text("Second item"));
+            }));
+            ul.AddChild(Element("li", li =>
+            {
+                li.AddChild(Text("Third item"));
+            }));
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.IsType<Rows>(renderable);
+        Assert.Empty(animations);
+    }
+
+    [Fact]
+    public void Translate_OrderedList_ReturnsRowsWithNumbers()
+    {
+        var node = Element("ol", ol =>
+        {
+            ol.AddChild(Element("li", li =>
+            {
+                li.AddChild(Text("First step"));
+            }));
+            ol.AddChild(Element("li", li =>
+            {
+                li.AddChild(Text("Second step"));
+            }));
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.IsType<Rows>(renderable);
+        Assert.Empty(animations);
+    }
+
+    [Fact]
+    public void Translate_EmptyList_ReturnsEmptyMarkup()
+    {
+        var node = Element("ul", ul => { });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.IsType<Markup>(renderable);
+        Assert.Empty(animations);
+    }
+
     private static VNode Element(string tagName, Action<VNode>? configure = null)
     {
         var node = VNode.CreateElement(tagName);
