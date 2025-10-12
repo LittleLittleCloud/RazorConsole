@@ -164,6 +164,7 @@ RazorConsole ships with a catalog of ready-to-use components that wrap Spectre.C
 - `Select` – present a focusable option list with keyboard navigation.
 - `Spinner` – show animated progress indicators using Spectre spinner presets.
 - `SyntaxHighlighter` – colorize code snippets using ColorCode themes.
+- `Table` – display structured data in formatted tables with headers, borders, and rich cell content.
 - `TextButton` – display clickable text with focus and pressed-state styling.
 - `TextInput` – capture user input with optional masking and change handlers.
 
