@@ -119,6 +119,19 @@ RazorConsole ships with a catalog of ready-to-use components that wrap Spectre.C
 - `TextButton` – display clickable text with focus and pressed-state styling.
 - `TextInput` – capture user input with optional masking and change handlers.
 
+### HTML Tag Support
+
+RazorConsole also supports several standard HTML tags for familiar web-like authoring:
+
+- `<img>` – display images in the console using Sixel graphics (requires terminal support). Use `src` attribute for the image path and optional `data-width` to control display width.
+  ```razor
+  <img src="screenshot.png" data-width="80" />
+  ```
+- `<strong>`, `<b>`, `<em>`, `<i>`, `<mark>`, `<del>`, `<ins>`, `<code>` – inline text formatting.
+- `<ul>`, `<ol>`, `<li>` – unordered and ordered lists.
+- `<button>` – clickable buttons with focus support.
+- `<div>` – generic container for layout.
+
 See [`design-doc/builtin-components.md`](design-doc/builtin-components.md) for the full reference, including parameters and customization tips.
 
 ## Component Gallery
