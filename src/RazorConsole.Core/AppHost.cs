@@ -27,9 +27,8 @@ public static class AppHost
     public static IHost Create<TComponent>(Action<HostApplicationBuilder>? configure = null)
         where TComponent : IComponent
     {
-        var builder = ConsoleAppBuilder.Create();
+        var builder = ConsoleAppBuilder.Create<TComponent>();
         configure?.Invoke(builder);
-        builder.Services.AddHostedService<ComponentService<TComponent>>();
         return builder.Build();
     }
 
@@ -46,7 +45,7 @@ public static class AppHost
         var app = Create<TComponent>(builder =>
         {
             configure?.Invoke(builder);
-            builder.Services.AddSingleton(new ParamContainer { Parameters = parameters });
+            builder.AddParameters(parameters);
         });
         await app.RunAsync(cancellationToken);
     }
@@ -57,10 +56,10 @@ public static class AppHost
 /// </summary>
 public sealed class ConsoleAppBuilder
 {
-    internal static HostApplicationBuilder Create()
+    internal static HostApplicationBuilder Create<TComponent>() where TComponent : IComponent
     {
         var b = Host.CreateApplicationBuilder();
-        RegisterDefaults(b.Services);
+        RegisterDefaults<TComponent>(b.Services);
 
         b.Services.AddLogging(loggingBuilder =>
         {
@@ -70,7 +69,7 @@ public sealed class ConsoleAppBuilder
         return b;
     }
 
-    private static void RegisterDefaults(IServiceCollection services)
+    private static void RegisterDefaults<TComponent>(IServiceCollection services) where TComponent : IComponent
     {
         services.TryAddSingleton<ConsoleNavigationManager>();
         services.TryAddSingleton<NavigationManager>(sp => sp.GetRequiredService<ConsoleNavigationManager>());
@@ -87,19 +86,15 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<SpectreMarkupFormatter>();
         services.TryAddSingleton<SyntaxHighlightingService>();
         services.AddSingleton<ConsoleAppOptions>();
-        services.TryAddSingleton<ParamContainer>();
+        services.AddSingleton<ParamContainer>();
+        services.AddHostedService<ComponentService<TComponent>>();
     }
 }
 
 public static class ConsoleAppBuilderExtensions
 {
-    public static void AddParameters(this HostApplicationBuilder builder, object p)
+    public static void AddParameters(this HostApplicationBuilder builder, object? p)
     {
-        if (p is null)
-        {
-            return;
-        }
-
         var container = new ParamContainer
         {
             Parameters = p
@@ -145,6 +140,17 @@ internal class ComponentService<TComponent>(
     ParamContainer? paramContainer) : BackgroundService where TComponent : IComponent
 {
     private readonly SemaphoreSlim _renderLock = new(1, 1);
+
+    public override Task StopAsync(CancellationToken cancellationToken)
+    {
+        // Bubble exceptions up into Host.StopAsync, invoked when Host self-stops when a BackgroundService throws
+        if (ExecuteTask?.Exception is not null)
+        {
+            throw ExecuteTask.Exception.Flatten().InnerException!;
+        }
+
+        return base.StopAsync(cancellationToken);
+    }
 
     protected override async Task ExecuteAsync(CancellationToken token)
     {
