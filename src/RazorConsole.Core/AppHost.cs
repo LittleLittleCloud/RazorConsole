@@ -1,14 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Core.Controllers;
@@ -18,8 +11,6 @@ using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.Syntax;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
-using Spectre.Console.Rendering;
-using static System.Collections.Specialized.BitVector32;
 
 namespace RazorConsole.Core;
 
@@ -29,16 +20,17 @@ namespace RazorConsole.Core;
 public static class AppHost
 {
     /// <summary>
-    /// Creates a <see cref="ConsoleApp{TComponent}"/> instance for the specified component type.
+    /// Creates a <see cref="IHost"/> instance for the specified component type.
     /// </summary>
     /// <typeparam name="TComponent">Component type to render.</typeparam>
     /// <param name="configure">Optional callback to customize services and options.</param>
-    public static ConsoleApp<TComponent> Create<TComponent>(Action<ConsoleAppBuilder>? configure = null)
+    public static IHost Create<TComponent>(Action<HostApplicationBuilder>? configure = null)
         where TComponent : IComponent
     {
         var builder = ConsoleAppBuilder.Create();
         configure?.Invoke(builder);
-        return new ConsoleApp<TComponent>(builder);
+        builder.Services.AddHostedService<ComponentService<TComponent>>();
+        return builder.Build();
     }
 
     /// <summary>
@@ -48,11 +40,15 @@ public static class AppHost
     /// <param name="parameters">Optional parameters passed to the component.</param>
     /// <param name="configure">Optional callback to customize services and options.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public static async Task RunAsync<TComponent>(object? parameters = null, Action<ConsoleAppBuilder>? configure = null, CancellationToken cancellationToken = default)
+    public static async Task RunAsync<TComponent>(object? parameters = null, Action<HostApplicationBuilder>? configure = null, CancellationToken cancellationToken = default)
         where TComponent : IComponent
     {
-        await using var app = Create<TComponent>(configure);
-        await app.RunAsync(parameters, cancellationToken).ConfigureAwait(false);
+        var app = Create<TComponent>(builder =>
+        {
+            configure?.Invoke(builder);
+            builder.Services.AddSingleton(new ParamContainer { Parameters = parameters });
+        });
+        await app.RunAsync(cancellationToken);
     }
 }
 
@@ -61,55 +57,17 @@ public static class AppHost
 /// </summary>
 public sealed class ConsoleAppBuilder
 {
-    private ConsoleAppBuilder()
+    internal static HostApplicationBuilder Create()
     {
-        Services = new ServiceCollection();
-        Options = new ConsoleAppOptions();
-        RegisterDefaults(Services);
-    }
+        var b = Host.CreateApplicationBuilder();
+        RegisterDefaults(b.Services);
 
-    /// <summary>
-    /// Gets the service collection used to construct the application.
-    /// </summary>
-    public IServiceCollection Services { get; }
-
-    /// <summary>
-    /// Gets the configuration options for the console application.
-    /// </summary>
-    public ConsoleAppOptions Options { get; }
-
-    internal static ConsoleAppBuilder Create() => new();
-
-    /// <summary>
-    /// Configures additional services for the console app.
-    /// </summary>
-    public ConsoleAppBuilder ConfigureServices(Action<IServiceCollection> configure)
-    {
-        if (configure is null)
+        b.Services.AddLogging(loggingBuilder =>
         {
-            throw new ArgumentNullException(nameof(configure));
-        }
-
-        configure(Services);
-        return this;
-    }
-
-    /// <summary>
-    /// Configures options for the console app.
-    /// </summary>
-    public ConsoleAppBuilder Configure(Action<ConsoleAppOptions> configure)
-    {
-        if (configure is not null)
-        {
-            configure(Options);
-        }
-
-        return this;
-    }
-
-    internal ServiceProvider BuildServiceProvider()
-    {
-        return Services.BuildServiceProvider();
+            loggingBuilder.ClearProviders();
+            //plumb in alternate
+        });
+        return b;
     }
 
     private static void RegisterDefaults(IServiceCollection services)
@@ -128,7 +86,32 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<ISyntaxThemeRegistry, SyntaxThemeRegistry>();
         services.TryAddSingleton<SpectreMarkupFormatter>();
         services.TryAddSingleton<SyntaxHighlightingService>();
+        services.AddSingleton<ConsoleAppOptions>();
+        services.TryAddSingleton<ParamContainer>();
     }
+}
+
+public static class ConsoleAppBuilderExtensions
+{
+    public static void AddParameters(this HostApplicationBuilder builder, object p)
+    {
+        if(p is null)
+        {
+            return;
+        }
+
+        var container = new ParamContainer
+        {
+            Parameters = p
+        };
+
+        builder.Services.AddSingleton(container);
+    }
+}
+
+public class ParamContainer
+{
+    public object? Parameters { get; set; }
 }
 
 /// <summary>
@@ -154,188 +137,35 @@ public sealed class ConsoleAppOptions
     }
 }
 
-/// <summary>
-/// Runs Razor components in a console context.
-/// </summary>
-/// <typeparam name="TComponent">Component type to render.</typeparam>
-public sealed partial class ConsoleApp<TComponent> : IAsyncDisposable, IDisposable
-    where TComponent : IComponent
+internal class ComponentService<TComponent>(
+    ConsoleAppOptions options,
+    ConsoleRenderer consoleRenderer,
+    FocusManager focusManager,
+    KeyboardEventManager keyboardEventManager,
+    ParamContainer? paramContainer) : BackgroundService where TComponent : IComponent
 {
-    private readonly ServiceProvider _serviceProvider;
-    private readonly ConsoleAppOptions _options;
-    private readonly VdomDiffService _diffService;
-    private readonly ConsoleRenderer _consoleRenderer;
     private readonly SemaphoreSlim _renderLock = new(1, 1);
-    private bool _disposed;
 
-    internal ConsoleApp(ConsoleAppBuilder builder)
+    protected override async Task ExecuteAsync(CancellationToken token)
     {
-        if (builder is null)
+        var initialView = await RenderComponentInternalAsync(paramContainer?.Parameters, token).ConfigureAwait(false);
+
+        var callback = options.AfterRenderAsync ?? ConsoleAppOptions.DefaultAfterRenderAsync;
+
+        if (options.AutoClearConsole)
         {
-            throw new ArgumentNullException(nameof(builder));
+            AnsiConsole.Clear();
         }
 
-        _serviceProvider = builder.BuildServiceProvider();
-        _options = builder.Options;
-        _diffService = _serviceProvider.GetRequiredService<VdomDiffService>();
-        _consoleRenderer = _serviceProvider.GetRequiredService<ConsoleRenderer>();
-    }
+        using var liveContext = new ConsoleLiveDisplayContext(new LiveDisplayCanvas(), consoleRenderer, null);
+        using var _ = consoleRenderer.Subscribe(focusManager);
+        using var focusSession = focusManager.BeginSession(liveContext, initialView, token);
+        await focusSession.InitializationTask.ConfigureAwait(false);
+        var keyListenerTask = keyboardEventManager.RunAsync(token);
 
-    /// <summary>
-    /// Gets the root service provider for advanced scenarios.
-    /// </summary>
-    public IServiceProvider Services
-    {
-        get
-        {
-            ThrowIfDisposed();
-            return _serviceProvider;
-        }
-    }
+        await callback(liveContext, initialView, token).ConfigureAwait(false);
 
-    /// <summary>
-    /// Renders the component and writes it to the console.
-    /// This method blocks until the user cancels the operation (e.g., by pressing Ctrl+C).
-    /// </summary>
-    /// <param name="parameters">Optional component parameters.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    public async Task RunAsync(object? parameters = null, CancellationToken cancellationToken = default)
-    {
-        ThrowIfDisposed();
-        cancellationToken.ThrowIfCancellationRequested();
-
-        using var shutdown = CreateShutdownSource(cancellationToken, out var shutdownToken, out var registerCtrlC);
-        ConsoleCancelEventHandler? cancelHandler = null;
-
-        if (registerCtrlC)
-        {
-            cancelHandler = RegisterCtrlCHandler(shutdown);
-        }
-
-        try
-        {
-            var initialView = await RenderComponentInternalAsync(parameters, shutdownToken).ConfigureAwait(false);
-            var currentParameters = parameters;
-            var focusManager = _serviceProvider.GetRequiredService<FocusManager>();
-            var keyboardManager = _serviceProvider.GetRequiredService<KeyboardEventManager>();
-            var callback = _options.AfterRenderAsync ?? ConsoleAppOptions.DefaultAfterRenderAsync;
-
-            if (_options.AutoClearConsole)
-            {
-                AnsiConsole.Clear();
-            }
-
-            using var liveContext = new ConsoleLiveDisplayContext(new LiveDisplayCanvas(), _consoleRenderer, null);
-            using var _ = _consoleRenderer.Subscribe(focusManager);
-            using var focusSession = focusManager.BeginSession(liveContext, initialView, shutdownToken);
-            await focusSession.InitializationTask.ConfigureAwait(false);
-            var keyListenerTask = keyboardManager.RunAsync(shutdownToken);
-
-            await callback(liveContext, initialView, shutdownToken).ConfigureAwait(false);
-            await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
-
-            try
-            {
-                await keyListenerTask.ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-            }
-
-            return;
-        }
-        finally
-        {
-            if (cancelHandler is not null)
-            {
-                Console.CancelKeyPress -= cancelHandler;
-            }
-        }
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _serviceProvider.Dispose();
-        _renderLock.Dispose();
-        _disposed = true;
-        GC.SuppressFinalize(this);
-    }
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        await _serviceProvider.DisposeAsync().ConfigureAwait(false);
-        _renderLock.Dispose();
-        _disposed = true;
-        GC.SuppressFinalize(this);
-    }
-
-    private void ThrowIfDisposed()
-    {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(ConsoleApp<TComponent>));
-        }
-    }
-
-    private static CancellationTokenSource CreateShutdownSource(CancellationToken cancellationToken, out CancellationToken shutdownToken, out bool registerCtrlC)
-    {
-        if (cancellationToken.CanBeCanceled)
-        {
-            var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            shutdownToken = linked.Token;
-            registerCtrlC = false;
-            return linked;
-        }
-
-        var source = new CancellationTokenSource();
-        shutdownToken = source.Token;
-        registerCtrlC = true;
-        return source;
-    }
-
-    private static ConsoleCancelEventHandler? RegisterCtrlCHandler(CancellationTokenSource shutdown)
-    {
-        try
-        {
-            ConsoleCancelEventHandler handler = (_, args) =>
-            {
-                args.Cancel = true;
-                if (!shutdown.IsCancellationRequested)
-                {
-                    shutdown.Cancel();
-                }
-            };
-
-            Console.CancelKeyPress += handler;
-            return handler;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static async Task WaitForExitAsync(CancellationToken token)
-    {
-        try
-        {
-            await Task.Delay(Timeout.InfiniteTimeSpan, token).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-        }
+        await Task.Delay(Timeout.InfiniteTimeSpan, token).ConfigureAwait(false);
     }
 
     private async Task<ConsoleViewResult> RenderComponentInternalAsync(object? parameters, CancellationToken cancellationToken)
@@ -346,7 +176,7 @@ public sealed partial class ConsoleApp<TComponent> : IAsyncDisposable, IDisposab
         try
         {
             var parameterView = CreateParameterView(parameters);
-            var snapshot = await _consoleRenderer.MountComponentAsync<TComponent>(parameterView, cancellationToken).ConfigureAwait(false);
+            var snapshot = await consoleRenderer.MountComponentAsync<TComponent>(parameterView, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 

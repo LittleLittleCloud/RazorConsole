@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 using RazorConsole.Core;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
@@ -21,14 +22,17 @@ public sealed class ConsoleAppTests
 
         var runTask = AppHost.RunAsync<TestComponent>(new { Message = "Callback" }, builder =>
         {
-            builder.Configure(options =>
+            builder.Services.AddSingleton<ConsoleAppOptions>(services =>
             {
-                options.AutoClearConsole = false;
-                options.AfterRenderAsync = (context, view, _) =>
+                return new ConsoleAppOptions
                 {
-                    observed = view;
-                    tcs.TrySetResult(view);
-                    return Task.CompletedTask;
+                    AutoClearConsole = false,
+                    AfterRenderAsync = (context, view, _) =>
+                    {
+                        observed = view;
+                        tcs.TrySetResult(view);
+                        return Task.CompletedTask;
+                    }
                 };
             });
         }, cts.Token);
