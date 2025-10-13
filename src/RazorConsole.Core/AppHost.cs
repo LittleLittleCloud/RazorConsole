@@ -95,7 +95,7 @@ public static class ConsoleAppBuilderExtensions
 {
     public static void AddParameters(this HostApplicationBuilder builder, object p)
     {
-        if(p is null)
+        if (p is null)
         {
             return;
         }
