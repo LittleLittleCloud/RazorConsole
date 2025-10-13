@@ -26,6 +26,7 @@ internal sealed partial class VdomSpectreTranslator
         typeof(ButtonElementTranslator),
         typeof(HtmlButtonElementTranslator),
     typeof(SyntaxHighlighterElementTranslator),
+        typeof(HtmlImageElementTranslator),
         typeof(PanelElementTranslator),
         typeof(RowsElementTranslator),
         typeof(ColumnsElementTranslator),

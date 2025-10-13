@@ -294,6 +294,73 @@ public class VdomSpectreTranslatorTests
     }
 
     [Fact]
+    public void Translate_ImgNode_WithValidPath_ReturnsCanvasImageRenderable()
+    {
+        var imagePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(typeof(VdomSpectreTranslatorTests).Assembly.Location) ?? string.Empty, "../../../../assets/gallery.png");
+        var node = Element("img", img =>
+        {
+            img.SetAttribute("src", imagePath);
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.IsType<CanvasImage>(renderable);
+        Assert.Empty(animations);
+    }
+
+    [Fact]
+    public void Translate_ImgNode_WithWidthAttribute_ReturnsCanvasImageWithMaxWidth()
+    {
+        var imagePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(typeof(VdomSpectreTranslatorTests).Assembly.Location) ?? string.Empty, "../../../../assets/gallery.png");
+        var node = Element("img", img =>
+        {
+            img.SetAttribute("src", imagePath);
+            img.SetAttribute("data-width", "80");
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        var image = Assert.IsType<CanvasImage>(renderable);
+        Assert.Equal(80, image.MaxWidth);
+        Assert.Empty(animations);
+    }
+
+    [Fact]
+    public void Translate_ImgNode_WithoutSrc_ReturnsFailPanel()
+    {
+        var node = Element("img", img => { });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.IsType<Panel>(renderable); // Falls through to FailToRenderElementTranslator
+    }
+
+    [Fact]
+    public void Translate_ImgNode_WithInvalidPath_ReturnsFailPanel()
+    {
+        var node = Element("img", img =>
+        {
+            img.SetAttribute("src", "/nonexistent/path/to/image.png");
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.IsType<Panel>(renderable); // Falls through to FailToRenderElementTranslator
+    }
+
+    [Fact]
     public void Translate_AlignNode_ReturnsAlignRenderable()
     {
         var child = Element("span", span =>
