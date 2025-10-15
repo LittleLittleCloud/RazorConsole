@@ -27,7 +27,7 @@ public static class AppHost
     public static ConsoleApp<TComponent> Create<TComponent>(Action<ConsoleAppBuilder>? configure = null)
         where TComponent : IComponent
     {
-        ConsoleAppBuilder builder = ConsoleAppBuilder.Create();
+        var builder = ConsoleAppBuilder.Create();
         configure?.Invoke(builder);
         return new ConsoleApp<TComponent>(builder);
     }
@@ -42,7 +42,7 @@ public static class AppHost
     public static async Task RunAsync<TComponent>(object? parameters = null, Action<ConsoleAppBuilder>? configure = null, CancellationToken cancellationToken = default)
         where TComponent : IComponent
     {
-        await using ConsoleApp<TComponent> app = Create<TComponent>(configure);
+        await using var app = Create<TComponent>(configure);
         await app.RunAsync(parameters, cancellationToken).ConfigureAwait(false);
     }
 }
@@ -98,7 +98,10 @@ public sealed class ConsoleAppBuilder
         return this;
     }
 
-    internal ServiceProvider BuildServiceProvider() => Services.BuildServiceProvider();
+    internal ServiceProvider BuildServiceProvider()
+    {
+        return Services.BuildServiceProvider();
+    }
 
     private static void RegisterDefaults(IServiceCollection services)
     {
@@ -137,7 +140,10 @@ public sealed class ConsoleAppOptions
     /// </summary>
     public Func<ConsoleLiveDisplayContext, ConsoleViewResult, CancellationToken, Task>? AfterRenderAsync { get; set; } = DefaultAfterRenderAsync;
 
-    internal static Task DefaultAfterRenderAsync(ConsoleLiveDisplayContext context, ConsoleViewResult view, CancellationToken cancellationToken) => Task.CompletedTask;
+    internal static Task DefaultAfterRenderAsync(ConsoleLiveDisplayContext context, ConsoleViewResult view, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>
@@ -190,7 +196,7 @@ public sealed partial class ConsoleApp<TComponent> : IAsyncDisposable, IDisposab
         ThrowIfDisposed();
         cancellationToken.ThrowIfCancellationRequested();
 
-        using CancellationTokenSource shutdown = CreateShutdownSource(cancellationToken, out CancellationToken shutdownToken, out bool registerCtrlC);
+        using var shutdown = CreateShutdownSource(cancellationToken, out var shutdownToken, out var registerCtrlC);
         ConsoleCancelEventHandler? cancelHandler = null;
 
         if (registerCtrlC)
@@ -200,22 +206,22 @@ public sealed partial class ConsoleApp<TComponent> : IAsyncDisposable, IDisposab
 
         try
         {
-            ConsoleViewResult initialView = await RenderComponentInternalAsync(parameters, shutdownToken).ConfigureAwait(false);
-            object? currentParameters = parameters;
-            FocusManager focusManager = _serviceProvider.GetRequiredService<FocusManager>();
-            KeyboardEventManager keyboardManager = _serviceProvider.GetRequiredService<KeyboardEventManager>();
-            Func<ConsoleLiveDisplayContext, ConsoleViewResult, CancellationToken, Task> callback = _options.AfterRenderAsync ?? ConsoleAppOptions.DefaultAfterRenderAsync;
+            var initialView = await RenderComponentInternalAsync(parameters, shutdownToken).ConfigureAwait(false);
+            var currentParameters = parameters;
+            var focusManager = _serviceProvider.GetRequiredService<FocusManager>();
+            var keyboardManager = _serviceProvider.GetRequiredService<KeyboardEventManager>();
+            var callback = _options.AfterRenderAsync ?? ConsoleAppOptions.DefaultAfterRenderAsync;
 
             if (_options.AutoClearConsole)
             {
                 AnsiConsole.Clear();
             }
 
-            using ConsoleLiveDisplayContext liveContext = new(new LiveDisplayCanvas(), _consoleRenderer, null);
-            using IDisposable _ = _consoleRenderer.Subscribe(focusManager);
-            using FocusManager.FocusSession focusSession = focusManager.BeginSession(liveContext, initialView, shutdownToken);
+            using var liveContext = new ConsoleLiveDisplayContext(new LiveDisplayCanvas(), _consoleRenderer, null);
+            using var _ = _consoleRenderer.Subscribe(focusManager);
+            using var focusSession = focusManager.BeginSession(liveContext, initialView, shutdownToken);
             await focusSession.InitializationTask.ConfigureAwait(false);
-            Task keyListenerTask = keyboardManager.RunAsync(shutdownToken);
+            var keyListenerTask = keyboardManager.RunAsync(shutdownToken);
 
             await callback(liveContext, initialView, shutdownToken).ConfigureAwait(false);
             await WaitForExitAsync(shutdownToken).ConfigureAwait(false);
@@ -279,13 +285,13 @@ public sealed partial class ConsoleApp<TComponent> : IAsyncDisposable, IDisposab
     {
         if (cancellationToken.CanBeCanceled)
         {
-            CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             shutdownToken = linked.Token;
             registerCtrlC = false;
             return linked;
         }
 
-        CancellationTokenSource source = new();
+        var source = new CancellationTokenSource();
         shutdownToken = source.Token;
         registerCtrlC = true;
         return source;
@@ -331,8 +337,8 @@ public sealed partial class ConsoleApp<TComponent> : IAsyncDisposable, IDisposab
         await _renderLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            ParameterView parameterView = CreateParameterView(parameters);
-            ConsoleRenderer.RenderSnapshot snapshot = await _consoleRenderer.MountComponentAsync<TComponent>(parameterView, cancellationToken).ConfigureAwait(false);
+            var parameterView = CreateParameterView(parameters);
+            var snapshot = await _consoleRenderer.MountComponentAsync<TComponent>(parameterView, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -366,7 +372,7 @@ public sealed partial class ConsoleApp<TComponent> : IAsyncDisposable, IDisposab
             return ParameterView.FromDictionary(readOnlyDictionary.ToDictionary(pair => pair.Key, pair => pair.Value));
         }
 
-        Dictionary<string, object?> props = parameters
+        var props = parameters
             .GetType()
             .GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)
             .Where(property => property.GetMethod is not null)
