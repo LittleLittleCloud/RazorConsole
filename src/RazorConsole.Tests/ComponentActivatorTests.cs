@@ -73,47 +73,47 @@ public sealed class ComponentActivatorTests
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => activator.CreateInstance(typeof(MyComponent)));
     }
-}
 
-public interface IMyService
-{
-    string GetMessage();
-}
-
-public class MyService : IMyService
-{
-    public static string message = "Hello from MyService!";
-    public string GetMessage() => message;
-}
-
-public class MyComponent : IComponent
-{
-    public IMyService Service { get; }
-
-    public MyComponent(IMyService service)
+    private interface IMyService
     {
-        Service = service ?? throw new ArgumentNullException(nameof(service));
+        string GetMessage();
     }
 
-    public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
-    public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
-    public string GetMessage() => Service.GetMessage();
-}
-
-public class MyKeyedComponent : IComponent
-{
-    public IMyService FirstService { get; }
-    public IMyService SecondService { get; }
-
-    public MyKeyedComponent([FromKeyedServices(nameof(FirstService))] IMyService firstService,
-                            [FromKeyedServices(nameof(SecondService))] IMyService secondService)
+    private sealed class MyService : IMyService
     {
-        FirstService = firstService ?? throw new ArgumentNullException(nameof(firstService));
-        SecondService = secondService ?? throw new ArgumentNullException(nameof(secondService));
+        public static string message = "Hello from MyService!";
+        public string GetMessage() => message;
     }
 
-    public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
-    public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
-    public string FirstGetMessage() => FirstService.GetMessage();
-    public string SecondGetMessage() => SecondService.GetMessage();
+    private sealed class MyComponent : IComponent
+    {
+        public IMyService Service { get; init; }
+
+        public MyComponent(IMyService service)
+        {
+            Service = service ?? throw new ArgumentNullException(nameof(service));
+        }
+
+        public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
+        public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+        public string GetMessage() => Service.GetMessage();
+    }
+
+    private sealed class MyKeyedComponent : IComponent
+    {
+        public IMyService FirstService { get; init; }
+        public IMyService SecondService { get; init; }
+
+        public MyKeyedComponent([FromKeyedServices(nameof(FirstService))] IMyService firstService,
+                                [FromKeyedServices(nameof(SecondService))] IMyService secondService)
+        {
+            FirstService = firstService ?? throw new ArgumentNullException(nameof(firstService));
+            SecondService = secondService ?? throw new ArgumentNullException(nameof(secondService));
+        }
+
+        public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
+        public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+        public string FirstGetMessage() => FirstService.GetMessage();
+        public string SecondGetMessage() => SecondService.GetMessage();
+    }
 }
