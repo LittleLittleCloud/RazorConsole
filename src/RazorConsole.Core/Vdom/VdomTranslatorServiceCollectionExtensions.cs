@@ -85,25 +85,10 @@ public static class VdomTranslatorServiceCollectionExtensions
     internal static void AddDefaultVdomTranslators(this IServiceCollection services)
     {
         // Register default translators - they will be ordered by their Priority property
-        services.AddVdomTranslator<TextElementTranslator>();
-        services.AddVdomTranslator<HtmlInlineTextElementTranslator>();
-        services.AddVdomTranslator<ParagraphElementTranslator>();
-        services.AddVdomTranslator<SpacerElementTranslator>();
-        services.AddVdomTranslator<NewlineElementTranslator>();
-        services.AddVdomTranslator<SpinnerElementTranslator>();
-        services.AddVdomTranslator<ButtonElementTranslator>();
-        services.AddVdomTranslator<HtmlButtonElementTranslator>();
-        services.AddVdomTranslator<SyntaxHighlighterElementTranslator>();
-        services.AddVdomTranslator<PanelElementTranslator>();
-        services.AddVdomTranslator<RowsElementTranslator>();
-        services.AddVdomTranslator<ColumnsElementTranslator>();
-        services.AddVdomTranslator<GridElementTranslator>();
-        services.AddVdomTranslator<PadderElementTranslator>();
-        services.AddVdomTranslator<AlignElementTranslator>();
-        services.AddVdomTranslator<FigletElementTranslator>();
-        services.AddVdomTranslator<TableElementTranslator>();
-        services.AddVdomTranslator<HtmlListElementTranslator>();
-        services.AddVdomTranslator<HtmlDivElementTranslator>();
-        services.AddVdomTranslator<FailToRenderElementTranslator>();
+        var defaultTranslators = VdomSpectreTranslator.CreateDefaultTranslators();
+        foreach (var translator in defaultTranslators)
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IVdomElementTranslator>(translator));
+        }
     }
 }

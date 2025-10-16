@@ -111,7 +111,7 @@ public sealed class VdomSpectreTranslator
         return false;
     }
 
-    private static IReadOnlyList<IVdomElementTranslator> CreateDefaultTranslators()
+    internal static IReadOnlyList<IVdomElementTranslator> CreateDefaultTranslators()
     {
         return new List<IVdomElementTranslator>
         {
@@ -135,7 +135,9 @@ public sealed class VdomSpectreTranslator
             new HtmlListElementTranslator(),
             new HtmlDivElementTranslator(),
             new FailToRenderElementTranslator(),
-        };
+        }
+        .OrderByDescending(t => t.Priority)
+        .ToList();
     }
 
     /// <summary>
