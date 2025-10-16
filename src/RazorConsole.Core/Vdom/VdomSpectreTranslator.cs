@@ -136,7 +136,7 @@ public sealed class VdomSpectreTranslator
             new HtmlDivElementTranslator(),
             new FailToRenderElementTranslator(),
         }
-        .OrderByDescending(t => t.Priority)
+        .OrderBy(t => t.Priority)
         .ToList();
     }
 
