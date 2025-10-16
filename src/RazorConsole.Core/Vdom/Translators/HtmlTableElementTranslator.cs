@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.Linq;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
@@ -8,9 +7,8 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.Vdom;
 
-internal sealed partial class VdomSpectreTranslator
+public sealed partial class VdomSpectreTranslator
 {
-    [Export(typeof(IVdomElementTranslator))]
     internal sealed class TableElementTranslator : IVdomElementTranslator
     {
         private static readonly IReadOnlyDictionary<string, TableBorder> BorderLookup = new Dictionary<string, TableBorder>(StringComparer.OrdinalIgnoreCase)

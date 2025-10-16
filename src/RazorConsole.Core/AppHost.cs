@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -120,6 +121,29 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<ISyntaxThemeRegistry, SyntaxThemeRegistry>();
         services.TryAddSingleton<SpectreMarkupFormatter>();
         services.TryAddSingleton<SyntaxHighlightingService>();
+
+        // Register default VDOM translators
+        services.AddDefaultVdomTranslators();
+
+        // Register VdomSpectreTranslator to use translators from DI
+        services.TryAddSingleton<Rendering.Vdom.VdomSpectreTranslator>(sp =>
+        {
+            var translators = sp.GetServices<Rendering.Vdom.VdomSpectreTranslator.IVdomElementTranslator>()
+                .OrderBy(t => GetPriority(t))
+                .ToList();
+            return new Rendering.Vdom.VdomSpectreTranslator(translators);
+        });
+    }
+
+    private static int GetPriority(object translator)
+    {
+        // Use reflection to get the Priority property if it exists
+        var priorityProperty = translator.GetType().GetProperty("Priority", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+        if (priorityProperty is not null && priorityProperty.PropertyType == typeof(int))
+        {
+            return (int)priorityProperty.GetValue(translator)!;
+        }
+        return int.MaxValue;
     }
 }
 

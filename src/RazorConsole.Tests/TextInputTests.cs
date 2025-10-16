@@ -17,7 +17,7 @@ public sealed class TextInputTests
     public async Task TextInput_RendersFocusMetadataAndValue()
     {
         using var services = new ServiceCollection().BuildServiceProvider();
-        using var renderer = new ConsoleRenderer(services, NullLoggerFactory.Instance);
+        using var renderer = TestHelpers.CreateTestRenderer(services);
 
         var snapshot = await renderer.MountComponentAsync<ValueHost>(ParameterView.Empty, CancellationToken.None);
 
@@ -33,7 +33,7 @@ public sealed class TextInputTests
     public async Task TextInput_WithoutValue_ExposesPlaceholderMetadata()
     {
         using var services = new ServiceCollection().BuildServiceProvider();
-        using var renderer = new ConsoleRenderer(services, NullLoggerFactory.Instance);
+        using var renderer = TestHelpers.CreateTestRenderer(services);
 
         var snapshot = await renderer.MountComponentAsync<PlaceholderHost>(ParameterView.Empty, CancellationToken.None);
 
@@ -47,7 +47,7 @@ public sealed class TextInputTests
     public async Task TextInput_WithExpand_SetsExpandAttribute()
     {
         using var services = new ServiceCollection().BuildServiceProvider();
-        using var renderer = new ConsoleRenderer(services, NullLoggerFactory.Instance);
+        using var renderer = TestHelpers.CreateTestRenderer(services);
 
         var snapshot = await renderer.MountComponentAsync<ExpandedHost>(ParameterView.Empty, CancellationToken.None);
 
@@ -59,7 +59,7 @@ public sealed class TextInputTests
     public async Task TextInput_WithMaskInput_RendersMaskedValue()
     {
         using var services = new ServiceCollection().BuildServiceProvider();
-        using var renderer = new ConsoleRenderer(services, NullLoggerFactory.Instance);
+        using var renderer = TestHelpers.CreateTestRenderer(services);
 
         var snapshot = await renderer.MountComponentAsync<MaskedHost>(ParameterView.Empty, CancellationToken.None);
 

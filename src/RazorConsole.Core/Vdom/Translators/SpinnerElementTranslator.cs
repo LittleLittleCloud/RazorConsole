@@ -1,14 +1,12 @@
 using System;
-using System.Composition;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
 using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.Vdom;
 
-internal sealed partial class VdomSpectreTranslator
+public sealed partial class VdomSpectreTranslator
 {
-    [Export(typeof(IVdomElementTranslator))]
     internal sealed class SpinnerElementTranslator : IVdomElementTranslator
     {
         public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)

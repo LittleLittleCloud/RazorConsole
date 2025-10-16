@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,9 +12,8 @@ using static RazorConsole.Core.Rendering.Vdom.VdomSpectreTranslator;
 namespace RazorConsole.Core.Rendering.Vdom;
 
 
-internal sealed partial class VdomSpectreTranslator
+public sealed partial class VdomSpectreTranslator
 {
-    [Export(typeof(IVdomElementTranslator))]
     internal sealed class FigletElementTranslator : IVdomElementTranslator
     {
         public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)

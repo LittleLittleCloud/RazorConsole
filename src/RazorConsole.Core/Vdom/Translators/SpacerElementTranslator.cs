@@ -1,5 +1,4 @@
 using System;
-using System.Composition;
 using System.Text;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
@@ -7,9 +6,8 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.Vdom;
 
-internal sealed partial class VdomSpectreTranslator
+public sealed partial class VdomSpectreTranslator
 {
-    [Export(typeof(IVdomElementTranslator))]
     internal sealed class SpacerElementTranslator : IVdomElementTranslator
     {
         public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)

@@ -6,7 +6,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Spectre.Console" />
-    <PackageReference Include="System.Composition" />
     <PackageReference Include="ColorCode.Core" />
   </ItemGroup>
   <Import Project="$(RepoRoot)/nuget/nuget-package.props" />

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -224,8 +225,28 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
 
     private static ConsoleRenderer CreateRenderer()
     {
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        return new ConsoleRenderer(serviceProvider, NullLoggerFactory.Instance);
+        var services = new ServiceCollection();
+        services.AddDefaultVdomTranslators();
+        services.AddSingleton<Rendering.Vdom.VdomSpectreTranslator>(sp =>
+        {
+            var translators = sp.GetServices<Rendering.Vdom.VdomSpectreTranslator.IVdomElementTranslator>()
+                .OrderBy(t => GetPriority(t))
+                .ToList();
+            return new Rendering.Vdom.VdomSpectreTranslator(translators);
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var translator = serviceProvider.GetRequiredService<Rendering.Vdom.VdomSpectreTranslator>();
+        return new ConsoleRenderer(serviceProvider, NullLoggerFactory.Instance, translator);
+    }
+
+    private static int GetPriority(object translator)
+    {
+        var priorityProperty = translator.GetType().GetProperty("Priority", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+        if (priorityProperty is not null && priorityProperty.PropertyType == typeof(int))
+        {
+            return (int)priorityProperty.GetValue(translator)!;
+        }
+        return int.MaxValue;
     }
 
     private static readonly IReadOnlyDictionary<string, string?> EmptyAttributes =

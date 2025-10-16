@@ -579,7 +579,7 @@ public class VdomSpectreTranslatorTests
 
     private static List<IRenderable> InvokeTryConvertChildren(IReadOnlyList<VNode> children, VdomSpectreTranslator.TranslationContext context)
     {
-        var method = typeof(VdomSpectreTranslator).GetMethod("TryConvertChildrenToRenderables", BindingFlags.Static | BindingFlags.NonPublic);
+        var method = typeof(VdomSpectreTranslator).GetMethod("TryConvertChildrenToRenderables", BindingFlags.Static | BindingFlags.Public);
         Assert.NotNull(method);
 
         var arguments = new object?[] { children, context, null };
