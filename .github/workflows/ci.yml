@@ -50,3 +50,59 @@ jobs:
 
       - name: Test
         run: dotnet test RazorConsole.sln --configuration Release --no-build --verbosity normal
+
+  publish-nightly:
+    name: Publish nightly build
+    runs-on: ubuntu-latest
+    needs: [validate-format, build-test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Compute version suffix
+        run: echo "VersionSuffix=nightly-$(date +'%Y%m%d')-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore RazorConsole.sln
+
+      - name: Build
+        run: dotnet build RazorConsole.sln --configuration Release --no-restore -p:VersionSuffix=$VersionSuffix
+
+      - name: Test
+        run: dotnet test RazorConsole.sln --configuration Release --no-build --verbosity normal -p:VersionSuffix=$VersionSuffix
+
+      - name: Pack libraries
+        run: |
+          dotnet pack RazorConsole.sln \
+            --configuration Release \
+            --no-build \
+            --output artifacts/packages \
+            -p:VersionSuffix=$VersionSuffix
+
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-packages
+          path: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/*.snupkg
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Push packages to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          for package in artifacts/packages/*.nupkg; do
+            dotnet nuget push "$package" \
+              --api-key "$NUGET_API_KEY" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          done
