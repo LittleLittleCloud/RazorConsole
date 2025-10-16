@@ -122,6 +122,102 @@ RazorConsole ships with a catalog of ready-to-use components that wrap Spectre.C
 
 See [`design-doc/builtin-components.md`](design-doc/builtin-components.md) for the full reference, including parameters and customization tips.
 
+## Custom Translators
+
+RazorConsole uses a Virtual DOM (VDOM) translation system to convert Razor components into Spectre.Console renderables. You can extend this system by creating custom translators to support additional Spectre.Console features or build entirely custom components.
+
+### Creating a Custom Translator
+
+Implement the `IVdomElementTranslator` interface to create a custom translator:
+
+```csharp
+using RazorConsole.Core.Rendering.Vdom;
+using RazorConsole.Core.Vdom;
+using Spectre.Console;
+using Spectre.Console.Rendering;
+
+public sealed class OverflowElementTranslator : IVdomElementTranslator
+{
+    // Lower priority values are processed first (1-1000+)
+    public int Priority => 85;
+
+    public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)
+    {
+        renderable = null;
+
+        // Check if this is a div with overflow attribute
+        if (node.Kind != VNodeKind.Element || 
+            !string.Equals(node.TagName, "div", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!node.Attributes.TryGetValue("data-overflow", out var overflowType))
+        {
+            return false;
+        }
+
+        // Translate child nodes
+        if (!VdomSpectreTranslator.TryConvertChildrenToRenderables(
+            node.Children, context, out var children))
+        {
+            return false;
+        }
+
+        var content = VdomSpectreTranslator.ComposeChildContent(children);
+
+        // Create renderable with overflow handling
+        renderable = overflowType?.ToLowerInvariant() switch
+        {
+            "ellipsis" => new Padder(content).Overflow(Overflow.Ellipsis),
+            "crop" => new Padder(content).Overflow(Overflow.Crop),
+            "fold" => new Padder(content).Overflow(Overflow.Fold),
+            _ => content
+        };
+
+        return true;
+    }
+}
+```
+
+### Registering a Custom Translator
+
+Register your translator in your application's service configuration:
+
+```csharp
+using RazorConsole.Core;
+using RazorConsole.Core.Vdom;
+
+var app = AppHost.Create<MyComponent>(builder =>
+{
+    // Register your custom translator
+    builder.Services.AddVdomTranslator<OverflowElementTranslator>();
+});
+
+await app.RunAsync();
+```
+
+### Using Custom Translators in Components
+
+Once registered, use your custom translator in Razor components:
+
+```razor
+<div data-overflow="ellipsis">
+    This text will be truncated with ellipsis if it's too long
+</div>
+```
+
+### Learn More
+
+For comprehensive documentation on custom translators, including:
+- Architecture overview and translation pipeline
+- Complete reference of built-in translators and priorities
+- Utility methods for common translation tasks
+- Best practices and advanced scenarios
+- Troubleshooting and testing strategies
+
+See the full guide at [`design-doc/custom-translators.md`](design-doc/custom-translators.md).
+
 ## Component Gallery
 
 Explore the built-in components interactively with the RazorConsole Component Gallery. Install the tool globally and launch it from any terminal:
