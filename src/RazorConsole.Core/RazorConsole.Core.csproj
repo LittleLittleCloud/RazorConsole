@@ -6,6 +6,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="Spectre.Console.ImageSharp" />
     <PackageReference Include="System.Composition" />
     <PackageReference Include="ColorCode.Core" />
   </ItemGroup>

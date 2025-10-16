@@ -1,0 +1,36 @@
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Rows>
+    <Markup Content="The &lt;img&gt; tag renders images in the console using Sixel graphics when available." Foreground="@Color.Grey70" />
+    <Markup Content="Powered by Spectre.Console.ImageSharp" Foreground="@Color.DeepSkyBlue1"
+            Decoration="@Decoration.Underline" link="https://spectreconsole.net/widgets/canvas-image" />
+    <Newline />
+    <Panel Title="Code" Border="BoxBorder.Rounded" Expand="true">
+        <SyntaxHighlighter Language="razor"
+                           Code="@_sampleCode"
+                           ShowLineNumbers="true" />
+    </Panel>
+    <Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
+        <Rows>
+            <Markup Content="Gallery Screenshot:" Foreground="@Color.Yellow" />
+            <img src="@_imagePath" data-width="80" />
+            <Newline />
+            <Markup Content="Note: Image rendering requires a terminal that supports Sixel graphics or similar image protocols." Foreground="@Color.Grey50" />
+        </Rows>
+    </Panel>
+</Rows>
+
+@code {
+    private string _imagePath = System.IO.Path.Combine(AppContext.BaseDirectory, "../../../../assets/gallery.png");
+    
+    private string _sampleCode = @"
+<!-- Display an image using the standard HTML img tag -->
+<img src=""path/to/image.png"" />
+
+<!-- Control the display width -->
+<img src=""path/to/image.png"" data-width=""80"" />
+
+<!-- Supported image formats: PNG, JPG, GIF, etc. -->
+<img src=""screenshot.png"" data-width=""100"" />".Trim();
+}

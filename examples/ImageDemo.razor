@@ -1,0 +1,36 @@
+@page "/"
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Rows>
+    <Figlet Content="Image Demo" />
+    <Newline />
+    <Panel Title="HTML &lt;img&gt; Tag Support" Border="BoxBorder.Rounded">
+        <Rows>
+            <Markup Content="RazorConsole now supports rendering images using the standard HTML &lt;img&gt; tag!" />
+            <Newline />
+            
+            <Markup Content="[bold yellow]Example 1:[/] Default size" />
+            <img src="@GetAssetPath("gallery.png")" />
+            <Newline />
+            
+            <Markup Content="[bold yellow]Example 2:[/] Custom width (80 characters)" />
+            <img src="@GetAssetPath("gallery.png")" data-width="80" />
+            <Newline />
+            
+            <Markup Content="[bold yellow]Example 3:[/] Small width (40 characters)" />
+            <img src="@GetAssetPath("gallery.png")" data-width="40" />
+            <Newline />
+            
+            <Markup Content="[dim]Note: Image rendering requires a terminal that supports Sixel graphics or similar protocols.[/]" />
+        </Rows>
+    </Panel>
+</Rows>
+
+@code {
+    private string GetAssetPath(string filename)
+    {
+        // In a real app, you'd get the path to your image file
+        return System.IO.Path.Combine(AppContext.BaseDirectory, "../../../../assets", filename);
+    }
+}
