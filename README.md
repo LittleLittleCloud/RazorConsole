@@ -2,8 +2,9 @@
 
 # 🚀 RazorConsole
 
-[![NuGet Version](https://img.shields.io/nuget/vpre/RazorConsole.Core.svg?style=flat-square&logo=nuget&include_prereleases=true)](https://www.nuget.org/packages/RazorConsole.Core)
-[![Component Gallery](https://img.shields.io/nuget/vpre/RazorConsole.Gallery.svg?style=flat-square&logo=nuget&label=gallery&color=purple&include_prereleases=true)](https://www.nuget.org/packages/RazorConsole.Gallery)
+[![NuGet (Stable)](https://img.shields.io/nuget/v/RazorConsole.Core.svg?style=flat-square&logo=nuget&label=stable)](https://www.nuget.org/packages/RazorConsole.Core)
+[![NuGet (Nightly)](https://img.shields.io/nuget/vpre/RazorConsole.Core.svg?style=flat-square&logo=nuget&label=nightly&color=orange)](https://www.nuget.org/packages/RazorConsole.Core/absoluteLatest)
+[![Component Gallery](https://img.shields.io/nuget/v/RazorConsole.Gallery.svg?style=flat-square&logo=nuget&label=gallery&color=purple)](https://www.nuget.org/packages/RazorConsole.Gallery)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/RazorConsole.Core.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/RazorConsole.Core)
 
 [![GitHub Release](https://img.shields.io/github/v/release/LittleLittleCloud/RazorConsole?style=flat-square&logo=github)](https://github.com/LittleLittleCloud/RazorConsole/releases)
