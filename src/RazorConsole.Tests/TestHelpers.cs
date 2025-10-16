@@ -21,19 +21,9 @@ internal static class TestHelpers
         var services = new ServiceCollection();
         services.AddDefaultVdomTranslators();
         var serviceProvider = services.BuildServiceProvider();
-        var translators = serviceProvider.GetServices<VdomSpectreTranslator.IVdomElementTranslator>()
-            .OrderBy(t => GetPriority(t))
+        var translators = serviceProvider.GetServices<IVdomElementTranslator>()
+            .OrderBy(t => t.Priority)
             .ToList();
         return new VdomSpectreTranslator(translators);
-    }
-
-    private static int GetPriority(object translator)
-    {
-        var priorityProperty = translator.GetType().GetProperty("Priority", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-        if (priorityProperty is not null && priorityProperty.PropertyType == typeof(int))
-        {
-            return (int)priorityProperty.GetValue(translator)!;
-        }
-        return int.MaxValue;
     }
 }

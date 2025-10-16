@@ -13,32 +13,8 @@ namespace RazorConsole.Core.Rendering.Vdom;
 /// <summary>
 /// Translates VNodes to Spectre.Console renderables.
 /// </summary>
-public sealed partial class VdomSpectreTranslator
+public sealed class VdomSpectreTranslator
 {
-    private static readonly Type[] TranslatorOrder =
-    {
-        typeof(TextElementTranslator),
-        typeof(HtmlInlineTextElementTranslator),
-        typeof(ParagraphElementTranslator),
-        typeof(SpacerElementTranslator),
-        typeof(NewlineElementTranslator),
-        typeof(SpinnerElementTranslator),
-        typeof(ButtonElementTranslator),
-        typeof(HtmlButtonElementTranslator),
-        typeof(SyntaxHighlighterElementTranslator),
-        typeof(PanelElementTranslator),
-        typeof(RowsElementTranslator),
-        typeof(ColumnsElementTranslator),
-        typeof(GridElementTranslator),
-        typeof(PadderElementTranslator),
-        typeof(AlignElementTranslator),
-        typeof(FigletElementTranslator),
-        typeof(TableElementTranslator),
-        typeof(HtmlListElementTranslator),
-        typeof(HtmlDivElementTranslator),
-        typeof(FailToRenderElementTranslator),
-    };
-
     private readonly IReadOnlyList<IVdomElementTranslator> _elementTranslators;
 
     /// <summary>
@@ -88,7 +64,7 @@ public sealed partial class VdomSpectreTranslator
         return false;
     }
 
-    private bool TryTranslateInternal(VNode node, TranslationContext context, out IRenderable? renderable)
+    internal bool TryTranslateInternal(VNode node, TranslationContext context, out IRenderable? renderable)
     {
         switch (node.Kind)
         {
@@ -160,43 +136,6 @@ public sealed partial class VdomSpectreTranslator
             new HtmlDivElementTranslator(),
             new FailToRenderElementTranslator(),
         };
-    }
-
-    /// <summary>
-    /// Represents a translator that can convert a VNode to a Spectre.Console IRenderable.
-    /// </summary>
-    public interface IVdomElementTranslator
-    {
-        /// <summary>
-        /// Attempts to translate a VNode to an IRenderable.
-        /// </summary>
-        /// <param name="node">The VNode to translate.</param>
-        /// <param name="context">The translation context for recursive translation.</param>
-        /// <param name="renderable">The resulting renderable if successful.</param>
-        /// <returns>True if translation was successful; otherwise, false.</returns>
-        bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable);
-    }
-
-    /// <summary>
-    /// Provides context for translating VNodes, allowing recursive translation of child nodes.
-    /// </summary>
-    public sealed class TranslationContext
-    {
-        private readonly VdomSpectreTranslator _translator;
-
-        internal TranslationContext(VdomSpectreTranslator translator)
-        {
-            _translator = translator;
-        }
-
-        /// <summary>
-        /// Attempts to translate a VNode to an IRenderable.
-        /// </summary>
-        /// <param name="node">The VNode to translate.</param>
-        /// <param name="renderable">The resulting renderable if successful.</param>
-        /// <returns>True if translation was successful; otherwise, false.</returns>
-        public bool TryTranslate(VNode node, out IRenderable? renderable)
-            => _translator.TryTranslateInternal(node, this, out renderable);
     }
 
     /// <summary>
@@ -382,7 +321,12 @@ public sealed partial class VdomSpectreTranslator
         };
     }
 
-    private static int? ParseOptionalPositiveInt(string? value)
+    /// <summary>
+    /// Parses an optional positive integer from a string.
+    /// </summary>
+    /// <param name="value">The string value to parse.</param>
+    /// <returns>The parsed integer value if successful and positive; otherwise, null.</returns>
+    public static int? ParseOptionalPositiveInt(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
@@ -471,7 +415,12 @@ public sealed partial class VdomSpectreTranslator
         }
     }
 
-    private static IEnumerable<string> EnumerateClassNames(string? raw)
+    /// <summary>
+    /// Enumerates class names from a space-separated class attribute value.
+    /// </summary>
+    /// <param name="raw">The raw class attribute value.</param>
+    /// <returns>An enumerable of individual class names.</returns>
+    public static IEnumerable<string> EnumerateClassNames(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
         {

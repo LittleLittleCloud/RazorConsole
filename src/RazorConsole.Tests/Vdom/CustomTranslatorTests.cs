@@ -18,13 +18,13 @@ public sealed class CustomTranslatorTests
         // Arrange
         var services = new ServiceCollection();
         services.AddDefaultVdomTranslators();
-        services.AddVdomTranslator<CustomTestTranslator>(priority: 5); // High priority
+        services.AddVdomTranslator<CustomTestTranslator>();
 
         var serviceProvider = services.BuildServiceProvider();
-        var translators = serviceProvider.GetServices<VdomSpectreTranslator.IVdomElementTranslator>();
+        var translators = serviceProvider.GetServices<IVdomElementTranslator>();
 
         // Act
-        var translatorList = new List<VdomSpectreTranslator.IVdomElementTranslator>(translators);
+        var translatorList = new List<IVdomElementTranslator>(translators);
 
         // Assert - Custom translator should be in the list
         // We should have at least one more translator than the default count (20)
@@ -37,11 +37,11 @@ public sealed class CustomTranslatorTests
         // Arrange
         var services = new ServiceCollection();
         services.AddDefaultVdomTranslators();
-        services.AddVdomTranslator<CustomTestTranslator>(priority: 1); // Very high priority
+        services.AddVdomTranslator<CustomTestTranslator>();
 
         var serviceProvider = services.BuildServiceProvider();
-        var translators = serviceProvider.GetServices<VdomSpectreTranslator.IVdomElementTranslator>()
-            .OrderBy(t => GetPriority(t))
+        var translators = serviceProvider.GetServices<IVdomElementTranslator>()
+            .OrderBy(t => t.Priority)
             .ToList();
 
         var translator = new VdomSpectreTranslator(translators);
@@ -63,11 +63,11 @@ public sealed class CustomTranslatorTests
         // Arrange
         var services = new ServiceCollection();
         services.AddDefaultVdomTranslators();
-        services.AddVdomTranslator(new CustomTestTranslator(), priority: 1);
+        services.AddVdomTranslator(new CustomTestTranslator());
 
         var serviceProvider = services.BuildServiceProvider();
-        var translators = serviceProvider.GetServices<VdomSpectreTranslator.IVdomElementTranslator>()
-            .OrderBy(t => GetPriority(t))
+        var translators = serviceProvider.GetServices<IVdomElementTranslator>()
+            .OrderBy(t => t.Priority)
             .ToList();
 
         var translator = new VdomSpectreTranslator(translators);
@@ -83,20 +83,12 @@ public sealed class CustomTranslatorTests
         Assert.IsType<Text>(renderable);
     }
 
-    private static int GetPriority(object translator)
-    {
-        var priorityProperty = translator.GetType().GetProperty("Priority", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-        if (priorityProperty is not null && priorityProperty.PropertyType == typeof(int))
-        {
-            return (int)priorityProperty.GetValue(translator)!;
-        }
-        return int.MaxValue;
-    }
-
     // Test custom translator
-    private sealed class CustomTestTranslator : VdomSpectreTranslator.IVdomElementTranslator
+    private sealed class CustomTestTranslator : IVdomElementTranslator
     {
-        public bool TryTranslate(VNode node, VdomSpectreTranslator.TranslationContext context, out IRenderable? renderable)
+        public int Priority => 1; // High priority
+
+        public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)
         {
             renderable = null;
 

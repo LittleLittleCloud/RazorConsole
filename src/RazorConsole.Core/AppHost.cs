@@ -128,22 +128,11 @@ public sealed class ConsoleAppBuilder
         // Register VdomSpectreTranslator to use translators from DI
         services.TryAddSingleton<Rendering.Vdom.VdomSpectreTranslator>(sp =>
         {
-            var translators = sp.GetServices<Rendering.Vdom.VdomSpectreTranslator.IVdomElementTranslator>()
-                .OrderBy(t => GetPriority(t))
+            var translators = sp.GetServices<Rendering.Vdom.IVdomElementTranslator>()
+                .OrderBy(t => t.Priority)
                 .ToList();
             return new Rendering.Vdom.VdomSpectreTranslator(translators);
         });
-    }
-
-    private static int GetPriority(object translator)
-    {
-        // Use reflection to get the Priority property if it exists
-        var priorityProperty = translator.GetType().GetProperty("Priority", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-        if (priorityProperty is not null && priorityProperty.PropertyType == typeof(int))
-        {
-            return (int)priorityProperty.GetValue(translator)!;
-        }
-        return int.MaxValue;
     }
 }
 

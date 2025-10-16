@@ -5,38 +5,37 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.Vdom;
 
-public sealed partial class VdomSpectreTranslator
+public sealed class ButtonElementTranslator : IVdomElementTranslator
 {
-    internal sealed class ButtonElementTranslator : IVdomElementTranslator
+    public int Priority => 70;
+
+    public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)
     {
-        public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)
+        renderable = null;
+
+        if (node.Kind != VNodeKind.Element)
         {
-            renderable = null;
-
-            if (node.Kind != VNodeKind.Element)
-            {
-                return false;
-            }
-
-            if (!string.Equals(node.TagName, "div", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(node.TagName, "button", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!node.Attributes.TryGetValue("data-button", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (!TryConvertChildrenToRenderables(node.Children, context, out var children))
-            {
-                return false;
-            }
-
-            var descriptor = ButtonRenderableDescriptorFactory.Create(name => GetAttribute(node, name));
-            renderable = ButtonRenderableBuilder.Build(descriptor, children);
-            return true;
+            return false;
         }
+
+        if (!string.Equals(node.TagName, "div", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(node.TagName, "button", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!node.Attributes.TryGetValue("data-button", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!VdomSpectreTranslator.TryConvertChildrenToRenderables(node.Children, context, out var children))
+        {
+            return false;
+        }
+
+        var descriptor = ButtonRenderableDescriptorFactory.Create(name => VdomSpectreTranslator.GetAttribute(node, name));
+        renderable = ButtonRenderableBuilder.Build(descriptor, children);
+        return true;
     }
 }
