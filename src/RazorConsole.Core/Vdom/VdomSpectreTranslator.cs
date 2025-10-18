@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Composition;
-using System.Composition.Hosting;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
@@ -13,46 +10,37 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.Vdom;
 
-internal sealed partial class VdomSpectreTranslator
+/// <summary>
+/// Translates VNodes to Spectre.Console renderables.
+/// </summary>
+public sealed class VdomSpectreTranslator
 {
-    private static readonly Type[] TranslatorOrder =
-    {
-    typeof(TextElementTranslator),
-    typeof(HtmlInlineTextElementTranslator),
-        typeof(ParagraphElementTranslator),
-        typeof(SpacerElementTranslator),
-        typeof(NewlineElementTranslator),
-        typeof(SpinnerElementTranslator),
-        typeof(ButtonElementTranslator),
-        typeof(HtmlButtonElementTranslator),
-    typeof(SyntaxHighlighterElementTranslator),
-        typeof(PanelElementTranslator),
-        typeof(RowsElementTranslator),
-        typeof(ColumnsElementTranslator),
-        typeof(GridElementTranslator),
-        typeof(PadderElementTranslator),
-        typeof(AlignElementTranslator),
-typeof(FigletElementTranslator),
-        typeof(TableElementTranslator),
-        typeof(HtmlListElementTranslator),
-        typeof(HtmlDivElementTranslator),
-        typeof(FailToRenderElementTranslator),
-    };
-
-    private static readonly Lazy<TranslatorCatalogData> TranslatorCatalog = new(DiscoverTranslators);
-
     private readonly IReadOnlyList<IVdomElementTranslator> _elementTranslators;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VdomSpectreTranslator"/> class with default translators.
+    /// </summary>
     public VdomSpectreTranslator()
         : this(CreateDefaultTranslators())
     {
     }
 
-    internal VdomSpectreTranslator(IReadOnlyList<IVdomElementTranslator> elementTranslators)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VdomSpectreTranslator"/> class with custom translators.
+    /// </summary>
+    /// <param name="elementTranslators">The collection of element translators to use.</param>
+    public VdomSpectreTranslator(IReadOnlyList<IVdomElementTranslator> elementTranslators)
     {
         _elementTranslators = elementTranslators ?? throw new ArgumentNullException(nameof(elementTranslators));
     }
 
+    /// <summary>
+    /// Attempts to translate a VNode tree to a Spectre.Console renderable.
+    /// </summary>
+    /// <param name="root">The root VNode to translate.</param>
+    /// <param name="renderable">The resulting renderable if successful.</param>
+    /// <param name="animatedRenderables">Collection of animated renderables discovered during translation.</param>
+    /// <returns>True if translation was successful; otherwise, false.</returns>
     public bool TryTranslate(
         VNode root,
         out IRenderable? renderable,
@@ -76,7 +64,7 @@ typeof(FigletElementTranslator),
         return false;
     }
 
-    private bool TryTranslateInternal(VNode node, TranslationContext context, out IRenderable? renderable)
+    internal bool TryTranslateInternal(VNode node, TranslationContext context, out IRenderable? renderable)
     {
         switch (node.Kind)
         {
@@ -123,28 +111,42 @@ typeof(FigletElementTranslator),
         return false;
     }
 
-    private static IReadOnlyList<IVdomElementTranslator> CreateDefaultTranslators()
-        => TranslatorCatalog.Value.Translators;
-
-    internal interface IVdomElementTranslator
+    internal static IReadOnlyList<IVdomElementTranslator> CreateDefaultTranslators()
     {
-        bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable);
-    }
-
-    internal sealed class TranslationContext
-    {
-        private readonly VdomSpectreTranslator _translator;
-
-        public TranslationContext(VdomSpectreTranslator translator)
+        return new List<IVdomElementTranslator>
         {
-            _translator = translator;
+            new TextElementTranslator(),
+            new HtmlInlineTextElementTranslator(),
+            new ParagraphElementTranslator(),
+            new SpacerElementTranslator(),
+            new NewlineElementTranslator(),
+            new SpinnerElementTranslator(),
+            new ButtonElementTranslator(),
+            new HtmlButtonElementTranslator(),
+            new SyntaxHighlighterElementTranslator(),
+            new PanelElementTranslator(),
+            new RowsElementTranslator(),
+            new ColumnsElementTranslator(),
+            new GridElementTranslator(),
+            new PadderElementTranslator(),
+            new AlignElementTranslator(),
+            new FigletElementTranslator(),
+            new TableElementTranslator(),
+            new HtmlListElementTranslator(),
+            new HtmlDivElementTranslator(),
+            new FailToRenderElementTranslator(),
         }
-
-        public bool TryTranslate(VNode node, out IRenderable? renderable)
-            => _translator.TryTranslateInternal(node, this, out renderable);
+        .OrderBy(t => t.Priority)
+        .ToList();
     }
 
-    private static string? GetAttribute(VNode node, string name)
+    /// <summary>
+    /// Gets an attribute value from a VNode.
+    /// </summary>
+    /// <param name="node">The VNode to get the attribute from.</param>
+    /// <param name="name">The name of the attribute.</param>
+    /// <returns>The attribute value if found; otherwise, null.</returns>
+    public static string? GetAttribute(VNode node, string name)
     {
         if (node.Kind != VNodeKind.Element)
         {
@@ -154,7 +156,14 @@ typeof(FigletElementTranslator),
         return node.Attributes.TryGetValue(name, out var value) ? value : null;
     }
 
-    private static bool TryConvertChildrenToRenderables(IReadOnlyList<VNode> children, TranslationContext context, out List<IRenderable> renderables)
+    /// <summary>
+    /// Converts child VNodes to a list of renderables.
+    /// </summary>
+    /// <param name="children">The child VNodes to convert.</param>
+    /// <param name="context">The translation context.</param>
+    /// <param name="renderables">The resulting list of renderables if successful.</param>
+    /// <returns>True if all children were successfully converted; otherwise, false.</returns>
+    public static bool TryConvertChildrenToRenderables(IReadOnlyList<VNode> children, TranslationContext context, out List<IRenderable> renderables)
     {
         renderables = new List<IRenderable>();
 
@@ -254,7 +263,12 @@ typeof(FigletElementTranslator),
 
     private readonly record struct NormalizedText(string Content, bool HasContent, bool LeadingWhitespace, bool TrailingWhitespace);
 
-    private static IRenderable ComposeChildContent(IReadOnlyList<IRenderable> children)
+    /// <summary>
+    /// Composes multiple child renderables into a single renderable.
+    /// </summary>
+    /// <param name="children">The child renderables to compose.</param>
+    /// <returns>A single renderable representing all children.</returns>
+    public static IRenderable ComposeChildContent(IReadOnlyList<IRenderable> children)
     {
         if (children.Count == 0)
         {
@@ -269,7 +283,12 @@ typeof(FigletElementTranslator),
         return new Rows(children);
     }
 
-    private static HorizontalAlignment ParseHorizontalAlignment(string? value)
+    /// <summary>
+    /// Parses a horizontal alignment value from a string.
+    /// </summary>
+    /// <param name="value">The string value to parse.</param>
+    /// <returns>The parsed horizontal alignment.</returns>
+    public static HorizontalAlignment ParseHorizontalAlignment(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
@@ -284,7 +303,12 @@ typeof(FigletElementTranslator),
         };
     }
 
-    private static VerticalAlignment ParseVerticalAlignment(string? value)
+    /// <summary>
+    /// Parses a vertical alignment value from a string.
+    /// </summary>
+    /// <param name="value">The string value to parse.</param>
+    /// <returns>The parsed vertical alignment.</returns>
+    public static VerticalAlignment ParseVerticalAlignment(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
@@ -299,7 +323,12 @@ typeof(FigletElementTranslator),
         };
     }
 
-    private static int? ParseOptionalPositiveInt(string? value)
+    /// <summary>
+    /// Parses an optional positive integer from a string.
+    /// </summary>
+    /// <param name="value">The string value to parse.</param>
+    /// <returns>The parsed integer value if successful and positive; otherwise, null.</returns>
+    public static int? ParseOptionalPositiveInt(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
@@ -314,7 +343,14 @@ typeof(FigletElementTranslator),
         return null;
     }
 
-    private static bool TryGetBoolAttribute(VNode node, string name, out bool value)
+    /// <summary>
+    /// Tries to get a boolean attribute value from a VNode.
+    /// </summary>
+    /// <param name="node">The VNode to get the attribute from.</param>
+    /// <param name="name">The name of the attribute.</param>
+    /// <param name="value">The parsed boolean value if successful.</param>
+    /// <returns>True if the attribute was found and parsed successfully; otherwise, false.</returns>
+    public static bool TryGetBoolAttribute(VNode node, string name, out bool value)
     {
         var raw = GetAttribute(node, name);
         if (!string.IsNullOrWhiteSpace(raw) && bool.TryParse(raw, out var parsed))
@@ -327,7 +363,14 @@ typeof(FigletElementTranslator),
         return false;
     }
 
-    private static int TryGetIntAttribute(VNode node, string name, int fallback)
+    /// <summary>
+    /// Tries to get an integer attribute value from a VNode.
+    /// </summary>
+    /// <param name="node">The VNode to get the attribute from.</param>
+    /// <param name="name">The name of the attribute.</param>
+    /// <param name="fallback">The fallback value if the attribute is not found or invalid.</param>
+    /// <returns>The parsed integer value, or the fallback value.</returns>
+    public static int TryGetIntAttribute(VNode node, string name, int fallback)
     {
         var raw = GetAttribute(node, name);
         if (!string.IsNullOrWhiteSpace(raw) && int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
@@ -338,7 +381,12 @@ typeof(FigletElementTranslator),
         return fallback;
     }
 
-    private static string? CollectInnerText(VNode node)
+    /// <summary>
+    /// Collects all inner text content from a VNode and its children.
+    /// </summary>
+    /// <param name="node">The VNode to collect text from.</param>
+    /// <returns>The collected inner text, or null if no text is found.</returns>
+    public static string? CollectInnerText(VNode node)
     {
         if (node is null)
         {
@@ -369,7 +417,12 @@ typeof(FigletElementTranslator),
         }
     }
 
-    private static IEnumerable<string> EnumerateClassNames(string? raw)
+    /// <summary>
+    /// Enumerates class names from a space-separated class attribute value.
+    /// </summary>
+    /// <param name="raw">The raw class attribute value.</param>
+    /// <returns>An enumerable of individual class names.</returns>
+    public static IEnumerable<string> EnumerateClassNames(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
         {
@@ -383,7 +436,13 @@ typeof(FigletElementTranslator),
         }
     }
 
-    private static bool HasClass(VNode node, string className)
+    /// <summary>
+    /// Checks if a VNode has a specific CSS class.
+    /// </summary>
+    /// <param name="node">The VNode to check.</param>
+    /// <param name="className">The class name to look for.</param>
+    /// <returns>True if the node has the specified class; otherwise, false.</returns>
+    public static bool HasClass(VNode node, string className)
     {
         if (!node.Attributes.TryGetValue("class", out var classes))
         {
@@ -393,7 +452,13 @@ typeof(FigletElementTranslator),
         return EnumerateClassNames(classes).Any(token => string.Equals(token, className, StringComparison.OrdinalIgnoreCase));
     }
 
-    private static bool TryParsePadding(string? raw, out Padding padding)
+    /// <summary>
+    /// Tries to parse a padding value from a string.
+    /// </summary>
+    /// <param name="raw">The string value to parse.</param>
+    /// <param name="padding">The parsed padding value if successful.</param>
+    /// <returns>True if parsing was successful; otherwise, false.</returns>
+    public static bool TryParsePadding(string? raw, out Padding padding)
     {
         if (string.IsNullOrWhiteSpace(raw))
         {
@@ -420,7 +485,13 @@ typeof(FigletElementTranslator),
         return true;
     }
 
-    private static bool TryParsePositiveInt(string? raw, out int result)
+    /// <summary>
+    /// Tries to parse a positive integer from a string.
+    /// </summary>
+    /// <param name="raw">The string value to parse.</param>
+    /// <param name="result">The parsed integer value if successful.</param>
+    /// <returns>True if parsing was successful and the value is positive; otherwise, false.</returns>
+    public static bool TryParsePositiveInt(string? raw, out int result)
     {
         if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value > 0)
         {
@@ -431,103 +502,4 @@ typeof(FigletElementTranslator),
         result = default;
         return false;
     }
-
-    private static TranslatorCatalogData DiscoverTranslators()
-    {
-        var rootAssembly = typeof(VdomSpectreTranslator).Assembly;
-        var processedAssemblies = new HashSet<Assembly> { rootAssembly };
-
-        var configuration = new ContainerConfiguration().WithAssembly(rootAssembly);
-
-        foreach (var assembly in GetCandidateAssemblies())
-        {
-            if (!processedAssemblies.Add(assembly))
-            {
-                continue;
-            }
-
-            try
-            {
-                configuration = configuration.WithAssembly(assembly);
-            }
-            catch
-            {
-                // Ignore assemblies that cannot be loaded into the MEF container.
-            }
-        }
-
-        try
-        {
-            using var container = configuration.CreateContainer();
-            var import = container.GetExport<TranslatorImport>();
-            var translators = import.Translators
-                .Select(lazy => lazy.Value)
-                .ToList();
-
-            if (translators.Count == 0)
-            {
-                throw new InvalidOperationException("No VDOM element translators were discovered via MEF composition.");
-            }
-
-            var ordered = translators
-                .OrderBy(translator => GetOrderIndex(translator.GetType()))
-                .ThenBy(translator => translator.GetType().FullName, StringComparer.Ordinal)
-                .ToList();
-
-            return new TranslatorCatalogData(ordered);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Failed to get VDOM translators from MEF container.");
-            Console.WriteLine(ex);
-            throw;
-        }
-    }
-
-    private static IEnumerable<Assembly> GetCandidateAssemblies()
-    {
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            if (assembly.IsDynamic)
-            {
-                continue;
-            }
-
-            var name = assembly.GetName().Name;
-            if (string.IsNullOrEmpty(name))
-            {
-                continue;
-            }
-
-            if (name.StartsWith("Microsoft", StringComparison.Ordinal) ||
-                name.StartsWith("System", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            yield return assembly;
-        }
-    }
-
-    private static int GetOrderIndex(Type translatorType)
-    {
-        for (var i = 0; i < TranslatorOrder.Length; i++)
-        {
-            if (TranslatorOrder[i].IsAssignableFrom(translatorType))
-            {
-                return i;
-            }
-        }
-
-        return int.MaxValue;
-    }
-
-    private sealed record TranslatorCatalogData(IReadOnlyList<IVdomElementTranslator> Translators);
-}
-
-[Export(typeof(TranslatorImport))]
-internal sealed class TranslatorImport
-{
-    [ImportMany]
-    public IEnumerable<Lazy<VdomSpectreTranslator.IVdomElementTranslator>> Translators { get; set; } = Array.Empty<Lazy<VdomSpectreTranslator.IVdomElementTranslator>>();
 }

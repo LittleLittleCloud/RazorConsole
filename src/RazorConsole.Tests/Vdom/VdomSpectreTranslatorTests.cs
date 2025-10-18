@@ -444,7 +444,7 @@ public class VdomSpectreTranslatorTests
     public void ConvertChildren_TextNodes_NormalizeWhitespace()
     {
         var translator = new VdomSpectreTranslator();
-        var context = new VdomSpectreTranslator.TranslationContext(translator);
+        var context = new TranslationContext(translator);
         var children = new List<VNode>
         {
             VNode.CreateText("  Hello   world"),
@@ -459,7 +459,7 @@ public class VdomSpectreTranslatorTests
     public void ConvertChildren_WhitespaceBetweenTextNodes_ProducesSingleSpacer()
     {
         var translator = new VdomSpectreTranslator();
-        var context = new VdomSpectreTranslator.TranslationContext(translator);
+        var context = new TranslationContext(translator);
         var children = new List<VNode>
         {
             VNode.CreateText("Hello"),
@@ -475,7 +475,7 @@ public class VdomSpectreTranslatorTests
     public void ConvertChildren_TrailingWhitespace_IsDiscarded()
     {
         var translator = new VdomSpectreTranslator();
-        var context = new VdomSpectreTranslator.TranslationContext(translator);
+        var context = new TranslationContext(translator);
         var children = new List<VNode>
         {
             VNode.CreateText("Hello "),
@@ -564,10 +564,10 @@ public class VdomSpectreTranslatorTests
 
     private static string BuildInlineMarkupLiteral(VNode node)
     {
-        var translatorType = typeof(VdomSpectreTranslator).GetNestedType("HtmlInlineTextElementTranslator", BindingFlags.NonPublic);
+        var translatorType = typeof(HtmlInlineTextElementTranslator);
         Assert.NotNull(translatorType);
 
-        var method = translatorType!.GetMethod("TryBuildMarkup", BindingFlags.Static | BindingFlags.NonPublic);
+        var method = translatorType!.GetMethod("TryBuildMarkup", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
         Assert.NotNull(method);
 
         var arguments = new object?[] { node, null };
@@ -577,9 +577,9 @@ public class VdomSpectreTranslatorTests
         return Assert.IsType<string>(arguments[1]);
     }
 
-    private static List<IRenderable> InvokeTryConvertChildren(IReadOnlyList<VNode> children, VdomSpectreTranslator.TranslationContext context)
+    private static List<IRenderable> InvokeTryConvertChildren(IReadOnlyList<VNode> children, TranslationContext context)
     {
-        var method = typeof(VdomSpectreTranslator).GetMethod("TryConvertChildrenToRenderables", BindingFlags.Static | BindingFlags.NonPublic);
+        var method = typeof(VdomSpectreTranslator).GetMethod("TryConvertChildrenToRenderables", BindingFlags.Static | BindingFlags.Public);
         Assert.NotNull(method);
 
         var arguments = new object?[] { children, context, null };

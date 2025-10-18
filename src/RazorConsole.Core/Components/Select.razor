@@ -21,33 +21,34 @@
                     Decoration="@DisplayDecoration" />
         </Columns>
     </Panel>
-
-    @if (_isOpen)
-    {
-        <Rows>
-            @if (Options.Length == 0)
-            {
-                    <Markup Content="@EmptyLabel"
-                            Foreground="@EmptyForeground"
-                            Decoration="@EmptyDecoration" />
-            }
-            else
-            {
-                @foreach (var option in Options)
-                {
-                    var isHighlighted = string.Equals(option, _highlightedValue, StringComparison.Ordinal);
-                    var indicator = isHighlighted ? ">" : " ";
-                        <Columns>
-                            <Markup Content="@($" {indicator}")" />
-                            <Markup Content="@option"
-                                    Foreground="@(isHighlighted ? SelectedOptionForeground : OptionForeground)"
-                                    Decoration="@(isHighlighted ? SelectedOptionDecoration : OptionDecoration)" />
-                        </Columns>
-                }
-            }
-        </Rows>
-    }
 </div>
+
+
+@if (_isOpen)
+{
+    <Rows>
+        @if (Options.Length == 0)
+        {
+                <Markup Content="@EmptyLabel"
+                        Foreground="@EmptyForeground"
+                        Decoration="@EmptyDecoration" />
+        }
+        else
+        {
+            @foreach (var option in Options)
+            {
+                var isHighlighted = string.Equals(option, _highlightedValue, StringComparison.Ordinal);
+                var indicator = isHighlighted ? ">" : " ";
+                    <Columns>
+                        <Markup Content="@($" {indicator}")" />
+                        <Markup Content="@option"
+                                Foreground="@(isHighlighted ? SelectedOptionForeground : OptionForeground)"
+                                Decoration="@(isHighlighted ? SelectedOptionDecoration : OptionDecoration)" />
+                    </Columns>
+            }
+        }
+    </Rows>
+}
 
 @code {
     private readonly string _focusKey = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);

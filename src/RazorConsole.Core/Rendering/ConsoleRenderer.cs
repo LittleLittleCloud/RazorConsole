@@ -52,7 +52,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
     private readonly Dictionary<int, VNode> _componentRoots = new();
     private readonly Stack<VNode> _cursor = new();
-    private readonly VdomSpectreTranslator _translator = new();
+    private readonly VdomSpectreTranslator _translator;
     private readonly object _observersSync = new();
     private readonly List<IObserver<RenderSnapshot>> _observers = new();
 
@@ -61,9 +61,10 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
     private RenderSnapshot _lastSnapshot = RenderSnapshot.Empty;
     private bool _disposed;
 
-    public ConsoleRenderer(IServiceProvider services, ILoggerFactory loggerFactory)
+    public ConsoleRenderer(IServiceProvider services, ILoggerFactory loggerFactory, VdomSpectreTranslator translator)
         : base(services, loggerFactory)
     {
+        _translator = translator ?? throw new ArgumentNullException(nameof(translator));
         // _logger = loggerFactory.CreateLogger<ConsoleRenderer>();
     }
 

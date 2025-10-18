@@ -9,6 +9,7 @@ using RazorConsole.Core.Focus;
 using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.Syntax;
+using RazorConsole.Core.Utilities;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 
@@ -71,6 +72,7 @@ public sealed class ConsoleAppBuilder
 
     private static void RegisterDefaults<TComponent>(IServiceCollection services) where TComponent : IComponent
     {
+        services.TryAddSingleton<IComponentActivator, ComponentActivator>();
         services.TryAddSingleton<ConsoleNavigationManager>();
         services.TryAddSingleton<NavigationManager>(sp => sp.GetRequiredService<ConsoleNavigationManager>());
         services.TryAddSingleton<ILoggerFactory>(_ => NullLoggerFactory.Instance);
@@ -85,6 +87,15 @@ public sealed class ConsoleAppBuilder
         services.TryAddSingleton<ISyntaxThemeRegistry, SyntaxThemeRegistry>();
         services.TryAddSingleton<SpectreMarkupFormatter>();
         services.TryAddSingleton<SyntaxHighlightingService>();
+        services.AddDefaultVdomTranslators();
+        services.TryAddSingleton(sp =>
+        {
+            var translators = sp.GetServices<Rendering.Vdom.IVdomElementTranslator>()
+                .OrderBy(t => t.Priority)
+                .ToList();
+            return new Rendering.Vdom.VdomSpectreTranslator(translators);
+        });
+
         services.AddSingleton<ConsoleAppOptions>();
         services.AddSingleton<ParamContainer>();
         services.AddHostedService<ComponentService<TComponent>>();
