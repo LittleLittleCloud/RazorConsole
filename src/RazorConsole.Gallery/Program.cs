@@ -11,17 +11,17 @@ using Spectre.Console;
 
 await AppHost.RunAsync<App>(null, builder =>
 {
-    builder.ConfigureServices(services =>
+    builder.Services.AddHttpClient<INuGetUpgradeChecker, NuGetUpgradeChecker>(client =>
     {
-        services.AddHttpClient<INuGetUpgradeChecker, NuGetUpgradeChecker>(client =>
-        {
-            client.BaseAddress = new Uri("https://api.nuget.org/v3-flatcontainer/", UriKind.Absolute);
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("RazorConsoleGallery/1.0");
-        });
+        client.BaseAddress = new Uri("https://api.nuget.org/v3-flatcontainer/", UriKind.Absolute);
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("RazorConsoleGallery/1.0");
     });
 
-    builder.Configure(options =>
+    builder.Services.AddSingleton<ConsoleAppOptions>((services) =>
     {
-        options.AutoClearConsole = false;
+        return new ConsoleAppOptions
+        {
+            AutoClearConsole = false
+        };
     });
 });

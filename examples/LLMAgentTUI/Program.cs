@@ -10,27 +10,27 @@ var useOllama = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("OPENAI_
 
 await AppHost.RunAsync<App>(null, builder =>
 {
-    builder.ConfigureServices(services =>
+    if (useOllama)
     {
-        if (useOllama)
-        {
-            // Use Ollama with local model
-            services.AddChatClient(client =>
-                new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.2"));
-        }
-        else
-        {
-            // Use OpenAI
-            var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY")!;
-            services.AddChatClient(client =>
-                new OpenAIClient(apiKey).AsChatClient("gpt-4o-mini"));
-        }
-
-        services.AddSingleton<IChatService, ChatService>();
-    });
-
-    builder.Configure(options =>
+        // Use Ollama with local model
+        builder.Services.AddChatClient(client =>
+            new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.2"));
+    }
+    else
     {
-        options.AutoClearConsole = false;
+        // Use OpenAI
+        var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY")!;
+        builder.Services.AddChatClient(client =>
+            new OpenAIClient(apiKey).AsChatClient("gpt-4o-mini"));
+    }
+
+    builder.Services.AddSingleton<IChatService, ChatService>();
+
+    builder.Services.AddSingleton<ConsoleAppOptions>(services =>
+    {
+        return new ConsoleAppOptions
+        {
+            AutoClearConsole = false
+        };
     });
 });
