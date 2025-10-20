@@ -157,7 +157,15 @@ internal class ComponentService<TComponent>(
         // Bubble exceptions up into Host.StopAsync, invoked when Host self-stops when a BackgroundService throws
         if (ExecuteTask?.Exception is not null)
         {
-            throw ExecuteTask.Exception.Flatten().InnerException!;
+            var flattened = ExecuteTask.Exception.Flatten();
+            if (flattened.InnerException is not null)
+            {
+                throw flattened.InnerException;
+            }
+            else
+            {
+                throw flattened;
+            }
         }
 
         return base.StopAsync(cancellationToken);
