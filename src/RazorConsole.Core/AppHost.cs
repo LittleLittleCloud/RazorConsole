@@ -16,58 +16,45 @@ using Spectre.Console;
 namespace RazorConsole.Core;
 
 /// <summary>
-/// Convenience helpers for rendering Razor components directly to the console.
+/// Extension methods for wiring Razor Console into generic host builders.
 /// </summary>
-public static class AppHost
+public static class HostBuilderExtension
 {
     /// <summary>
-    /// Creates a <see cref="IHost"/> instance for the specified component type.
+    /// Adds Razor Console services to the specified <see cref="IHostBuilder"/> using the provided root component.
     /// </summary>
-    /// <typeparam name="TComponent">Component type to render.</typeparam>
-    /// <param name="configure">Optional callback to customize services and options.</param>
-    public static IHost Create<TComponent>(Action<HostApplicationBuilder>? configure = null)
+    /// <typeparam name="TComponent">The Razor component that acts as the application's root component.</typeparam>
+    /// <param name="hostBuilder">The host builder to configure.</param>
+    /// <param name="configure">An optional callback to perform additional configuration.</param>
+    /// <returns>The configured <see cref="IHostBuilder"/> instance.</returns>
+    public static IHostBuilder UseRazorConsole<TComponent>(
+        this IHostBuilder hostBuilder,
+        Action<IHostBuilder>? configure = null)
         where TComponent : IComponent
     {
-        var builder = ConsoleAppBuilder.Create<TComponent>();
-        configure?.Invoke(builder);
-        return builder.Build();
+        hostBuilder.ConfigureServices(RegisterDefaults<TComponent>);
+        configure?.Invoke(hostBuilder);
+
+        return hostBuilder;
     }
 
     /// <summary>
-    /// Renders the specified component type to the console using default settings.
+    /// Adds Razor Console services to the specified <see cref="HostApplicationBuilder"/> using the provided root component.
     /// </summary>
-    /// <typeparam name="TComponent">Component type to render.</typeparam>
-    /// <param name="parameters">Optional parameters passed to the component.</param>
-    /// <param name="configure">Optional callback to customize services and options.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    public static async Task RunAsync<TComponent>(object? parameters = null, Action<HostApplicationBuilder>? configure = null, CancellationToken cancellationToken = default)
+    /// <typeparam name="TComponent">The Razor component that acts as the application's root component.</typeparam>
+    /// <param name="hostBuilder">The host application builder to configure.</param>
+    /// <param name="configure">An optional callback to perform additional configuration.</param>
+    /// <returns>The configured <see cref="HostApplicationBuilder"/> instance.</returns>
+    public static HostApplicationBuilder UseRazorConsole<TComponent>(
+        this HostApplicationBuilder hostBuilder,
+        Action<HostApplicationBuilder>? configure = null)
         where TComponent : IComponent
     {
-        var app = Create<TComponent>(builder =>
-        {
-            configure?.Invoke(builder);
-            builder.AddParameters(parameters);
-        });
-        await app.RunAsync(cancellationToken);
-    }
-}
+        RegisterDefaults<TComponent>(hostBuilder.Services);
 
-/// <summary>
-/// Builds a service provider and options for running console components.
-/// </summary>
-public sealed class ConsoleAppBuilder
-{
-    internal static HostApplicationBuilder Create<TComponent>() where TComponent : IComponent
-    {
-        var b = Host.CreateApplicationBuilder();
-        RegisterDefaults<TComponent>(b.Services);
+        configure?.Invoke(hostBuilder);
 
-        b.Services.AddLogging(loggingBuilder =>
-        {
-            loggingBuilder.ClearProviders();
-            //plumb in alternate
-        });
-        return b;
+        return hostBuilder;
     }
 
     private static void RegisterDefaults<TComponent>(IServiceCollection services) where TComponent : IComponent
@@ -97,49 +84,13 @@ public sealed class ConsoleAppBuilder
         });
 
         services.AddSingleton<ConsoleAppOptions>();
-        services.AddSingleton<ParamContainer>();
         services.AddHostedService<ComponentService<TComponent>>();
-    }
-}
 
-public static class ConsoleAppBuilderExtensions
-{
-    public static void AddParameters(this HostApplicationBuilder builder, object? p)
-    {
-        var container = new ParamContainer
+        // clear all log providers because it would interfere with console rendering
+        services.AddLogging(loggingBuilder =>
         {
-            Parameters = p
-        };
-
-        builder.Services.AddSingleton(container);
-    }
-}
-
-public class ParamContainer
-{
-    public object? Parameters { get; set; }
-}
-
-/// <summary>
-/// Options that control how console applications render output.
-/// </summary>
-public sealed class ConsoleAppOptions
-{
-    /// <summary>
-    /// Gets or sets whether the console should be cleared before writing output.
-    /// </summary>
-    public bool AutoClearConsole { get; set; } = true;
-
-    public ConsoleLiveDisplayOptions ConsoleLiveDisplayOptions { get; } = ConsoleLiveDisplayOptions.Default;
-
-    /// <summary>
-    /// Callback invoked after a component has been rendered.
-    /// </summary>
-    public Func<ConsoleLiveDisplayContext, ConsoleViewResult, CancellationToken, Task>? AfterRenderAsync { get; set; } = DefaultAfterRenderAsync;
-
-    internal static Task DefaultAfterRenderAsync(ConsoleLiveDisplayContext context, ConsoleViewResult view, CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
+            loggingBuilder.ClearProviders();
+        });
     }
 }
 
@@ -147,11 +98,15 @@ internal class ComponentService<TComponent>(
     ConsoleAppOptions options,
     ConsoleRenderer consoleRenderer,
     FocusManager focusManager,
-    KeyboardEventManager keyboardEventManager,
-    ParamContainer? paramContainer) : BackgroundService where TComponent : IComponent
+    KeyboardEventManager keyboardEventManager) : BackgroundService where TComponent : IComponent
 {
     private readonly SemaphoreSlim _renderLock = new(1, 1);
 
+    /// <summary>
+    /// Ensures exceptions that occur during component execution are surfaced when the host stops.
+    /// </summary>
+    /// <param name="cancellationToken">A token that requests the stop operation to cancel.</param>
+    /// <returns>A task that completes when background processing has stopped.</returns>
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         // Bubble exceptions up into Host.StopAsync, invoked when Host self-stops when a BackgroundService throws
@@ -173,7 +128,7 @@ internal class ComponentService<TComponent>(
 
     protected override async Task ExecuteAsync(CancellationToken token)
     {
-        var initialView = await RenderComponentInternalAsync(paramContainer?.Parameters, token).ConfigureAwait(false);
+        var initialView = await RenderComponentInternalAsync(null, token).ConfigureAwait(false);
 
         var callback = options.AfterRenderAsync ?? ConsoleAppOptions.DefaultAfterRenderAsync;
 

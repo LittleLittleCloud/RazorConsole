@@ -2,31 +2,35 @@ using LLMAgentTUI.Components;
 using LLMAgentTUI.Services;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using OpenAI;
 using RazorConsole.Core;
 
 // Get API key from environment variable or use Ollama as default
 var useOllama = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("OPENAI_API_KEY"));
 
-await AppHost.RunAsync<App>(null, builder =>
+var host = Host.CreateDefaultBuilder(args)
+    .UseRazorConsole<App>();
+
+host.ConfigureServices(services =>
 {
     if (useOllama)
     {
         // Use Ollama with local model
-        builder.Services.AddChatClient(client =>
+        services.AddChatClient(client =>
             new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.2"));
     }
     else
     {
         // Use OpenAI
         var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY")!;
-        builder.Services.AddChatClient(client =>
+        services.AddChatClient(client =>
             new OpenAIClient(apiKey).AsChatClient("gpt-4o-mini"));
     }
 
-    builder.Services.AddSingleton<IChatService, ChatService>();
+    services.AddSingleton<IChatService, ChatService>();
 
-    builder.Services.AddSingleton<ConsoleAppOptions>(services =>
+    services.AddSingleton<ConsoleAppOptions>(services =>
     {
         return new ConsoleAppOptions
         {
@@ -34,3 +38,7 @@ await AppHost.RunAsync<App>(null, builder =>
         };
     });
 });
+
+var builtHost = host.Build();
+
+await builtHost.RunAsync();

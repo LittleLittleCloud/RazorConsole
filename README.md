@@ -68,7 +68,10 @@ Here's a simple counter component to get you started:
 }
 
 // Program.cs
-await AppHost.RunAsync<Counter>();
+IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args)
+    .UseRazorConsole<Counter>();
+IHost host = hostBuilder.Build();
+await host.RunAsync();
 ```
 
 ![Image](https://github.com/user-attachments/assets/24d8cc11-6428-4886-93c1-873e45b47c74)

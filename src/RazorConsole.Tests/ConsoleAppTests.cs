@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using RazorConsole.Core;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
@@ -20,7 +21,8 @@ public sealed class ConsoleAppTests
 
         using var cts = new CancellationTokenSource();
 
-        var runTask = AppHost.RunAsync<TestComponent>(new { Message = "Callback" }, builder =>
+        var hostBuilder = Host.CreateApplicationBuilder()
+            .UseRazorConsole<TestComponent>(builder =>
         {
             builder.Services.AddSingleton<ConsoleAppOptions>(services =>
             {
@@ -35,7 +37,11 @@ public sealed class ConsoleAppTests
                     }
                 };
             });
-        }, cts.Token);
+        });
+
+        var host = hostBuilder.Build();
+
+        var runTask = host.RunAsync(cts.Token);
 
         var result = await tcs.Task;
 
@@ -50,7 +56,7 @@ public sealed class ConsoleAppTests
     private sealed class TestComponent : ComponentBase
     {
         [Parameter]
-        public string? Message { get; set; }
+        public string Message { get; set; } = "Callback Test";
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
