@@ -9,10 +9,10 @@ using RazorConsole.Core;
 // Get API key from environment variable or use Ollama as default
 var useOllama = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("OPENAI_API_KEY"));
 
-var host = Host.CreateDefaultBuilder(args)
+var hostBuilder = Host.CreateDefaultBuilder(args)
     .UseRazorConsole<App>();
 
-host.ConfigureServices(services =>
+hostBuilder.ConfigureServices(services =>
 {
     if (useOllama)
     {
@@ -39,6 +39,6 @@ host.ConfigureServices(services =>
     });
 });
 
-var builtHost = host.Build();
+var host = hostBuilder.Build();
 
-await builtHost.RunAsync();
+await host.RunAsync();
