@@ -77,9 +77,6 @@ public static class HostBuilderExtension
         services.TryAddSingleton<SyntaxHighlightingService>();
         services.TryAddSingleton<MarkdownRenderingService>();
         services.AddDefaultVdomTranslators();
-        // Register MarkdownElementTranslator with dependency injection
-        services.AddSingleton<Rendering.Vdom.IVdomElementTranslator>(sp =>
-            new Rendering.Vdom.MarkdownElementTranslator(sp.GetRequiredService<SyntaxHighlightingService>()));
         services.TryAddSingleton(sp =>
         {
             var translators = sp.GetServices<Rendering.Vdom.IVdomElementTranslator>()
