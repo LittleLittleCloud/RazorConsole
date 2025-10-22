@@ -124,6 +124,9 @@ public sealed class VdomSpectreTranslator
             new ButtonElementTranslator(),
             new HtmlButtonElementTranslator(),
             new SyntaxHighlighterElementTranslator(),
+            new HtmlHeadingElementTranslator(),
+            new HtmlBlockquoteElementTranslator(),
+            new HtmlHrElementTranslator(),
             new PanelElementTranslator(),
             new RowsElementTranslator(),
             new ColumnsElementTranslator(),
@@ -134,6 +137,7 @@ public sealed class VdomSpectreTranslator
             new TableElementTranslator(),
             new HtmlListElementTranslator(),
             new HtmlDivElementTranslator(),
+            new HtmlParagraphElementTranslator(),
             new FailToRenderElementTranslator(),
         }
         .OrderBy(t => t.Priority)
