@@ -110,9 +110,9 @@ Console.WriteLine(""test"");
         services.AddSingleton<SpectreMarkupFormatter>();
         services.AddSingleton<SyntaxHighlightingService>();
         services.AddSingleton<MarkdownRenderingService>();
-        
+
         var serviceProvider = services.BuildServiceProvider();
-        
+
         using var renderer = TestHelpers.CreateTestRenderer(serviceProvider);
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
         {

@@ -149,7 +149,7 @@ public sealed class MarkdownRenderingService
     {
         var sb = new StringBuilder();
         var lines = codeBlock.Lines;
-        
+
         for (int i = 0; i < lines.Count; i++)
         {
             var line = lines.Lines[i];
@@ -159,7 +159,7 @@ public sealed class MarkdownRenderingService
                 sb.AppendLine();
             }
         }
-        
+
         return sb.ToString();
     }
 
@@ -185,7 +185,7 @@ public sealed class MarkdownRenderingService
             WriteIndented = false
         };
         options.Converters.Add(new MarkdownElementConverter());
-        
+
         var json = JsonSerializer.Serialize(model, options);
         return Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
     }
@@ -198,7 +198,7 @@ public sealed class MarkdownRenderingService
             IncludeFields = true
         };
         options.Converters.Add(new MarkdownElementConverter());
-        
+
         var json = Encoding.UTF8.GetString(Convert.FromBase64String(payload));
         var model = JsonSerializer.Deserialize<MarkdownRenderModel>(json, options);
         return model ?? throw new InvalidOperationException("Failed to deserialize markdown model.");
