@@ -39,15 +39,15 @@ public static class HostBuilderExtension
     }
 
     /// <summary>
-    /// Adds Razor Console services to the specified <see cref="HostApplicationBuilder"/> using the provided root component.
+    /// Adds Razor Console services to the specified <see cref="IHostApplicationBuilder"/> using the provided root component.
     /// </summary>
     /// <typeparam name="TComponent">The Razor component that acts as the application's root component.</typeparam>
     /// <param name="hostBuilder">The host application builder to configure.</param>
     /// <param name="configure">An optional callback to perform additional configuration.</param>
-    /// <returns>The configured <see cref="HostApplicationBuilder"/> instance.</returns>
-    public static HostApplicationBuilder UseRazorConsole<TComponent>(
-        this HostApplicationBuilder hostBuilder,
-        Action<HostApplicationBuilder>? configure = null)
+    /// <returns>The configured <see cref="IHostApplicationBuilder"/> instance.</returns>
+    public static IHostApplicationBuilder UseRazorConsole<TComponent>(
+        this IHostApplicationBuilder hostBuilder,
+        Action<IHostApplicationBuilder>? configure = null)
         where TComponent : IComponent
     {
         RegisterDefaults<TComponent>(hostBuilder.Services);

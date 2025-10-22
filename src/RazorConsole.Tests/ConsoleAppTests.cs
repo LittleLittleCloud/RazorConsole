@@ -21,8 +21,8 @@ public sealed class ConsoleAppTests
 
         using var cts = new CancellationTokenSource();
 
-        var hostBuilder = Host.CreateApplicationBuilder()
-            .UseRazorConsole<TestComponent>(builder =>
+        var hostBuilder = Host.CreateApplicationBuilder();
+        hostBuilder.UseRazorConsole<TestComponent>(builder =>
         {
             builder.Services.AddSingleton<ConsoleAppOptions>(services =>
             {
