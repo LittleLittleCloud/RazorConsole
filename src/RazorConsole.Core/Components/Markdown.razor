@@ -1,0 +1,35 @@
+@namespace RazorConsole.Components
+
+@using System
+@using System.Collections.Generic
+@using Microsoft.AspNetCore.Components
+@using RazorConsole.Core.Rendering.Markdown
+
+<div class="markdown"
+     data-payload="@_payload" />
+
+@code {
+    private string _payload = string.Empty;
+
+    [Parameter]
+    [EditorRequired]
+    public string Content { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool ShowCodeLineNumbers { get; set; } = true;
+
+    [Inject]
+    internal MarkdownRenderingService MarkdownService { get; set; } = default!;
+
+    protected override void OnParametersSet()
+    {
+        if (MarkdownService is null)
+        {
+            throw new InvalidOperationException("MarkdownRenderingService has not been registered. Call services.AddMarkdownRendering().");
+        }
+
+        var request = new MarkdownRenderRequest(Content ?? string.Empty, ShowCodeLineNumbers);
+        var model = MarkdownService.Render(request);
+        _payload = MarkdownRenderingService.EncodePayload(model);
+    }
+}

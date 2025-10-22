@@ -8,6 +8,7 @@
 	<PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="ColorCode.Core" />
+    <PackageReference Include="Markdig" />
   </ItemGroup>
   <Import Project="$(RepoRoot)/nuget/nuget-package.props" />
 
