@@ -2,13 +2,16 @@
 
 # 🚀 RazorConsole
 
-[![NuGet Version](https://img.shields.io/nuget/vpre/RazorConsole.Core.svg?style=flat-square&logo=nuget&include_prereleases=true)](https://www.nuget.org/packages/RazorConsole.Core)
-[![Component Gallery](https://img.shields.io/nuget/vpre/RazorConsole.Gallery.svg?style=flat-square&logo=nuget&label=gallery&color=purple&include_prereleases=true)](https://www.nuget.org/packages/RazorConsole.Gallery)
+[![NuGet (Stable)](https://img.shields.io/nuget/v/RazorConsole.Core.svg?style=flat-square&logo=nuget&label=stable)](https://www.nuget.org/packages/RazorConsole.Core)
+[![NuGet (Nightly)](https://img.shields.io/nuget/vpre/RazorConsole.Core.svg?style=flat-square&logo=nuget&label=nightly&color=orange)](https://www.nuget.org/packages/RazorConsole.Core/absoluteLatest)
+[![Component Gallery](https://img.shields.io/nuget/v/RazorConsole.Gallery.svg?style=flat-square&logo=nuget&label=gallery&color=purple)](https://www.nuget.org/packages/RazorConsole.Gallery)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/RazorConsole.Core.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/RazorConsole.Core)
 
 [![GitHub Release](https://img.shields.io/github/v/release/LittleLittleCloud/RazorConsole?style=flat-square&logo=github)](https://github.com/LittleLittleCloud/RazorConsole/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-512BD4?style=flat-square)](https://dotnet.microsoft.com/)
+
+[![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/tpJ3brxB)
 
 **Build rich, interactive console applications using familiar Razor syntax and the power of Spectre.Console**
 
@@ -65,7 +68,10 @@ Here's a simple counter component to get you started:
 }
 
 // Program.cs
-await AppHost.RunAsync<Counter>();
+IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args)
+    .UseRazorConsole<Counter>();
+IHost host = hostBuilder.Build();
+await host.RunAsync();
 ```
 
 ![Image](https://github.com/user-attachments/assets/24d8cc11-6428-4886-93c1-873e45b47c74)
@@ -121,6 +127,102 @@ RazorConsole ships with a catalog of ready-to-use components that wrap Spectre.C
 
 See [`design-doc/builtin-components.md`](design-doc/builtin-components.md) for the full reference, including parameters and customization tips.
 
+## Custom Translators
+
+RazorConsole uses a Virtual DOM (VDOM) translation system to convert Razor components into Spectre.Console renderables. You can extend this system by creating custom translators to support additional Spectre.Console features or build entirely custom components.
+
+### Creating a Custom Translator
+
+Implement the `IVdomElementTranslator` interface to create a custom translator:
+
+```csharp
+using RazorConsole.Core.Rendering.Vdom;
+using RazorConsole.Core.Vdom;
+using Spectre.Console;
+using Spectre.Console.Rendering;
+
+public sealed class OverflowElementTranslator : IVdomElementTranslator
+{
+    // Lower priority values are processed first (1-1000+)
+    public int Priority => 85;
+
+    public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)
+    {
+        renderable = null;
+
+        // Check if this is a div with overflow attribute
+        if (node.Kind != VNodeKind.Element || 
+            !string.Equals(node.TagName, "div", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!node.Attributes.TryGetValue("data-overflow", out var overflowType))
+        {
+            return false;
+        }
+
+        // Translate child nodes
+        if (!VdomSpectreTranslator.TryConvertChildrenToRenderables(
+            node.Children, context, out var children))
+        {
+            return false;
+        }
+
+        var content = VdomSpectreTranslator.ComposeChildContent(children);
+
+        // Create renderable with overflow handling
+        renderable = overflowType?.ToLowerInvariant() switch
+        {
+            "ellipsis" => new Padder(content).Overflow(Overflow.Ellipsis),
+            "crop" => new Padder(content).Overflow(Overflow.Crop),
+            "fold" => new Padder(content).Overflow(Overflow.Fold),
+            _ => content
+        };
+
+        return true;
+    }
+}
+```
+
+### Registering a Custom Translator
+
+Register your translator in your application's service configuration:
+
+```csharp
+using RazorConsole.Core;
+using RazorConsole.Core.Vdom;
+
+var app = AppHost.Create<MyComponent>(builder =>
+{
+    // Register your custom translator
+    builder.Services.AddVdomTranslator<OverflowElementTranslator>();
+});
+
+await app.RunAsync();
+```
+
+### Using Custom Translators in Components
+
+Once registered, use your custom translator in Razor components:
+
+```razor
+<div data-overflow="ellipsis">
+    This text will be truncated with ellipsis if it's too long
+</div>
+```
+
+### Learn More
+
+For comprehensive documentation on custom translators, including:
+- Architecture overview and translation pipeline
+- Complete reference of built-in translators and priorities
+- Utility methods for common translation tasks
+- Best practices and advanced scenarios
+- Troubleshooting and testing strategies
+
+See the full guide at [`design-doc/custom-translators.md`](design-doc/custom-translators.md).
+
 ## Component Gallery
 
 Explore the built-in components interactively with the RazorConsole Component Gallery. Install the tool globally and launch it from any terminal:
@@ -174,6 +276,7 @@ The following file types are automatically tracked by Git LFS:
 
 ## Community & support
 
+- Join our [Discord server](https://discord.gg/tpJ3brxB) to chat with the community and get help.
 - File issues using the GitHub **Issues** tab.
 
 ## License

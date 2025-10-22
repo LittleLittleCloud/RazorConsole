@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,52 +12,50 @@ using static RazorConsole.Core.Rendering.Vdom.VdomSpectreTranslator;
 namespace RazorConsole.Core.Rendering.Vdom;
 
 
-internal sealed partial class VdomSpectreTranslator
+public sealed class FigletElementTranslator : IVdomElementTranslator
 {
-    [Export(typeof(IVdomElementTranslator))]
-    internal sealed class FigletElementTranslator : IVdomElementTranslator
+    public int Priority => 160;
+
+    public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)
     {
-        public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)
+        renderable = null;
+
+        if (node.Kind != VNodeKind.Element)
         {
-            renderable = null;
-
-            if (node.Kind != VNodeKind.Element)
-            {
-                return false;
-            }
-
-            if (!node.Attributes.TryGetValue("class", out var value) || !string.Equals(value, "figlet", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (node.Children is not { Count: 0 })
-            {
-                return false;
-            }
-
-            var content = GetAttribute(node, "data-content");
-
-            if (string.IsNullOrWhiteSpace(content))
-            {
-                return false;
-            }
-
-            var justifyAttribution = GetAttribute(node, "data-justify");
-            var justify = (justifyAttribution?.ToLowerInvariant()) switch
-            {
-                "left" => Justify.Left,
-                "right" => Justify.Right,
-                "center" => Justify.Center,
-                _ => Justify.Left,
-            };
-            var figlet = new FigletText(content)
-            {
-                Justification = justify,
-            };
-
-            renderable = figlet;
-            return true;
+            return false;
         }
+
+        if (!node.Attributes.TryGetValue("class", out var value) || !string.Equals(value, "figlet", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (node.Children is not { Count: 0 })
+        {
+            return false;
+        }
+
+        var content = VdomSpectreTranslator.GetAttribute(node, "data-content");
+
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return false;
+        }
+
+        var justifyAttribution = VdomSpectreTranslator.GetAttribute(node, "data-justify");
+        var justify = (justifyAttribution?.ToLowerInvariant()) switch
+        {
+            "left" => Justify.Left,
+            "right" => Justify.Right,
+            "center" => Justify.Center,
+            _ => Justify.Left,
+        };
+        var figlet = new FigletText(content)
+        {
+            Justification = justify,
+        };
+
+        renderable = figlet;
+        return true;
     }
 }

@@ -16,7 +16,7 @@ public sealed class ConsoleRendererTests
     [Fact]
     public async Task ElementCapturesComponentChildren_AsRenderableNodes()
     {
-        using var renderer = new ConsoleRenderer(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance);
+        using var renderer = TestHelpers.CreateTestRenderer();
 
         var snapshot = await renderer.MountComponentAsync<ContainerComponent>(ParameterView.Empty, CancellationToken.None);
 

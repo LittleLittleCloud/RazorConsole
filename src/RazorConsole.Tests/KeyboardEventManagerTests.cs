@@ -255,7 +255,7 @@ public class KeyboardEventManagerTests
             var manager = new KeyboardEventManager(focusManager, dispatcher, NullLogger<KeyboardEventManager>.Instance);
 
             var services = new ServiceCollection().BuildServiceProvider();
-            var renderer = new ConsoleRenderer(services, NullLoggerFactory.Instance);
+            var renderer = TestHelpers.CreateTestRenderer(services);
             var canvas = new NoopCanvas();
             var view = BuildView(elements);
             var context = new ConsoleLiveDisplayContext(canvas, renderer, view);
