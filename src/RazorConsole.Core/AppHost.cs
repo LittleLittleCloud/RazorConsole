@@ -84,7 +84,7 @@ public static class HostBuilderExtension
             return new Rendering.Vdom.VdomSpectreTranslator(translators);
         });
 
-        // Add ConsoleAppOptions as a singleton by resolving the IOptions value in a factory to avoid IOptions dependency in injesting components.
+        // Add ConsoleAppOptions as a singleton by resolving the IOptions value in a factory to avoid IOptions dependency in injecting components.
         services.AddSingleton<ConsoleAppOptions>(resolver => resolver.GetRequiredService<IOptions<ConsoleAppOptions>>().Value);
         services.AddHostedService<ComponentService<TComponent>>();
 
