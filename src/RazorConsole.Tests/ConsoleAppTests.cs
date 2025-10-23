@@ -1,13 +1,9 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RazorConsole.Core;
 using RazorConsole.Core.Controllers;
-using RazorConsole.Core.Rendering;
 
 namespace RazorConsole.Tests;
 
@@ -21,22 +17,18 @@ public sealed class ConsoleAppTests
 
         using var cts = new CancellationTokenSource();
 
-        var hostBuilder = Host.CreateApplicationBuilder()
-            .UseRazorConsole<TestComponent>(builder =>
+        Func<Core.Rendering.ConsoleLiveDisplayContext, ConsoleViewResult, CancellationToken, Task>? afterRenderCallback = (context, view, _) =>
         {
-            builder.Services.AddSingleton<ConsoleAppOptions>(services =>
-            {
-                return new ConsoleAppOptions
-                {
-                    AutoClearConsole = false,
-                    AfterRenderAsync = (context, view, _) =>
-                    {
-                        observed = view;
-                        tcs.TrySetResult(view);
-                        return Task.CompletedTask;
-                    }
-                };
-            });
+            observed = view;
+            tcs.TrySetResult(view);
+            return Task.CompletedTask;
+        };
+
+        var hostBuilder = Host.CreateApplicationBuilder();
+        hostBuilder.UseRazorConsole<TestComponent>();
+        hostBuilder.Services.Configure<ConsoleAppOptions>(options =>
+        {
+            options.AfterRenderAsync = afterRenderCallback;
         });
 
         var host = hostBuilder.Build();
@@ -51,6 +43,27 @@ public sealed class ConsoleAppTests
         Assert.NotNull(observed);
         Assert.Same(observed, result);
         Assert.Contains("Callback", result.Html, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RunAsync_DefaultConsoleAppOptionsResolves()
+    {
+        using var cts = new CancellationTokenSource();
+
+        var hostBuilder = Host.CreateApplicationBuilder();
+        hostBuilder.UseRazorConsole<TestComponent>();
+
+        var host = hostBuilder.Build();
+
+        var runTask = host.RunAsync(cts.Token);
+
+        ConsoleAppOptions options = host.Services.GetRequiredService<ConsoleAppOptions>();
+
+        cts.Cancel();
+        await runTask;
+
+        Assert.NotNull(options);
+        Assert.Equivalent(new ConsoleAppOptions(), options);
     }
 
     private sealed class TestComponent : ComponentBase

@@ -14,6 +14,7 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
 
 hostBuilder.ConfigureServices(services =>
 {
+
     if (useOllama)
     {
         // Use Ollama with local model
@@ -30,12 +31,9 @@ hostBuilder.ConfigureServices(services =>
 
     services.AddSingleton<IChatService, ChatService>();
 
-    services.AddSingleton<ConsoleAppOptions>(services =>
+    services.Configure<ConsoleAppOptions>(options =>
     {
-        return new ConsoleAppOptions
-        {
-            AutoClearConsole = false
-        };
+        options.AutoClearConsole = false;
     });
 });
 
