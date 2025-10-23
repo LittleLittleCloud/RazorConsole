@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Focus;
 using RazorConsole.Core.Input;
@@ -40,15 +41,15 @@ public static class HostBuilderExtension
     }
 
     /// <summary>
-    /// Adds Razor Console services to the specified <see cref="HostApplicationBuilder"/> using the provided root component.
+    /// Adds Razor Console services to the specified <see cref="IHostApplicationBuilder"/> using the provided root component.
     /// </summary>
     /// <typeparam name="TComponent">The Razor component that acts as the application's root component.</typeparam>
     /// <param name="hostBuilder">The host application builder to configure.</param>
     /// <param name="configure">An optional callback to perform additional configuration.</param>
-    /// <returns>The configured <see cref="HostApplicationBuilder"/> instance.</returns>
-    public static HostApplicationBuilder UseRazorConsole<TComponent>(
-        this HostApplicationBuilder hostBuilder,
-        Action<HostApplicationBuilder>? configure = null)
+    /// <returns>The configured <see cref="IHostApplicationBuilder"/> instance.</returns>
+    public static IHostApplicationBuilder UseRazorConsole<TComponent>(
+        this IHostApplicationBuilder hostBuilder,
+        Action<IHostApplicationBuilder>? configure = null)
         where TComponent : IComponent
     {
         RegisterDefaults<TComponent>(hostBuilder.Services);
@@ -88,7 +89,8 @@ public static class HostBuilderExtension
             return new Rendering.Vdom.VdomSpectreTranslator(translators);
         });
 
-        services.AddSingleton<ConsoleAppOptions>();
+        // Add ConsoleAppOptions as a singleton by resolving the IOptions value in a factory to avoid IOptions dependency in injecting components.
+        services.AddSingleton<ConsoleAppOptions>(resolver => resolver.GetRequiredService<IOptions<ConsoleAppOptions>>().Value);
         services.AddHostedService<ComponentService<TComponent>>();
 
         // clear all log providers because it would interfere with console rendering

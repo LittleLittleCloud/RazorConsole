@@ -6,18 +6,18 @@
   <ItemGroup>
     <PackageVersion Include="Microsoft.AspNetCore.Components" Version="8.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
-  <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-  <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-  <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
-  <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-  <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
-  <PackageVersion Include="NuGet.Versioning" Version="6.7.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageVersion Include="NuGet.Versioning" Version="6.7.0" />
     <PackageVersion Include="Spectre.Console" Version="0.51.1" />
     <PackageVersion Include="Microsoft.Extensions.AI" Version="9.1.0-preview.1.25064.3" />
     <PackageVersion Include="Microsoft.Extensions.AI.Ollama" Version="9.1.0-preview.1.25064.3" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="9.1.0-preview.1.25064.3" />
-  <PackageVersion Include="System.Composition" Version="8.0.0" />
+    <PackageVersion Include="System.Composition" Version="8.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.console" Version="2.9.3" />

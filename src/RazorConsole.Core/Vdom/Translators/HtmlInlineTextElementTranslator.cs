@@ -31,6 +31,8 @@ public sealed class HtmlInlineTextElementTranslator : IVdomElementTranslator
 
     private static readonly HashSet<string> QuoteTags = new(StringComparer.OrdinalIgnoreCase) { "q" };
 
+    private static readonly HashSet<string> LinkTags = new(StringComparer.OrdinalIgnoreCase) { "a" };
+
     public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)
     {
         renderable = null;
@@ -61,7 +63,7 @@ public sealed class HtmlInlineTextElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        return StyleEnvelopes.ContainsKey(tagName) || QuoteTags.Contains(tagName);
+        return StyleEnvelopes.ContainsKey(tagName) || QuoteTags.Contains(tagName) || LinkTags.Contains(tagName);
     }
 
     internal static bool TryBuildMarkup(VNode node, out string markup)
@@ -108,6 +110,29 @@ public sealed class HtmlInlineTextElementTranslator : IVdomElementTranslator
             }
 
             builder.Append("”");
+            return true;
+        }
+
+        if (LinkTags.Contains(tagName))
+        {
+            if (node.Attributes.TryGetValue("href", out var href) && !string.IsNullOrWhiteSpace(href))
+            {
+                builder.Append($"[link={Markup.Escape(href)}]");
+                if (!TryAppendChildren(node.Children, builder, allowNestedFormatting: true))
+                {
+                    return false;
+                }
+
+                builder.Append("[/]");
+                return true;
+            }
+
+            // If no href attribute, render as regular text
+            if (!TryAppendChildren(node.Children, builder, allowNestedFormatting: true))
+            {
+                return false;
+            }
+
             return true;
         }
 
