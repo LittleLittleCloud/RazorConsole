@@ -1,13 +1,9 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RazorConsole.Core;
 using RazorConsole.Core.Controllers;
-using RazorConsole.Core.Rendering;
 
 namespace RazorConsole.Tests;
 
@@ -18,25 +14,20 @@ public sealed class ConsoleAppTests
     {
         ConsoleViewResult? observed = null;
         var tcs = new TaskCompletionSource<ConsoleViewResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        Func<Core.Rendering.ConsoleLiveDisplayContext, ConsoleViewResult, CancellationToken, Task>? afterRenderCallback = (context, view, _) =>
+        {
+            observed = view;
+            tcs.TrySetResult(view);
+            return Task.CompletedTask;
+        };
 
         using var cts = new CancellationTokenSource();
 
         var hostBuilder = Host.CreateApplicationBuilder();
-        hostBuilder.UseRazorConsole<TestComponent>(builder =>
+        hostBuilder.UseRazorConsole<TestComponent>();
+        hostBuilder.Services.Configure<ConsoleAppOptions>(options =>
         {
-            builder.Services.AddSingleton<ConsoleAppOptions>(services =>
-            {
-                return new ConsoleAppOptions
-                {
-                    AutoClearConsole = false,
-                    AfterRenderAsync = (context, view, _) =>
-                    {
-                        observed = view;
-                        tcs.TrySetResult(view);
-                        return Task.CompletedTask;
-                    }
-                };
-            });
+            options.AfterRenderAsync = afterRenderCallback;
         });
 
         var host = hostBuilder.Build();

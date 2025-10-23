@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Focus;
 using RazorConsole.Core.Input;
@@ -83,7 +84,8 @@ public static class HostBuilderExtension
             return new Rendering.Vdom.VdomSpectreTranslator(translators);
         });
 
-        services.AddSingleton<ConsoleAppOptions>();
+        // Add ConsoleAppOptions as a singleton by resolving the IOptions value in a factory to avoid IOptions dependency in injesting components.
+        services.AddSingleton<ConsoleAppOptions>(resolver => resolver.GetRequiredService<IOptions<ConsoleAppOptions>>().Value);
         services.AddHostedService<ComponentService<TComponent>>();
 
         // clear all log providers because it would interfere with console rendering
