@@ -85,6 +85,29 @@ public class VdomSpectreTranslatorTests
     }
 
     [Fact]
+    public void Translate_ParagraphWithInlineElements_ReturnsComposedRenderable()
+    {
+        var node = Element("p", p =>
+        {
+            p.AddChild(Text("Visit "));
+            p.AddChild(Element("a", a =>
+            {
+                a.SetAttribute("href", "https://example.com");
+                a.AddChild(Text("example.com"));
+            }));
+            p.AddChild(Text(" for more info."));
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.NotNull(renderable);
+        Assert.Empty(animations);
+    }
+
+    [Fact]
     public void Translate_Spacer_DoesNotUseHtmlFallback()
     {
         var node = Element("div", spacer =>

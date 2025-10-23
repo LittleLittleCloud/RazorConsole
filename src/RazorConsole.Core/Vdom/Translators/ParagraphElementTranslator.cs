@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -18,23 +19,19 @@ public sealed class ParagraphElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        // the child node of <p> must be text nodes only
-        if (!node.Children.All(c => c.Kind == VNodeKind.Text))
+        // Try to convert children to renderables (handles mixed text + inline elements)
+        if (!VdomSpectreTranslator.TryConvertChildrenToRenderables(node.Children, context, out var children))
         {
             return false;
         }
-
-        var children = node.Children.Select(c => c.Text).ToList();
 
         if (children.Count == 0)
         {
             renderable = new Markup(string.Empty);
             return true;
         }
-        else
-        {
-            renderable = new Markup(string.Join(string.Empty, children));
-            return true;
-        }
+
+        renderable = VdomSpectreTranslator.ComposeChildContent(children);
+        return true;
     }
 }
