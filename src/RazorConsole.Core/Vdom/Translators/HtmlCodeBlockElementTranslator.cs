@@ -71,7 +71,8 @@ public sealed class HtmlCodeBlockElementTranslator : IVdomElementTranslator
         {
             var request = new SyntaxHighlightRequest(code, language, null, true, SyntaxOptions.Default);
             var model = _syntaxService.Highlight(request);
-            renderable = new SyntaxRenderable(model);
+            var body = new SyntaxRenderable(model);
+            renderable = new Rows([new Markup(" "), body, new Markup(" ")]);
             return true;
         }
         catch

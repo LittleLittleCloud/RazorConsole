@@ -32,9 +32,24 @@ public sealed class HtmlHeadingElementTranslator : IVdomElementTranslator
         }
 
         var style = GetHeadingStyle(tagName);
-        var markup = Markup.Escape(innerText);
+        var prefix = GetHeadingPrefix(tagName);
+        var markup = Markup.Escape($"{prefix}{innerText}");
         renderable = new Markup(markup, style);
         return true;
+    }
+
+    private static string GetHeadingPrefix(string? tagName)
+    {
+        return tagName switch
+        {
+            "h1" => "# ",
+            "h2" => "## ",
+            "h3" => "### ",
+            "h4" => "#### ",
+            "h5" => "##### ",
+            "h6" => "###### ",
+            _ => string.Empty
+        };
     }
 
     private static bool IsHeadingTag(string? tagName)

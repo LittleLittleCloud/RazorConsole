@@ -17,7 +17,7 @@ public sealed class MarkdownRenderingService
     {
         if (string.IsNullOrWhiteSpace(markdown))
         {
-            return "<div></div>";
+            return string.Empty;
         }
 
         var html = Markdig.Markdown.ToHtml(markdown, _pipeline);

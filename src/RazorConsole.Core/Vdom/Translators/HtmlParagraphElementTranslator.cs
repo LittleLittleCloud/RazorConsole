@@ -43,8 +43,13 @@ public sealed class HtmlParagraphElementTranslator : IVdomElementTranslator
             return true;
         }
 
-        // Multiple children - compose them
-        renderable = VdomSpectreTranslator.ComposeChildContent(children);
+        // Multiple children - compose them as column
+        renderable = new Columns(children)
+        {
+            Expand = false,
+            Padding = new Padding(0, 0, 0, 0),
+        };
+        
         return true;
     }
 }

@@ -21,7 +21,7 @@ public sealed class HtmlInlineTextElementTranslator : IVdomElementTranslator
             ["mark"] = new MarkupEnvelope("[black on yellow]", "[/]"),
             ["del"] = new MarkupEnvelope("[strikethrough]", "[/]"),
             ["ins"] = new MarkupEnvelope("[underline]", "[/]"),
-            ["code"] = new MarkupEnvelope("[grey53 on #1f1f1f]", "[/]", AllowNestedFormatting: false),
+            ["code"] = new MarkupEnvelope("[indianred1 on #1f1f1f]", "[/]", AllowNestedFormatting: false),
             ["abbr"] = new MarkupEnvelope("[underline]", "[/]"),
             ["cite"] = new MarkupEnvelope("[italic]", "[/]"),
             ["small"] = new MarkupEnvelope("[dim]", "[/]"),

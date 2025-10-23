@@ -117,7 +117,6 @@ public sealed class VdomSpectreTranslator
         {
             new TextElementTranslator(),
             new HtmlInlineTextElementTranslator(),
-            new ParagraphElementTranslator(),
             new SpacerElementTranslator(),
             new NewlineElementTranslator(),
             new SpinnerElementTranslator(),

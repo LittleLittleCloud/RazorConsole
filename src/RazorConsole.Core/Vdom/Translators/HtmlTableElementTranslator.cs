@@ -67,8 +67,8 @@ public sealed class TableElementTranslator : IVdomElementTranslator
         }
 
         var table = new Table();
-
-        table.Expand = !string.Equals(VdomSpectreTranslator.GetAttribute(node, "data-expand"), "false", StringComparison.OrdinalIgnoreCase);
+        var dataExpand = VdomSpectreTranslator.GetAttribute(node, "data-expand") ?? "false";
+        table.Expand = !string.Equals(dataExpand, "false", StringComparison.OrdinalIgnoreCase);
 
         if (VdomSpectreTranslator.TryParsePositiveInt(VdomSpectreTranslator.GetAttribute(node, "data-width"), out var width))
         {
@@ -270,10 +270,10 @@ public sealed class TableElementTranslator : IVdomElementTranslator
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return TableBorder.None;
+            return TableBorder.Rounded;
         }
 
-        return BorderLookup.TryGetValue(value, out var border) ? border : TableBorder.None;
+        return BorderLookup.TryGetValue(value, out var border) ? border : TableBorder.Rounded;
     }
 
     private static Justify? ParseAlignment(string? value)

@@ -37,14 +37,11 @@ public sealed class HtmlBlockquoteElementTranslator : IVdomElementTranslator
         }
 
         var content = VdomSpectreTranslator.ComposeChildContent(children);
-
-        // Render blockquote as a panel with left padding and grey border
         var panel = new Panel(content)
         {
             Border = BoxBorder.None,
             Padding = new Padding(2, 0, 0, 0)
         };
-        panel.BorderStyle(new Style(Color.Grey));
 
         renderable = panel;
         return true;
