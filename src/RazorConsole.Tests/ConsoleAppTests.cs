@@ -14,14 +14,15 @@ public sealed class ConsoleAppTests
     {
         ConsoleViewResult? observed = null;
         var tcs = new TaskCompletionSource<ConsoleViewResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        using var cts = new CancellationTokenSource();
+
         Func<Core.Rendering.ConsoleLiveDisplayContext, ConsoleViewResult, CancellationToken, Task>? afterRenderCallback = (context, view, _) =>
         {
             observed = view;
             tcs.TrySetResult(view);
             return Task.CompletedTask;
         };
-
-        using var cts = new CancellationTokenSource();
 
         var hostBuilder = Host.CreateApplicationBuilder();
         hostBuilder.UseRazorConsole<TestComponent>();
