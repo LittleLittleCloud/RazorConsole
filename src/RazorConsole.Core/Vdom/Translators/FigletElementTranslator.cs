@@ -42,14 +42,14 @@ public sealed class FigletElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        var styleAttribution = VdomSpectreTranslator.GetAttribute(node, "data-style");
+        var styleAttribute = VdomSpectreTranslator.GetAttribute(node, "data-style");
         var style = new Style(Color.Default);
-        if (!string.IsNullOrWhiteSpace(styleAttribution))
-            style = Style.Parse(styleAttribution);
+        if (!string.IsNullOrWhiteSpace(styleAttribute))
+            style = Style.Parse(styleAttribute);
 
 
-        var justifyAttribution = VdomSpectreTranslator.GetAttribute(node, "data-justify");
-        var justify = (justifyAttribution?.ToLowerInvariant()) switch
+        var justifyAttribute = VdomSpectreTranslator.GetAttribute(node, "data-justify");
+        var justify = (justifyAttribute?.ToLowerInvariant()) switch
         {
             "left" => Justify.Left,
             "right" => Justify.Right,
