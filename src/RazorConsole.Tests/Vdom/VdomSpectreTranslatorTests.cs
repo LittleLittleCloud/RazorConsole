@@ -441,6 +441,88 @@ public class VdomSpectreTranslatorTests
     }
 
     [Fact]
+    public void Translate_AnchorElement_WithHref_ReturnsLinkMarkup()
+    {
+        var node = Element("a", a =>
+        {
+            a.SetAttribute("href", "https://example.com");
+            a.AddChild(Text("Click here"));
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        var markup = Assert.IsType<Markup>(renderable);
+        Assert.Equal("[link=https://example.com]Click here[/]", BuildInlineMarkupLiteral(node));
+        Assert.Empty(animations);
+    }
+
+    [Fact]
+    public void Translate_AnchorElement_WithoutHref_ReturnsPlainText()
+    {
+        var node = Element("a", a =>
+        {
+            a.AddChild(Text("Not a link"));
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        var markup = Assert.IsType<Markup>(renderable);
+        Assert.Equal("Not a link", BuildInlineMarkupLiteral(node));
+        Assert.Empty(animations);
+    }
+
+    [Fact]
+    public void Translate_AnchorElement_WithSpecialCharactersInHref_EscapesUrl()
+    {
+        var node = Element("a", a =>
+        {
+            a.SetAttribute("href", "https://example.com/path?q=[test]");
+            a.AddChild(Text("Link"));
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        var markup = Assert.IsType<Markup>(renderable);
+        // Markup.Escape should escape the square brackets
+        var expectedMarkup = BuildInlineMarkupLiteral(node);
+        Assert.Contains("link=", expectedMarkup);
+        Assert.Contains("Link", expectedMarkup);
+        Assert.Empty(animations);
+    }
+
+    [Fact]
+    public void Translate_NestedAnchorWithFormatting_ComposesMarkup()
+    {
+        var node = Element("a", a =>
+        {
+            a.SetAttribute("href", "https://example.com");
+            a.AddChild(Text("Click "));
+            a.AddChild(Element("strong", strong =>
+            {
+                strong.AddChild(Text("here"));
+            }));
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        var markup = Assert.IsType<Markup>(renderable);
+        Assert.Equal("[link=https://example.com]Click [bold]here[/][/]", BuildInlineMarkupLiteral(node));
+        Assert.Empty(animations);
+    }
+
+    [Fact]
     public void ConvertChildren_TextNodes_NormalizeWhitespace()
     {
         var translator = new VdomSpectreTranslator();
