@@ -42,6 +42,12 @@ public sealed class FigletElementTranslator : IVdomElementTranslator
             return false;
         }
 
+        var styleAttribution = VdomSpectreTranslator.GetAttribute(node, "data-style");
+        var style = new Style(Color.Default);
+        if (!string.IsNullOrWhiteSpace(styleAttribution))
+            style = Style.Parse(styleAttribution);
+
+
         var justifyAttribution = VdomSpectreTranslator.GetAttribute(node, "data-justify");
         var justify = (justifyAttribution?.ToLowerInvariant()) switch
         {
@@ -53,6 +59,7 @@ public sealed class FigletElementTranslator : IVdomElementTranslator
         var figlet = new FigletText(content)
         {
             Justification = justify,
+            Color = style.Foreground
         };
 
         renderable = figlet;
