@@ -4,13 +4,13 @@
 <div
     class="figlet"
     data-content="@Content"
-    data-justify="@JustifyAttribute"
-    data-style="@StyleAttributes"
+    data-justify="@justifyAttribute"
+    data-style="@styleAttributes"
 />
 
 @code {
-    private string JustifyAttribute => Justify.ToString();
-    private string StyleAttributes => new Style(Color).ToMarkup();
+    private string justifyAttribute => Justify.ToString();
+    private string styleAttributes => new Style(Color).ToMarkup();
 
     [Parameter]
     public string Content { get; set; } = string.Empty;
