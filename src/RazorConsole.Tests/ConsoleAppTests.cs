@@ -44,6 +44,27 @@ public sealed class ConsoleAppTests
         Assert.Contains("Callback", result.Html, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task RunAsync_DefaultConsoleAppOptionsResolves()
+    {
+        using var cts = new CancellationTokenSource();
+
+        var hostBuilder = Host.CreateApplicationBuilder();
+        hostBuilder.UseRazorConsole<TestComponent>();
+
+        var host = hostBuilder.Build();
+
+        var runTask = host.RunAsync(cts.Token);
+
+        ConsoleAppOptions options = host.Services.GetRequiredService<ConsoleAppOptions>();
+
+        cts.Cancel();
+        await runTask;
+
+        Assert.NotNull(options);
+        Assert.Equivalent(new ConsoleAppOptions(), options);
+    }
+
     private sealed class TestComponent : ComponentBase
     {
         [Parameter]
