@@ -40,7 +40,7 @@ public sealed class FlowElementTranslator : IVdomElementTranslator
 
             // Determine if this child should be block or inline based on the element type
             var isBlock = ShouldBeBlock(child);
-            
+
             if (isBlock)
             {
                 items.Add(BlockInlineRenderable.Block(childRenderable));
@@ -89,7 +89,7 @@ public sealed class FlowElementTranslator : IVdomElementTranslator
                 "ul" or "ol" => true,
                 "pre" => true,
                 "blockquote" => true,
-                
+
                 // Inline elements
                 "span" => false,
                 "strong" or "b" => false,
@@ -97,7 +97,7 @@ public sealed class FlowElementTranslator : IVdomElementTranslator
                 "code" => false,
                 "a" => false,
                 "mark" => false,
-                
+
                 // Default to inline for unknown elements
                 _ => false,
             };

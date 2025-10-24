@@ -54,14 +54,14 @@ public class FlowElementTranslatorTests
         var node = Element("div", div =>
         {
             div.SetAttribute("data-flow", "mixed");
-            
+
             // Add a block element (div)
             div.AddChild(Element("div", blockDiv =>
             {
                 blockDiv.SetAttribute("data-text", "true");
                 blockDiv.AddChild(Text("Block"));
             }));
-            
+
             // Add an inline element (span)
             div.AddChild(Element("span", span =>
             {
@@ -84,7 +84,7 @@ public class FlowElementTranslatorTests
         var node = Element("div", div =>
         {
             div.SetAttribute("data-flow", "mixed");
-            
+
             // Force span to be block with data-display
             div.AddChild(Element("span", span =>
             {
@@ -92,7 +92,7 @@ public class FlowElementTranslatorTests
                 span.SetAttribute("data-display", "block");
                 span.AddChild(Text("Forced block"));
             }));
-            
+
             // Force div to be inline with data-display
             div.AddChild(Element("div", inlineDiv =>
             {

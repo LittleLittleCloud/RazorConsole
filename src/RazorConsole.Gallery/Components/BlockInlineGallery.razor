@@ -1,0 +1,64 @@
+@namespace RazorConsole.Gallery.Components
+
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Rows>
+    <Markup Content="[bold yellow]BlockInline Renderable Gallery[/]" />
+    <Markup Content="[dim]Demonstrates block and inline element composition[/]" />
+
+    @* Example 1: Basic mixed content *@
+    <Panel Title="Example 1: Mixed Block and Inline">
+        <div data-flow="mixed">
+            <div data-text="true">First block element</div>
+            <span data-text="true"> inline element </span>
+            <span data-text="true">[bold]bold inline[/]</span>
+            <div data-text="true">Second block element</div>
+        </div>
+    </Panel>
+
+    @* Example 2: Multiple inline elements *@
+    <Panel Title="Example 2: Multiple Inline Elements">
+        <div data-flow="mixed">
+            <span data-text="true">This </span>
+            <span data-text="true">[green]is[/] </span>
+            <span data-text="true">[blue]all[/] </span>
+            <span data-text="true">[yellow]on[/] </span>
+            <span data-text="true">[red]one[/] </span>
+            <span data-text="true">line!</span>
+        </div>
+    </Panel>
+
+    @* Example 3: Block elements only *@
+    <Panel Title="Example 3: Block Elements Only">
+        <div data-flow="mixed">
+            <div data-text="true">Block 1</div>
+            <div data-text="true">Block 2</div>
+            <div data-text="true">Block 3</div>
+        </div>
+    </Panel>
+
+    @* Example 4: Explicit display control *@
+    <Panel Title="Example 4: Explicit Display Control">
+        <div data-flow="mixed">
+            <span data-text="true" data-display="block">Span forced to block</span>
+            <div data-text="true" data-display="inline">Div forced to inline </div>
+            <div data-text="true" data-display="inline">[italic]Another inline div[/]</div>
+            <span data-text="true" data-display="block">Another block span</span>
+        </div>
+    </Panel>
+
+    @* Example 5: Rich formatting mix *@
+    <Panel Title="Example 5: Rich Formatting">
+        <div data-flow="mixed">
+            <div data-text="true">[bold]Title:[/]</div>
+            <span data-text="true">Status: </span>
+            <span data-text="true">[green]✓ Success[/] </span>
+            <span data-text="true">| </span>
+            <span data-text="true">[yellow]⚠ 2 warnings[/]</span>
+            <div data-text="true">[dim italic]Last updated: 2025-01-24[/]</div>
+        </div>
+    </Panel>
+
+    <Markup Content="[dim]Note: This uses the FlowElementTranslator with data-flow attribute[/]" />
+</Rows>
