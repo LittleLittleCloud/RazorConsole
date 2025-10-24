@@ -1,11 +1,11 @@
-<Markdown Content="@_markdownSample" />
-@* <Columns>
+<Columns>
+    <p>Current count</p>
     <Markup Content="@currentCount.ToString()" Foreground="@Spectre.Console.Color.Green" />
 </Columns>
 <TextButton Content="Click me"
             OnClick="IncrementCount"
             BackgroundColor="@Spectre.Console.Color.Grey"
-            FocusedColor="@Spectre.Console.Color.Blue" /> *@
+            FocusedColor="@Spectre.Console.Color.Blue" />
 
 
 @code {
@@ -14,85 +14,4 @@
     {
         currentCount++;
     }
-
-	private static string _markdownSample => @"# Welcome to Markdown
-
-This is a **bold** statement and this is *italic*. You can also have `inline code`.
-
-## Features
-
-Here's what you can do with markdown:
-
-- Create bullet lists
-- With multiple items
-- Like this one
-
-### Ordered Lists
-
-1. First item
-2. Second item
-3. Third item
-
-### Nested Lists
-
-- Top level item A
-  - Child item A.1
-    - Grandchild item `A.1.a`
-  - Child item A.2
-- Top level item B
-  1. Nested ordered item B.1
-  2. Nested ordered item B.2
-     - Mixed child bullet
-     - Another bullet
-
-### Code Blocks
-
-```csharp
-public class HelloWorld
-{
-    public static void Main()
-    {
-        Console.WriteLine(""Hello, World!"");
-    }
-}
-```
-
-```python
-def greet(name):
-    print(f""Hello, {name}!"")
-
-greet(""World"")
-```
-
-### Quotes
-
-> This is a quote block.
-> It can span multiple lines.
-
-### Tables
-
-| Syntax | Description |
-|--------|-------------|
-| Header | Title |
-| Paragraph | Text |
-
-Alignment example:
-
-| Left | Center | Right |
-|:-----|:------:|------:|
-| L1   |  C1    |   R1  |
-| L2   |  C2    |   R2  |
-
-### Links
-
-Inline link example: [Spectre.Console on GitHub](https://github.com/spectreconsole/spectre.console)
-
-Reference-style link example: [RazorConsole][razorconsole]
-
-[razorconsole]: https://github.com/LittleLittleCloud/RazorConsole
-
----
-
-That's a horizontal rule above!
-".Trim();
 }
