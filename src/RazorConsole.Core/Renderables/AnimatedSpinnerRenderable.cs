@@ -53,7 +53,6 @@ internal sealed class AnimatedSpinnerRenderable : IRenderable, IAnimatedConsoleR
 
         // Use global time so new instances continue the animation instead of restarting.
         var intervalTicks = _interval.Ticks;
-        if (intervalTicks <= 0) intervalTicks = TimeSpan.FromMilliseconds(100).Ticks;
 
         // Use DateTime.UtcNow.Ticks as continuous clock.
         var tick = DateTime.UtcNow.Ticks / intervalTicks;
