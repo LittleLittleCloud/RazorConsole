@@ -459,7 +459,7 @@ public class VdomSpectreTranslatorTests
 
         Assert.True(success);
         var markup = Assert.IsType<Markup>(renderable);
-        Assert.Equal("[grey53 on #1f1f1f]var value = 42;[/]", BuildInlineMarkupLiteral(node));
+        Assert.Equal("[indianred1 on #1f1f1f]var value = 42;[/]", BuildInlineMarkupLiteral(node));
         Assert.Empty(animations);
     }
 
