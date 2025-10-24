@@ -27,6 +27,7 @@
 			{
 				<Padder Padding="@(new(0, 1, 0, 0))">
 					<Markup Content="@($"{(message.IsUser ? "You" : "Bot")}")" Foreground="@(message.IsUser? Color.Green: Color.Blue)" />
+					<Markup Content=" " />
 					<Markdown Content="@message.Content" />
 				</Padder>
 			}
