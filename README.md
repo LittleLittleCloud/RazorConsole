@@ -90,7 +90,7 @@ Create engaging user experiences with interactive elements like buttons, text in
 Get started quickly with 15+ pre-built components covering layout, input, display, and navigation needs:
 - **Layout**: `Grid`, `Columns`, `Rows`, `Align`, `Padder`
 - **Input**: `TextInput`, `TextButton`, `Select`
-- **Display**: `Markup`, `Panel`, `Border`, `Figlet`, `SyntaxHighlighter`, `Table`
+- **Display**: `Markdown`, `Markup`, `Panel`, `Border`, `Figlet`, `SyntaxHighlighter`, `Table`
 - **Utilities**: `Spinner`, `Newline`
 
 For a full list of components and usage details, see the [Built-in Components](#built-in-components) section below.
@@ -114,6 +114,7 @@ RazorConsole ships with a catalog of ready-to-use components that wrap Spectre.C
 - `Figlet` – render big ASCII art text using FIGlet fonts.
 - `Grid` – build multi-row, multi-column layouts with precise cell control.
 - `Markup` – emit styled text with Spectre markup tags.
+- `Markdown` - render markdown string.
 - `Newline` – insert intentional spacing between renderables.
 - `Padder` – add outer padding around child content without altering the child itself.
 - `Panel` – frame content inside a titled container with border and padding options.
