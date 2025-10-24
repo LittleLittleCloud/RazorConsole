@@ -283,7 +283,11 @@ public sealed class VdomSpectreTranslator
             return children[0];
         }
 
-        return new Rows(children);
+        return new Columns(children)
+        {
+            Expand = false,
+            Padding = new Padding(0, 0, 0, 0),
+        };
     }
 
     /// <summary>

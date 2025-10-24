@@ -10,7 +10,7 @@ using RazorConsole.Gallery.Services;
 using Spectre.Console;
 
 var builder = Host.CreateDefaultBuilder(args)
-    .UseRazorConsole<Counter>();
+    .UseRazorConsole<App>();
 
 builder.ConfigureServices(services =>
 {

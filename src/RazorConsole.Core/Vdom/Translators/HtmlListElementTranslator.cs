@@ -67,7 +67,7 @@ public sealed class HtmlListElementTranslator : IVdomElementTranslator
             }
             else
             {
-                itemContent = new Columns(new IRenderable[] { new Markup("\r"), new Markup(prefix), new Columns(itemChildren) { Expand = false } })
+                itemContent = new Columns(new IRenderable[] { new Markup(prefix), new Rows(itemChildren) { Expand = false } })
                 {
                     Expand = false,
                     Padding = new Padding(0, 0, 0, 0),
