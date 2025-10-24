@@ -49,7 +49,7 @@ public sealed class HtmlParagraphElementTranslator : IVdomElementTranslator
             Expand = false,
             Padding = new Padding(0, 0, 0, 0),
         };
-        
+
         return true;
     }
 }
