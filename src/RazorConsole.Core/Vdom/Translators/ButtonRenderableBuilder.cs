@@ -20,15 +20,13 @@ internal static class ButtonRenderableBuilder
         ["danger"] = new ButtonStylePreset("white on red3", "red3"),
     };
 
-    public static IRenderable Build(ButtonRenderableDescriptor descriptor, IReadOnlyList<IRenderable> children)
+    public static IRenderable Build(ButtonRenderableDescriptor descriptor, IRenderable content)
     {
         if (descriptor is null)
         {
             throw new ArgumentNullException(nameof(descriptor));
         }
 
-        var childRenderables = children ?? Array.Empty<IRenderable>();
-        var content = ComposeContent(descriptor, childRenderables);
         var border = descriptor.IsActive
             ? BoxBorder.Double
             : descriptor.IsDefault ? BoxBorder.Heavy : BoxBorder.Rounded;

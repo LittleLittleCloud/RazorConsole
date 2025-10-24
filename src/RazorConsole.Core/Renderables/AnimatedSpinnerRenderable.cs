@@ -11,7 +11,6 @@ internal sealed class AnimatedSpinnerRenderable : IRenderable, IAnimatedConsoleR
     private readonly Spinner _spinner;
     private readonly string? _message;
     private readonly string? _style;
-    private readonly Stopwatch _stopwatch;
     private readonly TimeSpan _interval;
 
     public AnimatedSpinnerRenderable(Spinner spinner, string? message, string? style, bool autoDismiss)
@@ -21,7 +20,6 @@ internal sealed class AnimatedSpinnerRenderable : IRenderable, IAnimatedConsoleR
         _style = style;
         _ = autoDismiss; // Placeholder for future support when auto-dismiss semantics are defined.
         _interval = spinner.Interval <= TimeSpan.Zero ? TimeSpan.FromMilliseconds(100) : spinner.Interval;
-        _stopwatch = Stopwatch.StartNew();
     }
 
     public TimeSpan RefreshInterval => _interval;
@@ -53,7 +51,11 @@ internal sealed class AnimatedSpinnerRenderable : IRenderable, IAnimatedConsoleR
             return "";
         }
 
-        var tick = _stopwatch.ElapsedTicks / _interval.Ticks;
+        // Use global time so new instances continue the animation instead of restarting.
+        var intervalTicks = _interval.Ticks;
+
+        // Use DateTime.UtcNow.Ticks as continuous clock.
+        var tick = DateTime.UtcNow.Ticks / intervalTicks;
         var index = (int)(tick % frames.Count);
         return frames[index];
     }

@@ -32,7 +32,7 @@ public sealed class HtmlButtonElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        if (!VdomSpectreTranslator.TryConvertChildrenToRenderables(node.Children, context, out var children))
+        if (!VdomSpectreTranslator.TryConvertChildrenToBlockInlineRenderable(node.Children, context, out var children) || children is null)
         {
             return false;
         }

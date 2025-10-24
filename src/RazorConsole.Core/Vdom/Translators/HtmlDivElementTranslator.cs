@@ -1,4 +1,5 @@
 using System;
+using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -18,29 +19,19 @@ public sealed class HtmlDivElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        if (!VdomSpectreTranslator.TryConvertChildrenToRenderables(node.Children, context, out var children))
-        {
-            return false;
-        }
-
-        if (children.Count == 0)
+        if (node.Children.Count == 0)
         {
             renderable = new Markup(string.Empty);
             return true;
         }
 
-        if (children.Count == 1)
+        if (VdomSpectreTranslator.TryConvertChildrenToBlockInlineRenderable(node.Children, context, out var bir))
         {
-            renderable = children[0];
+            renderable = bir;
             return true;
         }
 
-        renderable = new Columns(children)
-        {
-            Expand = false,
-            Padding = new Padding(0, 0, 0, 0),
-        };
-
-        return true;
+        renderable = null;
+        return false;
     }
 }

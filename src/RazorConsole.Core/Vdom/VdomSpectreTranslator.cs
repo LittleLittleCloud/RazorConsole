@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
@@ -69,15 +70,23 @@ public sealed class VdomSpectreTranslator
         switch (node.Kind)
         {
             case VNodeKind.Text:
-                renderable = new Text(node.Text ?? string.Empty);
+                var normalized = NormalizeTextNode(node.Text);
+
+                if (!normalized.HasContent)
+                {
+                    renderable = null;
+                    return false;
+                }
+
+                renderable = new Text($"{(normalized.LeadingWhitespace ? " " : "")}{normalized.Content}{(normalized.TrailingWhitespace ? " " : "")}");
                 return true;
             case VNodeKind.Element:
                 return TryTranslateElement(node, context, out renderable);
             case VNodeKind.Component:
             case VNodeKind.Region:
-                if (TryConvertChildrenToRenderables(node.Children, context, out var children))
+                if (TryConvertChildrenToBlockInlineRenderable(node.Children, context, out var children))
                 {
-                    renderable = ComposeChildContent(children);
+                    renderable = children;
                     return true;
                 }
 
@@ -103,7 +112,7 @@ public sealed class VdomSpectreTranslator
             }
             catch (Exception)
             {
-                continue;
+                throw;
             }
         }
 
@@ -197,6 +206,62 @@ public sealed class VdomSpectreTranslator
             }
         }
 
+        return true;
+    }
+
+    /// <summary>
+    /// Converts child VNodes to a <see cref="BlockInlineRenderable"/>
+    /// </summary>
+    /// <param name="children">The child VNodes to convert.</param>
+    /// <param name="context">The translation context.</param>
+    /// <param name="renderable">The resulting renderable if successful.</param>
+    /// <returns>True if all children were successfully converted; otherwise, false.</returns>
+    public static bool TryConvertChildrenToBlockInlineRenderable(IReadOnlyList<VNode> children, TranslationContext context, out IRenderable? renderable)
+    {
+        var items = new List<BlockInlineRenderable.RenderableItem>();
+
+        for (int i = 0; i < children.Count; ++i)
+        {
+            var child = children[i];
+            switch (child.Kind)
+            {
+                case VNodeKind.Text:
+                    var normalized = NormalizeTextNode(child.Text);
+
+                    if (!normalized.HasContent)
+                    {
+                        break;
+                    }
+
+                    var r = new Markup(Markup.Escape($"{(normalized.LeadingWhitespace && i != 0 ? " " : "")}{normalized.Content}{(normalized.TrailingWhitespace ? " " : "")}"));
+                    items.Add(BlockInlineRenderable.Inline(r));
+                    break;
+                default:
+                    if (!context.TryTranslate(child, out var childRenderable) || childRenderable is null)
+                    {
+                        continue;
+                    }
+
+                    var isBlock = ShouldBeBlock(child);
+                    if (isBlock)
+                    {
+                        items.Add(BlockInlineRenderable.Block(childRenderable));
+                    }
+                    else
+                    {
+                        items.Add(BlockInlineRenderable.Inline(childRenderable));
+                    }
+                    break;
+            }
+        }
+
+        if (items.Count == 0)
+        {
+            renderable = null;
+            return false;
+        }
+
+        renderable = new BlockInlineRenderable(items);
         return true;
     }
 
@@ -507,6 +572,53 @@ public sealed class VdomSpectreTranslator
         }
 
         result = default;
+        return false;
+    }
+
+    private static bool ShouldBeBlock(VNode node)
+    {
+        // Check for explicit data-display attribute
+        if (node.Attributes.TryGetValue("data-display", out var display))
+        {
+            if (string.Equals(display, "block", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            if (string.Equals(display, "inline", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        // Default block elements based on tag name
+        if (node.TagName is not null)
+        {
+            return node.TagName.ToLowerInvariant() switch
+            {
+                // Block-level HTML elements
+                "div" => true,
+                "p" => true,
+                "h1" or "h2" or "h3" or "h4" or "h5" or "h6" => true,
+                "panel" => true,
+                "table" => true,
+                "ul" or "ol" => true,
+                "pre" => true,
+                "blockquote" => true,
+
+                // Inline elements
+                "span" => false,
+                "strong" or "b" => false,
+                "em" or "i" => false,
+                "code" => false,
+                "a" => false,
+                "mark" => false,
+
+                // Default to inline for unknown elements
+                _ => false,
+            };
+        }
+
+        // Text nodes are inline
         return false;
     }
 }

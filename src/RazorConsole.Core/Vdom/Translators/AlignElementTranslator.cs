@@ -24,23 +24,17 @@ public sealed class AlignElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        if (!VdomSpectreTranslator.TryConvertChildrenToRenderables(node.Children, context, out var children))
+        if (!VdomSpectreTranslator.TryConvertChildrenToBlockInlineRenderable(node.Children, context, out var children) || children is null)
         {
             return false;
         }
 
-        if (children is not { Count: 1 })
-        {
-            return false;
-        }
-
-        var content = children[0];
         var horizontal = VdomSpectreTranslator.ParseHorizontalAlignment(VdomSpectreTranslator.GetAttribute(node, "data-horizontal"));
         var vertical = VdomSpectreTranslator.ParseVerticalAlignment(VdomSpectreTranslator.GetAttribute(node, "data-vertical"));
         var width = VdomSpectreTranslator.ParseOptionalPositiveInt(VdomSpectreTranslator.GetAttribute(node, "data-width"));
         var height = VdomSpectreTranslator.ParseOptionalPositiveInt(VdomSpectreTranslator.GetAttribute(node, "data-height"));
 
-        var align = new MeasuredAlign(content, horizontal, vertical)
+        var align = new MeasuredAlign(children, horizontal, vertical)
         {
             Width = width,
             Height = height,
