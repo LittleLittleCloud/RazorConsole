@@ -57,7 +57,7 @@ public sealed class HtmlListElementTranslator : IVdomElementTranslator
             {
                 itemContent = new Markup(prefix);
             }
-            else 
+            else
             {
                 itemContent = new Columns(new IRenderable[] { new Markup(prefix), itemChildRenderable })
                 {
