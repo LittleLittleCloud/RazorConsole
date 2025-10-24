@@ -440,7 +440,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         {
             0 => null,
             1 => collected[0],
-            _ => CreateRowsWrapper(collected),
+            _ => CreateDivWrapper(collected),
         };
     }
     private void LogComponentRoots()
@@ -702,10 +702,9 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         return clone;
     }
 
-    private static VNode CreateRowsWrapper(List<VNode> children)
+    private static VNode CreateDivWrapper(List<VNode> children)
     {
         var wrapper = VNode.CreateElement("div");
-        wrapper.SetAttribute("data-rows", "true");
         foreach (var child in children)
         {
             wrapper.AddChild(child);

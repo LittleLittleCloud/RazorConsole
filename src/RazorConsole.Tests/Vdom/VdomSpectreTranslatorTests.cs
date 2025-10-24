@@ -234,7 +234,7 @@ public class VdomSpectreTranslatorTests
     }
 
     [Fact]
-    public void Translate_GenericDivNode_ReturnsColumnsRenderable()
+    public void Translate_GenericDivNode_ReturnsBlockInlineRenderable()
     {
         var node = Element("div", div =>
         {
@@ -247,7 +247,7 @@ public class VdomSpectreTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
         Assert.True(success);
-        Assert.IsType<Columns>(renderable);
+        Assert.IsType<BlockInlineRenderable>(renderable);
         Assert.Empty(animations);
     }
 

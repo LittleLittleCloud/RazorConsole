@@ -46,28 +46,20 @@ public sealed class HtmlListElementTranslator : IVdomElementTranslator
             var prefix = isOrdered ? $"{i + 1}. " : "• ";
 
             // Convert list item children to renderables
-            if (!VdomSpectreTranslator.TryConvertChildrenToRenderables(listItem.Children, context, out var itemChildren))
+            if (!VdomSpectreTranslator.TryConvertChildrenToBlockInlineRenderable(listItem.Children, context, out var itemChildRenderable))
             {
                 return false;
             }
 
             // Create the list item with prefix
             IRenderable itemContent;
-            if (itemChildren.Count == 0)
+            if (itemChildRenderable is null)
             {
                 itemContent = new Markup(prefix);
             }
-            else if (itemChildren.Count == 1)
+            else 
             {
-                itemContent = new Columns(new IRenderable[] { new Markup(prefix), itemChildren[0] })
-                {
-                    Expand = false,
-                    Padding = new Padding(0, 0, 0, 0),
-                };
-            }
-            else
-            {
-                itemContent = new Columns(new IRenderable[] { new Markup(prefix), new Rows(itemChildren) { Expand = false } })
+                itemContent = new Columns(new IRenderable[] { new Markup(prefix), itemChildRenderable })
                 {
                     Expand = false,
                     Padding = new Padding(0, 0, 0, 0),

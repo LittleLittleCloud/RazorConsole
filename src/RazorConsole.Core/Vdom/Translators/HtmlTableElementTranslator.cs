@@ -247,19 +247,16 @@ public sealed class TableElementTranslator : IVdomElementTranslator
                 continue;
             }
 
-            if (!VdomSpectreTranslator.TryConvertChildrenToRenderables(child.Children, context, out var renderables))
+            if (!VdomSpectreTranslator.TryConvertChildrenToBlockInlineRenderable(child.Children, context, out var renderable) || renderable is null)
             {
                 rowData = default!;
                 return false;
             }
 
-            var content = VdomSpectreTranslator.ComposeChildContent(renderables);
-
-
             var alignmentAttribute = VdomSpectreTranslator.GetAttribute(child, "data-align");
             var alignment = ParseAlignment(alignmentAttribute);
 
-            cells.Add(new CellData(content, alignment));
+            cells.Add(new CellData(renderable, alignment));
         }
 
         rowData = new RowData(cells.ToArray());
