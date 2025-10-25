@@ -1,0 +1,189 @@
+import { Link, Outlet } from "react-router-dom"
+import { Github, Menu, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useState } from "react"
+
+export default function Layout() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-slate-950/95 dark:supports-[backdrop-filter]:bg-slate-950/60">
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex items-center gap-8">
+              <Link to="/" className="flex items-center space-x-2">
+                <span className="text-2xl">🚀</span>
+                <span className="font-bold text-xl">RazorConsole</span>
+              </Link>
+              
+              {/* Desktop Navigation */}
+              <nav className="hidden md:flex gap-6">
+                <Link 
+                  to="/" 
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 transition-colors"
+                >
+                  Home
+                </Link>
+                <Link 
+                  to="/quick-start" 
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 transition-colors"
+                >
+                  Quick Start
+                </Link>
+                <Link 
+                  to="/components" 
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 transition-colors"
+                >
+                  Components
+                </Link>
+                <Link 
+                  to="/advanced" 
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 transition-colors"
+                >
+                  Advanced
+                </Link>
+              </nav>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <a 
+                href="https://github.com/LittleLittleCloud/RazorConsole" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hidden md:block"
+              >
+                <Button variant="ghost" size="sm">
+                  <Github className="w-4 h-4 mr-2" />
+                  GitHub
+                </Button>
+              </a>
+
+              {/* Mobile menu button */}
+              <button 
+                className="md:hidden"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Navigation */}
+          {mobileMenuOpen && (
+            <nav className="md:hidden pb-4 space-y-2">
+              <Link 
+                to="/" 
+                className="block py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link 
+                to="/quick-start" 
+                className="block py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Quick Start
+              </Link>
+              <Link 
+                to="/components" 
+                className="block py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Components
+              </Link>
+              <Link 
+                to="/advanced" 
+                className="block py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Advanced
+              </Link>
+              <a 
+                href="https://github.com/LittleLittleCloud/RazorConsole" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
+              >
+                GitHub
+              </a>
+            </nav>
+          )}
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1">
+        <Outlet />
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t py-8 bg-slate-50 dark:bg-slate-900">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h3 className="font-semibold mb-4">RazorConsole</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Build rich, interactive console applications using Razor and Spectre.Console
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Resources</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a href="https://github.com/LittleLittleCloud/RazorConsole" 
+                     target="_blank" 
+                     rel="noopener noreferrer"
+                     className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                    GitHub Repository
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.nuget.org/packages/RazorConsole.Core" 
+                     target="_blank" 
+                     rel="noopener noreferrer"
+                     className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                    NuGet Package
+                  </a>
+                </li>
+                <li>
+                  <a href="https://discord.gg/tpJ3brxB" 
+                     target="_blank" 
+                     rel="noopener noreferrer"
+                     className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                    Discord Community
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Documentation</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link to="/quick-start" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                    Quick Start
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/components" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                    Components
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/advanced" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                    Advanced Topics
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t text-center text-sm text-slate-600 dark:text-slate-400">
+            <p>© 2024 RazorConsole. Licensed under MIT License.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
