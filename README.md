@@ -279,6 +279,7 @@ The following file types are automatically tracked by Git LFS:
 
 - Join our [Discord server](https://discord.gg/tpJ3brxB) to chat with the community and get help.
 - File issues using the GitHub **Issues** tab.
+- Read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
 
 ## License
 
