@@ -482,3 +482,8 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+## Website
+website/node_modules/
+website/dist/
+website/.vite/
