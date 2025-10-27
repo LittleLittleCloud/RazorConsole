@@ -51,10 +51,33 @@ jobs:
       - name: Test
         run: dotnet test RazorConsole.sln --configuration Release --no-build --verbosity normal
 
+  website-build:
+    name: Build website
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: website
+
+      - name: Build website
+        run: npm run build
+        working-directory: website
+
   publish-nightly:
     name: Publish nightly build
     runs-on: ubuntu-latest
-    needs: [validate-format, build-test]
+    needs: [validate-format, build-test, website-build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
