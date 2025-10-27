@@ -1,9 +1,46 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useMemo } from "react"
 import { Link } from "react-router-dom"
 import { Package, Zap, Code, Github, Terminal, ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { MarkdownRenderer } from "@/components/Markdown"
 
 export default function Home() {
+  const quickStartSnippets = useMemo(
+    () => ({
+      install: ["```bash", "dotnet add package RazorConsole.Core", "```"].join("\n"),
+      projectFile: [
+        "```xml",
+        '<Project Sdk="Microsoft.NET.Sdk.Razor">',
+        "    <!-- your project settings -->",
+        "</Project>",
+        "```",
+      ].join("\n"),
+      counter: [
+        "```razor",
+        "// Counter.razor",
+        "@using RazorConsole.Components",
+        "",
+        "<Columns>",
+        "    <p>Current count</p>",
+        '    <Markup Content="@currentCount.ToString()" ',
+        '            Foreground="@Spectre.Console.Color.Green" />',
+        "</Columns>",
+        "<TextButton Content=\"Click me\"",
+        "            OnClick=\"IncrementCount\"",
+        '            BackgroundColor="@Spectre.Console.Color.Grey"',
+        '            FocusedColor="@Spectre.Console.Color.Blue" />',
+        "",
+        "@code {",
+        "    private int currentCount = 0;",
+        "    private void IncrementCount() => currentCount++;",
+        "}",
+        "```",
+      ].join("\n"),
+    }),
+    []
+  )
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
       {/* Hero Section */}
@@ -16,7 +53,7 @@ export default function Home() {
             Build rich, interactive console applications using familiar Razor syntax and the power of Spectre.Console
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Link to="/quick-start">
+            <Link to="/docs#quick-start">
               <Button size="lg" className="gap-2">
                 <Terminal className="w-4 h-4" />
                 Quick Start
@@ -91,41 +128,17 @@ export default function Home() {
           <CardContent className="space-y-4">
             <div>
               <h3 className="font-semibold mb-2">1. Install the package</h3>
-              <pre className="bg-slate-900 text-slate-100 p-4 rounded-md overflow-x-auto">
-                <code>dotnet add package RazorConsole.Core</code>
-              </pre>
+              <MarkdownRenderer content={quickStartSnippets.install} />
             </div>
             <div>
               <h3 className="font-semibold mb-2">2. Update your project file</h3>
-              <pre className="bg-slate-900 text-slate-100 p-4 rounded-md overflow-x-auto">
-                <code>{`<Project Sdk="Microsoft.NET.Sdk.Razor">
-    <!-- your project settings -->
-</Project>`}</code>
-              </pre>
+              <MarkdownRenderer content={quickStartSnippets.projectFile} />
             </div>
             <div>
               <h3 className="font-semibold mb-2">3. Create your first component</h3>
-              <pre className="bg-slate-900 text-slate-100 p-4 rounded-md overflow-x-auto">
-                <code>{`// Counter.razor
-@using RazorConsole.Components
-
-<Columns>
-    <p>Current count</p>
-    <Markup Content="@currentCount.ToString()" 
-            Foreground="@Spectre.Console.Color.Green" />
-</Columns>
-<TextButton Content="Click me"
-            OnClick="IncrementCount"
-            BackgroundColor="@Spectre.Console.Color.Grey"
-            FocusedColor="@Spectre.Console.Color.Blue" />
-
-@code {
-    private int currentCount = 0;
-    private void IncrementCount() => currentCount++;
-}`}</code>
-              </pre>
+              <MarkdownRenderer content={quickStartSnippets.counter} />
             </div>
-            <Link to="/quick-start">
+            <Link to="/docs#quick-start">
               <Button className="gap-2">
                 View Full Tutorial
                 <ArrowRight className="w-4 h-4" />
@@ -135,28 +148,6 @@ export default function Home() {
         </Card>
 
         {/* Advanced Topics Preview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Advanced Topics</CardTitle>
-              <CardDescription>Dive deeper into RazorConsole</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Link to="/advanced#hot-reload" className="block hover:text-blue-600 transition-colors">
-                • Hot Reload Support
-              </Link>
-              <Link to="/advanced#custom-translators" className="block hover:text-blue-600 transition-colors">
-                • Custom Translators
-              </Link>
-              <Link to="/advanced#keyboard-events" className="block hover:text-blue-600 transition-colors">
-                • Keyboard Events
-              </Link>
-              <Link to="/advanced#focus-management" className="block hover:text-blue-600 transition-colors">
-                • Focus Management
-              </Link>
-            </CardContent>
-          </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Examples</CardTitle>
@@ -177,7 +168,6 @@ export default function Home() {
               </a>
             </CardContent>
           </Card>
-        </div>
       </div>
     </div>
   )

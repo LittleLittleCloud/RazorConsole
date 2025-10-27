@@ -27,22 +27,16 @@ export default function Layout() {
                   Home
                 </Link>
                 <Link 
-                  to="/quick-start" 
+                  to="/docs#quick-start" 
                   className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 transition-colors"
                 >
-                  Quick Start
+                  Docs
                 </Link>
                 <Link 
                   to="/components" 
                   className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 transition-colors"
                 >
                   Components
-                </Link>
-                <Link 
-                  to="/advanced" 
-                  className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 transition-colors"
-                >
-                  Advanced
                 </Link>
               </nav>
             </div>
@@ -81,11 +75,11 @@ export default function Layout() {
                 Home
               </Link>
               <Link 
-                to="/quick-start" 
+                to="/docs#quick-start" 
                 className="block py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Quick Start
+                Docs
               </Link>
               <Link 
                 to="/components" 
@@ -93,13 +87,6 @@ export default function Layout() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Components
-              </Link>
-              <Link 
-                to="/advanced" 
-                className="block py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Advanced
               </Link>
               <a 
                 href="https://github.com/LittleLittleCloud/RazorConsole" 
@@ -162,17 +149,22 @@ export default function Layout() {
               <h3 className="font-semibold mb-4">Documentation</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link to="/quick-start" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
-                    Quick Start
+                  <Link to="/docs" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                    Docs Overview
                   </Link>
                 </li>
                 <li>
-                  <Link to="/components" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
-                    Components
+                  <Link to="/docs#quick-start" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                    Quick Start Guide
                   </Link>
                 </li>
                 <li>
-                  <Link to="/advanced" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                  <Link to="/docs#built-in-components" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                    Built-in Components
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/docs#hot-reload" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
                     Advanced Topics
                   </Link>
                 </li>
