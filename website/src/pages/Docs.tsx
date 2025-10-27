@@ -31,11 +31,6 @@ export default function Docs() {
                 content: keyboardEventsDoc,
             },
             {
-                id: "focus-management",
-                title: "Focus Management",
-                content: focusManagementDoc,
-            },
-            {
                 id: "component-gallery",
                 title: "Component Gallery",
                 content: componentGalleryDoc,
