@@ -7,7 +7,7 @@ Thank you for your interest in contributing to RazorConsole! We welcome contribu
 ### Before You Start
 
 - **For large PRs, refactors, or new features**: Please create an issue first to discuss your proposed changes. This helps ensure your contribution aligns with the project's goals and prevents duplicate work.
-- **Join our Discord**: For timely responses and real-time collaboration, [join our Discord server](https://discord.gg/tpJ3brxB). The maintainers and community are active there and can help guide your contributions.
+- **Join our Discord**: For timely responses and real-time collaboration, [join our Discord server](https://discord.gg/DphHAnJxCM). The maintainers and community are active there and can help guide your contributions.
 
 ## 🐛 Reporting Issues
 
@@ -94,7 +94,7 @@ Creating a GitHub release triggers `.github/workflows/release.yml` to build, tes
 
 ## 💬 Getting Help
 
-- **Discord**: [Join our server](https://discord.gg/tpJ3brxB) for quick questions and real-time help
+- **Discord**: [Join our server](https://discord.gg/DphHAnJxCM) for quick questions and real-time help
 - **Issues**: Create an issue on GitHub for bugs or feature requests
 - **Discussions**: Use GitHub Discussions for general questions and ideas
 

@@ -136,7 +136,7 @@ export default function Layout() {
                   </a>
                 </li>
                 <li>
-                  <a href="https://discord.gg/tpJ3brxB" 
+                  <a href="https://discord.gg/DphHAnJxCM" 
                      target="_blank" 
                      rel="noopener noreferrer"
                      className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
