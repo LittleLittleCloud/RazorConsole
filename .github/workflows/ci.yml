@@ -60,6 +60,29 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+          fetch-depth: 2
+
+      - name: Check for source code changes
+        id: check-changes
+        run: |
+          # Get the list of changed files in the last commit
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+
+          # Check if any source code files were changed
+          # Source code includes:
+          # - .cs, .razor, .csproj, .props, .targets files
+          # - src/ directory
+          # - CI/CD workflows that affect package building
+          if echo "$CHANGED_FILES" | grep -qE '\.(cs|razor|csproj|props|targets)$|^src/|^\.github/workflows/(ci|release)\.yml'; then
+            echo "source_changed=true" >> "$GITHUB_OUTPUT"
+            echo "✓ Source code changes detected"
+          else
+            echo "source_changed=false" >> "$GITHUB_OUTPUT"
+            echo "✗ No source code changes detected"
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
 
       - name: Compute version suffix
         run: echo "VersionSuffix=$(date +'%Y%m%d')-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
@@ -97,6 +120,7 @@ jobs:
           retention-days: 7
 
       - name: Push packages to NuGet.org
+        if: steps.check-changes.outputs.source_changed == 'true'
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
