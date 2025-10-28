@@ -1,6 +1,7 @@
 import { Link, Outlet } from "react-router-dom"
 import { Github, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/ThemeToggle"
 import { useState } from "react"
 
 export default function Layout() {
@@ -42,6 +43,8 @@ export default function Layout() {
             </div>
 
             <div className="flex items-center gap-4">
+              <ThemeToggle />
+              
               <a 
                 href="https://github.com/LittleLittleCloud/RazorConsole" 
                 target="_blank" 

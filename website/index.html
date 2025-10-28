@@ -5,6 +5,23 @@
     <link rel="icon" type="image/svg+xml" href="/razorconsole-icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RazorConsole - Build Rich Console Apps with Razor</title>
+    <script>
+      // Prevent flash of unstyled content by applying theme before React loads
+      (function() {
+        const theme = localStorage.getItem('theme') || 'system'
+        const root = document.documentElement
+        
+        if (theme === 'dark') {
+          root.classList.add('dark')
+        } else if (theme === 'light') {
+          root.classList.add('light')
+        } else {
+          // System theme
+          const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          root.classList.add(isDark ? 'dark' : 'light')
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
