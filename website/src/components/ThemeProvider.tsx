@@ -1,28 +1,24 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { create } from "zustand"
+import { useEffect } from "react"
 
 type Theme = "light" | "dark" | "system"
 
-type ThemeProviderProps = {
-    children: React.ReactNode
-    defaultTheme?: Theme
-}
-
-type ThemeProviderState = {
+type ThemeStore = {
     theme: Theme
     setTheme: (theme: Theme) => void
 }
 
-const ThemeProviderContext = createContext<ThemeProviderState | undefined>(
-    undefined
-)
+export const useTheme = create<ThemeStore>((set) => ({
+    theme: (localStorage.getItem("theme") as Theme) || "system",
+    setTheme: (theme: Theme) => {
+        localStorage.setItem("theme", theme)
+        set({ theme })
+    },
+}))
 
-export function ThemeProvider({
-    children,
-    defaultTheme = "system",
-}: ThemeProviderProps) {
-    const [theme, setThemeState] = useState<Theme>(
-        () => (localStorage.getItem("theme") as Theme) || defaultTheme
-    )
+// Hook to apply theme changes to the DOM
+export function useThemeEffect() {
+    const theme = useTheme((state) => state.theme)
 
     useEffect(() => {
         const root = window.document.documentElement
@@ -41,28 +37,4 @@ export function ThemeProvider({
 
         root.classList.add(theme)
     }, [theme])
-
-    const value = {
-        theme,
-        setTheme: (theme: Theme) => {
-            localStorage.setItem("theme", theme)
-            setThemeState(theme)
-        },
-    }
-
-    return (
-        <ThemeProviderContext.Provider value={value}>
-            {children}
-        </ThemeProviderContext.Provider>
-    )
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const useTheme = () => {
-    const context = useContext(ThemeProviderContext)
-
-    if (context === undefined)
-        throw new Error("useTheme must be used within a ThemeProvider")
-
-    return context
 }

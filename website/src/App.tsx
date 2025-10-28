@@ -5,8 +5,11 @@ import Docs from "@/pages/Docs"
 import QuickStart from "@/pages/QuickStart"
 import Components from "@/pages/Components"
 import Advanced from "@/pages/Advanced"
+import { useThemeEffect } from "@/components/ThemeProvider"
 
 function App() {
+  useThemeEffect()
+  
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>

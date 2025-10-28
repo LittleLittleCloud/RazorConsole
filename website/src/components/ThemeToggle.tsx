@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/ThemeProvider"
 
 export function ThemeToggle() {
-    const { theme, setTheme } = useTheme()
+    const theme = useTheme((state) => state.theme)
+    const setTheme = useTheme((state) => state.setTheme)
 
     const cycleTheme = () => {
         if (theme === "light") {
