@@ -70,7 +70,7 @@ function ComponentCard({ component }: { component: ComponentInfo }) {
           <TabsContent value="example">
             <div>
               <h4 className="font-semibold mb-2 text-sm">Usage Example</h4>
-              <pre className="bg-slate-900 text-slate-100 p-4 rounded-md overflow-x-auto text-sm">
+              <pre className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-4 rounded-md overflow-x-auto text-sm border border-slate-200 dark:border-slate-700">
                 <code>{component.example}</code>
               </pre>
             </div>

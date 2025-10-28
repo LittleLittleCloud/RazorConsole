@@ -79,7 +79,7 @@ export default function Home() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Code className="w-5 h-5 text-blue-600" />
+                <Code className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 Component-Based
               </CardTitle>
             </CardHeader>
@@ -93,7 +93,7 @@ export default function Home() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-violet-600" />
+                <Zap className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                 Interactive
               </CardTitle>
             </CardHeader>
@@ -107,7 +107,7 @@ export default function Home() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-green-600" />
+                <Package className="w-5 h-5 text-green-600 dark:text-green-400" />
                 15+ Built-in Components
               </CardTitle>
             </CardHeader>
@@ -157,13 +157,13 @@ export default function Home() {
               <a href="https://github.com/LittleLittleCloud/RazorConsole/tree/main/examples/LLMAgentTUI" 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 className="block hover:text-blue-600 transition-colors">
+                 className="block text-slate-700 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 transition-colors">
                 • LLM Agent TUI - Claude Code-inspired chat interface
               </a>
               <a href="https://github.com/LittleLittleCloud/RazorConsole/tree/main/src/RazorConsole.Gallery" 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 className="block hover:text-blue-600 transition-colors">
+                 className="block text-slate-700 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 transition-colors">
                 • Interactive Component Gallery
               </a>
             </CardContent>

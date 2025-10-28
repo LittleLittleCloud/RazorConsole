@@ -2,10 +2,12 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import {
-    docco
+    docco,
+    atomOneDark
 } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import remarkGfm from "remark-gfm";
 import { CopyButton } from "./CopyButton";
+import { useTheme } from "./ThemeProvider";
 
 interface MarkdownRendererProps {
   content: string;
@@ -17,6 +19,11 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   className = "",
 }) => {
   const remarkPlugins: any[] = [remarkGfm];
+  const theme = useTheme((state) => state.theme)
+  
+  // Determine if we should use dark theme for syntax highlighting
+  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+  const syntaxTheme = isDark ? atomOneDark : docco
 
   return (
     <div className={`markdown-renderer ${className}`}>
@@ -40,7 +47,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                   <SyntaxHighlighter
                     language={language || "text"}
                     PreTag="div"
-                    style={docco}
+                    style={syntaxTheme}
                     customStyle={{
                       margin: 0,
                       borderRadius: "0.5rem",
