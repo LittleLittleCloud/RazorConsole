@@ -20,7 +20,7 @@ export function ThemeProvider({
     children,
     defaultTheme = "system",
 }: ThemeProviderProps) {
-    const [theme, setTheme] = useState<Theme>(
+    const [theme, setThemeState] = useState<Theme>(
         () => (localStorage.getItem("theme") as Theme) || defaultTheme
     )
 
@@ -46,7 +46,7 @@ export function ThemeProvider({
         theme,
         setTheme: (theme: Theme) => {
             localStorage.setItem("theme", theme)
-            setTheme(theme)
+            setThemeState(theme)
         },
     }
 
