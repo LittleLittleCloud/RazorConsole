@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./assets/razor_console logo_dark_icon (128x128).svg" alt="RazorConsole Logo" width="128" height="128" />
+
 # 🚀 RazorConsole
 
 [![NuGet (Stable)](https://img.shields.io/nuget/v/RazorConsole.Core.svg?style=flat-square&logo=nuget&label=stable)](https://www.nuget.org/packages/RazorConsole.Core)
