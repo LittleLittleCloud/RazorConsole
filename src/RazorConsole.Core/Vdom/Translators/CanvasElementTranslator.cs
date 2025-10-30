@@ -1,4 +1,4 @@
-﻿using RazorConsole.Core.Rendering.ComponentMarkup;
+using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
