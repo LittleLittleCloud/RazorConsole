@@ -130,6 +130,7 @@ public sealed class VdomSpectreTranslator
             new NewlineElementTranslator(),
             new SpinnerElementTranslator(),
             new ButtonElementTranslator(),
+            new CanvasElementTranslator(),
             new HtmlButtonElementTranslator(),
             new SyntaxHighlighterElementTranslator(),
             new HtmlHeadingElementTranslator(),
