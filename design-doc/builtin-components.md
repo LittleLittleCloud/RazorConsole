@@ -77,7 +77,7 @@ SpectreCanvas component renders an array of pixels with different colors.
 | `CanvasWidth` ⚠️  | `int`                           | —       | Canvas width; Required.                                                                                            |
 | `CanvasHeight` ⚠️ | `int`                           | —       | Canvas height; Required.                                                                                           |
 | `MaxWidth`        | `int?`                          | `null`    | Max width of the canvas.                                                                                           |
-| `PixelWidth`      | `int`                           | `2`     | Number of rectangles, that will render as a pixel. One rectangle's width is half of square, so default value is 2. |
+| `PixelWidth`      | `int`                           | `2`     | Number of rectangles that will render as a pixel. One rectangle's width is half of square, so default value is 2. |
 | `Scale`           | `bool`                          | `false` | The value indicating whether or not to scale the canvas when rendering.                                            |
 
 ## Padder
