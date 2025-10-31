@@ -87,7 +87,7 @@ public sealed class CanvasElementTranslator : IVdomElementTranslator
         if (defaultValue.HasValue)
             return defaultValue.Value;
 
-        throw new Exception($"Could not find attribute {name}");
+        throw new InvalidOperationException($"Required canvas attribute '{name}' is missing or has an invalid value.");
     }
 
 
