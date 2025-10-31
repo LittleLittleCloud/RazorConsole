@@ -46,7 +46,7 @@
     private const int HeartH = 10;
     private (int x, int y, Color color)[] _pixelsChecker = new (int x, int y, Color color)[CheckerW * CheckerH];
     private readonly (int x, int y, Color color)[] _pixelsGradient = new (int x, int y, Color color)[GradientW * GradientH];
-    private (int x, int y, Color color)[] _pixelsHeart = new (int x, int y, Color color)[HeartW * HeartH];
+    private readonly (int x, int y, Color color)[] _pixelsHeart = new (int x, int y, Color color)[HeartW * HeartH];
 
     private string _sampleCode = $@"
 <SpectreCanvas Pixels=""@_pixelsHeart"" CanvasWidth=""{HeartW}"" CanvasHeight=""{HeartH}"" Scale=""true""/>
