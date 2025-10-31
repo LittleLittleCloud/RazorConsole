@@ -39,7 +39,7 @@
     private string ScaleAttribute => Scale ? "true" : "false";
 
     private readonly Guid _dataId = Guid.NewGuid();
-    private Guid _updateToken; // Token, that forces re-render when pixels array has changed
+    private Guid _updateToken; // Token that forces re-render when pixels array has changed
     private (int x, int y, Color color)[]? _lastPixelsReference;
 
     protected override void OnInitialized()
