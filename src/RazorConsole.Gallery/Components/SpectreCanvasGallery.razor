@@ -48,7 +48,7 @@
     private readonly (int x, int y, Color color)[] _pixelsGradient = new (int x, int y, Color color)[GradientW * GradientH];
     private readonly (int x, int y, Color color)[] _pixelsHeart = new (int x, int y, Color color)[HeartW * HeartH];
 
-    private string _sampleCode = $@"
+    private readonly string _sampleCode = $@"
 <SpectreCanvas Pixels=""@_pixelsHeart"" CanvasWidth=""{HeartW}"" CanvasHeight=""{HeartH}"" Scale=""true""/>
 <SpectreCanvas Pixels=""@_pixelsChecker"" CanvasWidth=""{CheckerW}"" CanvasHeight=""{CheckerH}"" Scale=""true""/>
 <SpectreCanvas Pixels=""@_pixelsGradient"" CanvasWidth=""{GradientW}"" CanvasHeight=""{GradientH}"" PixelWidth=""1"" Scale=""false""/>
