@@ -107,44 +107,44 @@ public sealed class MeasuredAlign : Renderable
             switch (Vertical)
             {
                 case VerticalAlignment.Top:
+                {
+                    var diff = height - lines.Count;
+                    for (var i = 0; i < diff; i++)
                     {
-                        var diff = height - lines.Count;
-                        for (var i = 0; i < diff; i++)
-                        {
-                            lines.Add(blank);
-                        }
-
-                        break;
+                        lines.Add(blank);
                     }
+
+                    break;
+                }
 
                 case VerticalAlignment.Middle:
+                {
+                    var top = (height - lines.Count) / 2;
+                    var bottom = height - top - lines.Count;
+
+                    for (var i = 0; i < top; i++)
                     {
-                        var top = (height - lines.Count) / 2;
-                        var bottom = height - top - lines.Count;
-
-                        for (var i = 0; i < top; i++)
-                        {
-                            lines.Insert(0, blank);
-                        }
-
-                        for (var i = 0; i < bottom; i++)
-                        {
-                            lines.Add(blank);
-                        }
-
-                        break;
+                        lines.Insert(0, blank);
                     }
+
+                    for (var i = 0; i < bottom; i++)
+                    {
+                        lines.Add(blank);
+                    }
+
+                    break;
+                }
 
                 case VerticalAlignment.Bottom:
+                {
+                    var diff = height - lines.Count;
+                    for (var i = 0; i < diff; i++)
                     {
-                        var diff = height - lines.Count;
-                        for (var i = 0; i < diff; i++)
-                        {
-                            lines.Insert(0, blank);
-                        }
-
-                        break;
+                        lines.Insert(0, blank);
                     }
+
+                    break;
+                }
 
                 default:
                     throw new NotSupportedException("Unknown vertical alignment");
@@ -172,35 +172,35 @@ public sealed class MeasuredAlign : Renderable
         switch (alignment)
         {
             case HorizontalAlignment.Left:
-                {
-                    var diff = maxWidth - width;
-                    segments.Add(Segment.Padding(diff));
-                    break;
-                }
+            {
+                var diff = maxWidth - width;
+                segments.Add(Segment.Padding(diff));
+                break;
+            }
 
             case HorizontalAlignment.Right:
-                {
-                    var diff = maxWidth - width;
-                    segments.Insert(0, Segment.Padding(diff));
-                    break;
-                }
+            {
+                var diff = maxWidth - width;
+                segments.Insert(0, Segment.Padding(diff));
+                break;
+            }
 
             case HorizontalAlignment.Center:
+            {
+                // Left side.
+                var diff = (maxWidth - width) / 2;
+                segments.Insert(0, Segment.Padding(diff));
+
+                // Right side
+                segments.Add(Segment.Padding(diff));
+                var remainder = (maxWidth - width) % 2;
+                if (remainder != 0)
                 {
-                    // Left side.
-                    var diff = (maxWidth - width) / 2;
-                    segments.Insert(0, Segment.Padding(diff));
-
-                    // Right side
-                    segments.Add(Segment.Padding(diff));
-                    var remainder = (maxWidth - width) % 2;
-                    if (remainder != 0)
-                    {
-                        segments.Add(Segment.Padding(remainder));
-                    }
-
-                    break;
+                    segments.Add(Segment.Padding(remainder));
                 }
+
+                break;
+            }
 
             default:
                 throw new NotSupportedException("Unknown alignment");
