@@ -47,7 +47,9 @@ public sealed class CanvasElementTranslator : IVdomElementTranslator
 
 
         if (maxWidth.HasValue)
+        {
             canvas.MaxWidth = maxWidth.Value;
+        }
 
         canvas.PixelWidth = pixelWidth;
 
@@ -61,7 +63,9 @@ public sealed class CanvasElementTranslator : IVdomElementTranslator
             var dataInDictionary = CanvasDataRegistry.TryGetData(dataId, out var pixels);
 
             if (!dataInDictionary)
+            {
                 return false;
+            }
 
             foreach (var p in pixels!)
 
@@ -71,7 +75,9 @@ public sealed class CanvasElementTranslator : IVdomElementTranslator
             }
         }
         else
+        {
             return false;
+        }
 
         renderable = canvas;
         return true;
@@ -82,10 +88,14 @@ public sealed class CanvasElementTranslator : IVdomElementTranslator
     {
         if (node.Attributes.TryGetValue(name, out var value)
             && int.TryParse(value, out var result))
+        {
             return result;
+        }
 
         if (defaultValue.HasValue)
+        {
             return defaultValue.Value;
+        }
 
         throw new InvalidOperationException($"Required canvas attribute '{name}' is missing or has an invalid value.");
     }
