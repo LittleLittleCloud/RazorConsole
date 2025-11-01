@@ -10,15 +10,15 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-slate-950/95 dark:supports-[backdrop-filter]:bg-slate-950/60">
+      <header className="sticky top-0 z-50 w-full border-b border-violet-500/80 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-slate-950/95 dark:supports-[backdrop-filter]:bg-slate-950/60">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">
               <Link to="/" className="flex items-center space-x-2">
-                <span className="text-2xl">🚀</span>
-                <span className="font-bold text-xl">RazorConsole</span>
+                <span className="font-bold text-xl bg-gradient-to-r from-blue-500/80 to-violet-500/80 dark:from-blue-600 dark:to-violet-600 bg-clip-text text-transparent">
+                  RazorConsole
+                </span>
               </Link>
-              
               {/* Desktop Navigation */}
               <nav className="hidden md:flex gap-6">
                 <Link 

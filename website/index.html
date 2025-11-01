@@ -6,21 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RazorConsole - Build Rich Console Apps with Razor</title>
     <script>
-      // Prevent flash of unstyled content by applying theme before React loads
-      (function() {
-        const theme = localStorage.getItem('theme') || 'system'
+    // Prevent FOUC: apply only "dark" class before React loads.
+    (function () {
+      try {
+        const theme = localStorage.getItem('theme') // "light" | "dark" | "system" | null
         const root = document.documentElement
-        
+
         if (theme === 'dark') {
           root.classList.add('dark')
         } else if (theme === 'light') {
-          root.classList.add('light')
+          // ensure no 'dark' class - doing nothing is fine if markup starts without it
+          root.classList.remove('dark')
         } else {
-          // System theme
-          const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-          root.classList.add(isDark ? 'dark' : 'light')
+          // system preference: add `dark` only if system is dark
+          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            root.classList.add('dark')
+          }
         }
-      })()
+      } catch (e) {
+        // ignore (e.g. localStorage not available)
+      }
+    })()
     </script>
   </head>
   <body>

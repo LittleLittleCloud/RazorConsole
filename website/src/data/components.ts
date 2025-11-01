@@ -450,5 +450,46 @@ export const components: ComponentInfo[] = [
     description: "Emits a single line break. No parameters.",
     category: "Utilities",
     example: `<Newline />`
+  },
+  {
+    name: "SpectreCanvas",
+    description: "Renders an array of pixels with different colors.",
+    category: "Display",
+    parameters: [
+      {
+        name: "Pixels",
+        type: "(int x, int y, Color color)[]",
+        description: "Array of (x, y, color) tuples. Required."
+      },
+      {
+        name: "CanvasWidth",
+        type: "int",
+        description: "Canvas width. Required."
+      },
+      {
+        name: "CanvasHeight",
+        type: "int",
+        description: "Canvas height. Required."
+      },
+      {
+        name: "MaxWidth",
+        type: "int?",
+        default: "null",
+        description: "Max width of the canvas."
+      },
+      {
+        name: "PixelWidth",
+        type: "int",
+        default: "2",
+        description: "Pixel width in characters. One character is half of the square so default value is 2."
+      },
+      {
+        name: "Scale",
+        type: "bool",
+        default: "false",
+        description: "The value indicating whether or not to scale the canvas when rendering."
+      }
+    ],
+    example: `<SpectreCanvas Pixels="new[] { (0, 0, Color.Red), (1, 0, Color.Green) }" CanvasWidth="10" CanvasHeight="10" />`
   }
 ]

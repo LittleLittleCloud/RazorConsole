@@ -4,6 +4,7 @@ import { Package, Zap, Code, Github, Terminal, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { MarkdownRenderer } from "@/components/Markdown"
+import ConsoleTitle from "@/components/ConsoleTitle"
 
 export default function Home() {
   const quickStartSnippets = useMemo(
@@ -46,9 +47,7 @@ export default function Home() {
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
-            🚀 RazorConsole
-          </h1>
+          <ConsoleTitle/> 
           <p className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
             Build rich, interactive console applications using familiar Razor syntax and the power of Spectre.Console
           </p>

@@ -1,4 +1,9 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  #root {
+    @apply min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-slate-50;
+  }
+}
