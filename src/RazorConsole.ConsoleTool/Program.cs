@@ -35,6 +35,7 @@ try
 {
     table.AddRow("CursorLeft", Console.CursorLeft.ToString());
     table.AddRow("CursorTop", Console.CursorTop.ToString());
+    // CursorVisible is only supported on Windows
     if (OperatingSystem.IsWindows())
     {
         table.AddRow("CursorVisible", Console.CursorVisible.ToString());
