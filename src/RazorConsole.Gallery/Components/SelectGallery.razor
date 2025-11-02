@@ -6,7 +6,7 @@
     <Markup Content="Select shows a focusable dropdown with keyboard navigation, callbacks for changes, and styling hooks for each option." Foreground="@Color.Grey70" />
     <Markup Content="Source Code: Select.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
     <Newline />
-    <Panel Title="Code" Border="BoxBorder.Rounded" Expand="true">
+    <Panel Title="Razor Component Syntax" Border="BoxBorder.Rounded" Expand="true">
         <SyntaxHighlighter Language="razor"
                            Code="@_exampleCode"
                            ShowLineNumbers="true" />
@@ -22,6 +22,24 @@
                     Decoration="@Decoration.Bold" />
         </Rows>
     </Panel>
+    <Newline />
+    <Markup Content="HTML Select Tag Support" Foreground="@Color.Yellow" Decoration="@Decoration.Bold" />
+    <Markup Content="You can also use standard HTML select tags which are automatically translated to the appropriate renderable." Foreground="@Color.Grey70" />
+    <Newline />
+    <Panel Title="HTML Syntax" Border="BoxBorder.Rounded" Expand="true">
+        <SyntaxHighlighter Language="html"
+                           Code="@_htmlExampleCode"
+                           ShowLineNumbers="true" />
+    </Panel>
+    <Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
+        <select data-expand="true" placeholder="Choose a language" value="csharp" data-border-color="dodgerblue2">
+            <option value="csharp">C#</option>
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="typescript">TypeScript</option>
+            <option value="rust">Rust</option>
+        </select>
+    </Panel>
 </Rows>
 
 @code {
@@ -34,6 +52,17 @@
            Foreground=""Color.Chartreuse1""
            Decoration=""Decoration.Bold"" />
 </Rows>".Trim();
+
+    private static readonly string _htmlExampleCode = @"<select data-expand=""true"" 
+        placeholder=""Choose a language"" 
+        value=""csharp""
+        data-border-color=""dodgerblue2"">
+    <option value=""csharp"">C#</option>
+    <option value=""python"">Python</option>
+    <option value=""javascript"">JavaScript</option>
+    <option value=""typescript"">TypeScript</option>
+    <option value=""rust"">Rust</option>
+</select>".Trim();
 
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Select.razor";
 }
