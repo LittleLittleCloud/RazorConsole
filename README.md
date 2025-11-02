@@ -29,6 +29,25 @@ RazorConsole bridges the gap between modern web UI development and console appli
 dotnet add package RazorConsole.Core
 ```
 
+### Console Information Tool
+
+For debugging console-related issues, install the `razorconsole-info` diagnostic tool:
+
+```bash
+dotnet tool install --global RazorConsole.ConsoleTool
+```
+
+Run the tool to display comprehensive console information:
+
+```bash
+razorconsole-info
+```
+
+This tool helps diagnose issues by showing:
+- System.Console properties (dimensions, redirection, encoding)
+- Spectre.Console capabilities (colors, ANSI, Unicode support)
+- Environment information (OS, .NET version, terminal type)
+
 ## 🚀 Usage
 
 ### Project Setup
