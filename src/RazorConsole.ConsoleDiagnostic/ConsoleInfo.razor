@@ -1,0 +1,215 @@
+@namespace RazorConsole.ConsoleDiagnostic
+
+@using Microsoft.AspNetCore.Components
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Figlet Content="RazorConsole" />
+<Markup Content="Console Information Tool" Foreground="@Color.Yellow" Decoration="@Decoration.Bold" />
+<Newline />
+
+<table data-border="rounded" data-expand="true">
+    <thead>
+        <tr>
+            <th>Property</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><Markup Content="== System.Console Properties ==" Foreground="@Color.Cyan1" /></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>IsInputRedirected</td>
+            <td>@Console.IsInputRedirected.ToString()</td>
+        </tr>
+        <tr>
+            <td>IsOutputRedirected</td>
+            <td>@Console.IsOutputRedirected.ToString()</td>
+        </tr>
+        <tr>
+            <td>IsErrorRedirected</td>
+            <td>@Console.IsErrorRedirected.ToString()</td>
+        </tr>
+        @if (_bufferInfo != null)
+        {
+            <tr>
+                <td>BufferHeight</td>
+                <td>@_bufferInfo.BufferHeight.ToString()</td>
+            </tr>
+            <tr>
+                <td>BufferWidth</td>
+                <td>@_bufferInfo.BufferWidth.ToString()</td>
+            </tr>
+            <tr>
+                <td>WindowHeight</td>
+                <td>@_bufferInfo.WindowHeight.ToString()</td>
+            </tr>
+            <tr>
+                <td>WindowWidth</td>
+                <td>@_bufferInfo.WindowWidth.ToString()</td>
+            </tr>
+        }
+        else if (_bufferError != null)
+        {
+            <tr>
+                <td>Window/Buffer Size</td>
+                <td><Markup Content="@_bufferError" Foreground="@Color.Red" /></td>
+            </tr>
+        }
+        @if (_cursorInfo != null)
+        {
+            <tr>
+                <td>CursorLeft</td>
+                <td>@_cursorInfo.CursorLeft.ToString()</td>
+            </tr>
+            <tr>
+                <td>CursorTop</td>
+                <td>@_cursorInfo.CursorTop.ToString()</td>
+            </tr>
+            @if (OperatingSystem.IsWindows())
+            {
+                <tr>
+                    <td>CursorVisible</td>
+                    <td>@_cursorInfo.CursorVisible.ToString()</td>
+                </tr>
+            }
+        }
+        else if (_cursorError != null)
+        {
+            <tr>
+                <td>Cursor Information</td>
+                <td><Markup Content="@_cursorError" Foreground="@Color.Red" /></td>
+            </tr>
+        }
+        <tr>
+            <td>OutputEncoding</td>
+            <td>@Console.OutputEncoding.EncodingName</td>
+        </tr>
+        <tr>
+            <td>InputEncoding</td>
+            <td>@Console.InputEncoding.EncodingName</td>
+        </tr>
+        <tr>
+            <td><Markup Content="== Spectre.Console Capabilities ==" Foreground="@Color.Cyan1" /></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>ColorSystem</td>
+            <td>@AnsiConsole.Profile.Capabilities.ColorSystem.ToString()</td>
+        </tr>
+        <tr>
+            <td>Ansi</td>
+            <td>@AnsiConsole.Profile.Capabilities.Ansi.ToString()</td>
+        </tr>
+        <tr>
+            <td>Links</td>
+            <td>@AnsiConsole.Profile.Capabilities.Links.ToString()</td>
+        </tr>
+        <tr>
+            <td>Legacy</td>
+            <td>@AnsiConsole.Profile.Capabilities.Legacy.ToString()</td>
+        </tr>
+        <tr>
+            <td>Interactive</td>
+            <td>@AnsiConsole.Profile.Capabilities.Interactive.ToString()</td>
+        </tr>
+        <tr>
+            <td>Unicode</td>
+            <td>@AnsiConsole.Profile.Capabilities.Unicode.ToString()</td>
+        </tr>
+        <tr>
+            <td><Markup Content="== Environment Information ==" Foreground="@Color.Cyan1" /></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Operating System</td>
+            <td>@Environment.OSVersion.ToString()</td>
+        </tr>
+        <tr>
+            <td>Platform</td>
+            <td>@Environment.OSVersion.Platform.ToString()</td>
+        </tr>
+        <tr>
+            <td>.NET Version</td>
+            <td>@Environment.Version.ToString()</td>
+        </tr>
+        <tr>
+            <td>TERM</td>
+            <td><Markup Content="@(Environment.GetEnvironmentVariable("TERM") ?? "Not set")" Foreground="@(Environment.GetEnvironmentVariable("TERM") == null ? Color.Grey : Color.White)" /></td>
+        </tr>
+        <tr>
+            <td>TERM_PROGRAM</td>
+            <td><Markup Content="@(Environment.GetEnvironmentVariable("TERM_PROGRAM") ?? "Not set")" Foreground="@(Environment.GetEnvironmentVariable("TERM_PROGRAM") == null ? Color.Grey : Color.White)" /></td>
+        </tr>
+        <tr>
+            <td>COLORTERM</td>
+            <td><Markup Content="@(Environment.GetEnvironmentVariable("COLORTERM") ?? "Not set")" Foreground="@(Environment.GetEnvironmentVariable("COLORTERM") == null ? Color.Grey : Color.White)" /></td>
+        </tr>
+        <tr>
+            <td>TERMINAL_EMULATOR</td>
+            <td><Markup Content="@(Environment.GetEnvironmentVariable("TERMINAL_EMULATOR") ?? "Not set")" Foreground="@(Environment.GetEnvironmentVariable("TERMINAL_EMULATOR") == null ? Color.Grey : Color.White)" /></td>
+        </tr>
+    </tbody>
+</table>
+
+<Newline />
+<Markup Content="This information can help diagnose console-related issues." Foreground="@Color.Grey" />
+
+@code {
+    private BufferInfo? _bufferInfo;
+    private string? _bufferError;
+    private CursorInfo? _cursorInfo;
+    private string? _cursorError;
+
+    protected override void OnInitialized()
+    {
+        // Try to get buffer info
+        try
+        {
+            _bufferInfo = new BufferInfo
+            {
+                BufferHeight = Console.BufferHeight,
+                BufferWidth = Console.BufferWidth,
+                WindowHeight = Console.WindowHeight,
+                WindowWidth = Console.WindowWidth
+            };
+        }
+        catch (Exception ex)
+        {
+            _bufferError = $"Error: {ex.Message}";
+        }
+
+        // Try to get cursor info
+        try
+        {
+            _cursorInfo = new CursorInfo
+            {
+                CursorLeft = Console.CursorLeft,
+                CursorTop = Console.CursorTop,
+                // CursorVisible is only supported on Windows
+                CursorVisible = OperatingSystem.IsWindows() ? Console.CursorVisible : false
+            };
+        }
+        catch (Exception ex)
+        {
+            _cursorError = $"Error: {ex.Message}";
+        }
+    }
+
+    private class BufferInfo
+    {
+        public int BufferHeight { get; set; }
+        public int BufferWidth { get; set; }
+        public int WindowHeight { get; set; }
+        public int WindowWidth { get; set; }
+    }
+
+    private class CursorInfo
+    {
+        public int CursorLeft { get; set; }
+        public int CursorTop { get; set; }
+        public bool CursorVisible { get; set; }
+    }
+}
