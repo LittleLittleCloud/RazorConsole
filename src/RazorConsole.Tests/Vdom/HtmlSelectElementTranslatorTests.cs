@@ -1,3 +1,7 @@
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using RazorConsole.Core.Rendering.Vdom;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
@@ -220,6 +224,29 @@ public class HtmlSelectElementTranslatorTests
 
         Assert.True(success);
         Assert.IsType<Panel>(renderable);
+    }
+
+    [Fact]
+    public async Task HtmlSelectDemo_RendersSuccessfully()
+    {
+        // This test demonstrates that HTML select tags can be used in Razor components
+        // and are properly translated to Spectre.Console renderables
+        using var services = new ServiceCollection().BuildServiceProvider();
+        using var renderer = TestHelpers.CreateTestRenderer(services);
+
+        var snapshot = await renderer.MountComponentAsync<HtmlSelectDemoComponent>(ParameterView.Empty, CancellationToken.None);
+
+        var root = Assert.IsType<VNode>(snapshot.Root);
+        Assert.Equal("select", root.TagName);
+        Assert.Equal(4, root.Children.Count); // 4 option elements
+
+        // Verify it can be translated to a renderable
+        var translator = new VdomSpectreTranslator();
+        var success = translator.TryTranslate(root, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.IsType<Panel>(renderable);
+        Assert.Empty(animations);
     }
 
     private static VNode Element(string tagName, Action<VNode>? configure = null)
