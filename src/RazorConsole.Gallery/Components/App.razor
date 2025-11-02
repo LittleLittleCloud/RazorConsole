@@ -110,6 +110,9 @@
             case "markdown":
                 <MarkdownGallery />
                 break;
+            case "consoleinfo":
+                <ConsoleInfoGallery />
+                break;
         }
 			</Padder>
     </Grid>
@@ -139,6 +142,7 @@
         ("spinner", "Spinner"),
         ("textbutton", "Text Button"),
         ("textinput", "Text Input"),
+        ("consoleinfo", "Console Info"),
     };
 
     private string _activeTab = "align";
