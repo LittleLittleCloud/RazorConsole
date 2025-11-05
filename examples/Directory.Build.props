@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+</Project>

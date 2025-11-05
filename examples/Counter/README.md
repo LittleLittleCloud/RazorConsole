@@ -1,5 +1,7 @@
 # Counter Example
 
+![alt text](../../assets/counter.png)
+
 A simple counter application demonstrating the basics of RazorConsole. This example shows how to:
 
 - Create interactive buttons with focus management
