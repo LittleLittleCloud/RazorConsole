@@ -14,6 +14,73 @@ This example showcases:
 - **Success feedback** with green panels and welcome message
 - **State management** for login/logout flow
 
+## Visual Preview
+
+The login form displays:
+
+```
+ _                _         ____            _        _ 
+| |    ___   __ _(_)_ __   |  _ \ ___  _ __| |_ __ _| |
+| |   / _ \ / _` | | '_ \  | |_) / _ \| '__| __/ _` | |
+| |__| (_) | (_| | | | | | |  __/ (_) | |  | || (_| | |
+|_____\___/ \__, |_|_| |_| |_|   \___/|_|   \__\__,_|_|
+            |___/                                       
+
+╭─ User Login ─────────────────────────────────╮
+│                                              │
+│  ╭──────────────────────────────────────╮   │
+│  │ Username  [Enter your username]      │   │
+│  ╰──────────────────────────────────────╯   │
+│                                              │
+│  ╭──────────────────────────────────────╮   │
+│  │ Password  [Enter your password]      │   │
+│  ╰──────────────────────────────────────╯   │
+│                                              │
+│  [ Login ]  [ Clear ]                        │
+│                                              │
+╰──────────────────────────────────────────────╯
+
+Press Tab to change focus • Press Enter to submit • Press Ctrl+C to exit
+```
+
+When validation fails (e.g., empty username):
+
+```
+╭─ User Login ─────────────────────────────────╮
+│                                              │
+│  ╭─────────────────────────────────────╮    │
+│  │ ⚠ Username cannot be empty          │    │
+│  ╰─────────────────────────────────────╯    │
+│                                              │
+│  ╭──────────────────────────────────────╮   │ ← Red border
+│  │ Username  [Enter your username]      │   │
+│  ╰──────────────────────────────────────╯   │
+│  ⚠ Username is required                      │
+│                                              │
+│  ╭──────────────────────────────────────╮   │
+│  │ Password  [••••••••]                 │   │
+│  ╰──────────────────────────────────────╯   │
+│                                              │
+│  [ Login ]  [ Clear ]                        │
+│                                              │
+╰──────────────────────────────────────────────╯
+```
+
+After successful login:
+
+```
+╭─ User Login ─────────────────────────────────╮
+│                                              │
+│  ╭─────────────────────────────────────╮    │
+│  │ ✓ Login Successful!                 │    │ ← Green border
+│  │ Welcome, alice!                     │    │
+│  ╰─────────────────────────────────────╯    │
+│                                              │
+│  [ Logout ]                                  │
+│                                              │
+╰──────────────────────────────────────────────╯
+```
+
 ## Validation Rules
 
 - Username must be at least 3 characters
