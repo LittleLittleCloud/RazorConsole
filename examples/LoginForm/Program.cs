@@ -1,0 +1,10 @@
+using LoginForm.Components;
+using Microsoft.Extensions.Hosting;
+using RazorConsole.Core;
+
+var builder = Host.CreateDefaultBuilder(args)
+    .UseRazorConsole<LoginForm.Components.LoginForm>();
+
+var host = builder.Build();
+
+await host.RunAsync();
