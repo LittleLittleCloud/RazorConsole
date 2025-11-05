@@ -242,6 +242,16 @@ After installation, run `razorconsole-gallery` to open the showcase and browse c
 
 Check out the [`examples/`](examples/) folder for complete sample applications that demonstrate RazorConsole in action:
 
+### Counter
+
+A simple counter application that demonstrates the basics of RazorConsole:
+- Interactive buttons with keyboard navigation
+- State management and event handling
+- Layout with Rows, Columns, and Panels
+- Styled text with Markup and Figlet components
+
+Perfect for getting started with RazorConsole. See [`examples/Counter/`](examples/Counter/) for the complete implementation.
+
 ### LLM Agent TUI
 
 A Claude Code-inspired chat interface that demonstrates:
