@@ -1,7 +1,5 @@
 # File Explorer Example
 
-![File Explorer](../../assets/file-explorer.png)
-
 A local file explorer application demonstrating how to build an interactive file browser in the console. This example shows how to:
 
 - Browse directories and navigate the file system

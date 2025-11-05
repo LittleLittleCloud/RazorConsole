@@ -201,7 +201,6 @@
     private void NavigateToDirectory(string path)
     {
         LoadDirectory(path);
-        StateHasChanged();
     }
 
     private void NavigateToParent()
@@ -209,7 +208,6 @@
         if (!string.IsNullOrEmpty(_parentPath))
         {
             LoadDirectory(_parentPath);
-            StateHasChanged();
         }
     }
 
@@ -222,7 +220,6 @@
             _selectedFileSize = FormatFileSize(fileInfo.Length);
             _selectedFileModified = fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss");
             _selectedFileExtension = string.IsNullOrEmpty(fileInfo.Extension) ? "None" : fileInfo.Extension;
-            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -230,7 +227,6 @@
             _selectedFileSize = "-";
             _selectedFileModified = "-";
             _selectedFileExtension = "-";
-            StateHasChanged();
         }
     }
 
