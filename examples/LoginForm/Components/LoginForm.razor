@@ -56,11 +56,17 @@
                        FocusedBorderColor="@(_passwordError ? Color.Red : Color.MediumOrchid)"
                        BorderColor="@(_passwordError ? Color.Red3 : Color.Grey37)"
                        BorderPadding="@_inputPadding"
-                       Expand="true" />
+                       Expand="true"
+                       OnFocused="OnPasswordFocused"
+                       OnBlurred="OnPasswordBlurred" />
 
             @if (_passwordError)
             {
                 <Markup Content="⚠ Password is required" Foreground="@Color.Red" Decoration="@Decoration.Italic" />
+            }
+            else if (_showPasswordHint)
+            {
+                <Markup Content="💡 Password must be at least 6 characters" Foreground="@Color.Grey70" Decoration="@Decoration.Italic" />
             }
 
             <Newline />
@@ -91,10 +97,14 @@
     private bool _usernameError = false;
     private bool _passwordError = false;
     private bool _isLoggedIn = false;
+    private bool _showPasswordHint = false;
 
     // Simple validation: username must be at least 3 characters, password at least 6
     private const int MinUsernameLength = 3;
     private const int MinPasswordLength = 6;
+
+    [Inject]
+    private FocusManager FocusManager { get; set; } = null!;
 
     private Task OnUsernameChanged(string? value)
     {
@@ -110,6 +120,20 @@
         _password = value ?? string.Empty;
         _passwordError = false;
         _errorMessage = string.Empty;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnPasswordFocused()
+    {
+        _showPasswordHint = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnPasswordBlurred()
+    {
+        _showPasswordHint = false;
         StateHasChanged();
         return Task.CompletedTask;
     }
