@@ -13,7 +13,7 @@ namespace RazorConsole.Tests.Vdom;
 public class HtmlSelectElementTranslatorTests
 {
     [Fact]
-    public void TryTranslate_SelectWithOptions_ReturnsPanel()
+    public void TryTranslate_SelectWithOptions_ReturnsRows()
     {
         var node = Element("select", select =>
         {
@@ -34,12 +34,12 @@ public class HtmlSelectElementTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
         Assert.True(success);
-        Assert.IsType<Panel>(renderable);
+        Assert.IsType<Rows>(renderable);
         Assert.Empty(animations);
     }
 
     [Fact]
-    public void TryTranslate_SelectWithSelectedValue_DisplaysSelectedOption()
+    public void TryTranslate_SelectWithSelectedValue_DisplaysAllOptionsWithSelectedMarked()
     {
         var node = Element("select", select =>
         {
@@ -61,16 +61,15 @@ public class HtmlSelectElementTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
         Assert.True(success);
-        var panel = Assert.IsType<Panel>(renderable);
-        Assert.NotNull(panel);
+        var rows = Assert.IsType<Rows>(renderable);
+        Assert.NotNull(rows);
     }
 
     [Fact]
-    public void TryTranslate_SelectWithoutValue_DisplaysPlaceholder()
+    public void TryTranslate_SelectWithoutValue_DisplaysAllOptions()
     {
         var node = Element("select", select =>
         {
-            select.SetAttribute("placeholder", "Choose an option");
             select.AddChild(Element("option", option =>
             {
                 option.SetAttribute("value", "opt1");
@@ -83,73 +82,7 @@ public class HtmlSelectElementTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
         Assert.True(success);
-        Assert.IsType<Panel>(renderable);
-    }
-
-    [Fact]
-    public void TryTranslate_SelectWithExpand_SetsPanelExpand()
-    {
-        var node = Element("select", select =>
-        {
-            select.SetAttribute("data-expand", "true");
-            select.AddChild(Element("option", option =>
-            {
-                option.SetAttribute("value", "opt1");
-                option.AddChild(Text("Option 1"));
-            }));
-        });
-
-        var translator = new VdomSpectreTranslator();
-
-        var success = translator.TryTranslate(node, out var renderable, out var animations);
-
-        Assert.True(success);
-        var panel = Assert.IsType<Panel>(renderable);
-        Assert.True(panel.Expand);
-    }
-
-    [Fact]
-    public void TryTranslate_SelectWithCustomBorderStyle_UsesBorderStyle()
-    {
-        var node = Element("select", select =>
-        {
-            select.SetAttribute("data-border-style", "double");
-            select.AddChild(Element("option", option =>
-            {
-                option.SetAttribute("value", "opt1");
-                option.AddChild(Text("Option 1"));
-            }));
-        });
-
-        var translator = new VdomSpectreTranslator();
-
-        var success = translator.TryTranslate(node, out var renderable, out var animations);
-
-        Assert.True(success);
-        var panel = Assert.IsType<Panel>(renderable);
-        Assert.Equal(BoxBorder.Double, panel.Border);
-    }
-
-    [Fact]
-    public void TryTranslate_SelectWithDisabled_UsesDisabledBorderColor()
-    {
-        var node = Element("select", select =>
-        {
-            select.SetAttribute("disabled", "");
-            select.SetAttribute("data-disabled-border-color", "grey19");
-            select.AddChild(Element("option", option =>
-            {
-                option.SetAttribute("value", "opt1");
-                option.AddChild(Text("Option 1"));
-            }));
-        });
-
-        var translator = new VdomSpectreTranslator();
-
-        var success = translator.TryTranslate(node, out var renderable, out var animations);
-
-        Assert.True(success);
-        Assert.IsType<Panel>(renderable);
+        Assert.IsType<Rows>(renderable);
     }
 
     [Fact]
@@ -169,7 +102,7 @@ public class HtmlSelectElementTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
         Assert.True(success);
-        Assert.IsType<Panel>(renderable);
+        Assert.IsType<Rows>(renderable);
     }
 
     [Fact]
@@ -189,7 +122,7 @@ public class HtmlSelectElementTranslatorTests
     }
 
     [Fact]
-    public void TryTranslate_EmptySelect_ReturnsPanel()
+    public void TryTranslate_EmptySelect_ReturnsRowsWithEmptyMessage()
     {
         var node = Element("select", select =>
         {
@@ -201,21 +134,17 @@ public class HtmlSelectElementTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
         Assert.True(success);
-        Assert.IsType<Panel>(renderable);
+        Assert.IsType<Rows>(renderable);
         Assert.Empty(animations);
     }
 
     [Fact]
-    public void TryTranslate_SelectWithCustomPlaceholder_UsesCustomPlaceholder()
+    public void TryTranslate_SelectWithCustomEmptyLabel_UsesCustomLabel()
     {
         var node = Element("select", select =>
         {
-            select.SetAttribute("placeholder", "Pick one");
-            select.AddChild(Element("option", option =>
-            {
-                option.SetAttribute("value", "opt1");
-                option.AddChild(Text("Option 1"));
-            }));
+            select.SetAttribute("data-empty-label", "Nothing here");
+            // No options
         });
 
         var translator = new VdomSpectreTranslator();
@@ -223,7 +152,7 @@ public class HtmlSelectElementTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
         Assert.True(success);
-        Assert.IsType<Panel>(renderable);
+        Assert.IsType<Rows>(renderable);
     }
 
     [Fact]
@@ -245,7 +174,7 @@ public class HtmlSelectElementTranslatorTests
         var success = translator.TryTranslate(root, out var renderable, out var animations);
 
         Assert.True(success);
-        Assert.IsType<Panel>(renderable);
+        Assert.IsType<Rows>(renderable);
         Assert.Empty(animations);
     }
 

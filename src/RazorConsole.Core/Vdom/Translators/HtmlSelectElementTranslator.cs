@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
@@ -23,68 +24,44 @@ public sealed class HtmlSelectElementTranslator : IVdomElementTranslator
 
         var options = ExtractOptions(node);
         var selectedValue = VdomSpectreTranslator.GetAttribute(node, "value");
-        var placeholder = VdomSpectreTranslator.GetAttribute(node, "placeholder") ?? "Select an option";
-        var disabled = node.Attributes.ContainsKey("disabled");
-        var expand = VdomSpectreTranslator.TryGetBoolAttribute(node, "data-expand", out var expandValue) && expandValue;
 
-        // Determine display value and style
-        string displayValue;
-        string displayStyle;
+        // Build rows with all options displayed
+        var optionRenderables = new List<IRenderable>();
 
-        if (!string.IsNullOrEmpty(selectedValue) && options.Any(o => string.Equals(o.Value, selectedValue, StringComparison.Ordinal)))
+        if (options.Count == 0)
         {
-            var selectedOption = options.First(o => string.Equals(o.Value, selectedValue, StringComparison.Ordinal));
-            displayValue = selectedOption.Label;
-            var colorAttr = VdomSpectreTranslator.GetAttribute(node, "data-value-color");
-            displayStyle = !string.IsNullOrWhiteSpace(colorAttr) ? colorAttr : "white";
+            // Show empty state
+            var emptyText = VdomSpectreTranslator.GetAttribute(node, "data-empty-label") ?? "No options available";
+            var emptyStyle = VdomSpectreTranslator.GetAttribute(node, "data-empty-color") ?? "grey70";
+            var emptyMarkup = ComponentMarkupUtilities.CreateStyledMarkup($"{emptyStyle} italic", emptyText, requiresEscape: true);
+            optionRenderables.Add(new Markup(emptyMarkup));
         }
         else
         {
-            displayValue = placeholder;
-            var colorAttr = VdomSpectreTranslator.GetAttribute(node, "data-placeholder-color");
-            var baseColor = !string.IsNullOrWhiteSpace(colorAttr) ? colorAttr : "grey70";
-            displayStyle = $"{baseColor} italic dim";
-        }
-
-        // Build the display markup
-        var markupText = ComponentMarkupUtilities.CreateStyledMarkup(displayStyle, displayValue, requiresEscape: true);
-
-        // Determine border color
-        var borderColorAttr = disabled
-            ? VdomSpectreTranslator.GetAttribute(node, "data-disabled-border-color") ?? "grey19"
-            : VdomSpectreTranslator.GetAttribute(node, "data-border-color") ?? "grey37";
-
-        // Determine border style
-        var borderStyleAttr = VdomSpectreTranslator.GetAttribute(node, "data-border-style");
-        var borderStyle = ResolveBorderStyle(borderStyleAttr);
-
-        // Create panel
-        var panel = new Panel(new Markup(markupText))
-        {
-            Border = borderStyle,
-            Padding = new Padding(0, 0, 0, 0),
-        };
-
-        // Apply border color
-        if (!string.IsNullOrWhiteSpace(borderColorAttr))
-        {
-            try
+            foreach (var option in options)
             {
-                var style = Style.Parse(borderColorAttr);
-                panel.BorderStyle(style);
-            }
-            catch (Exception)
-            {
-                // Ignore invalid style specifications
+                var isSelected = !string.IsNullOrEmpty(selectedValue) &&
+                                string.Equals(option.Value, selectedValue, StringComparison.Ordinal);
+
+                // Determine indicator and style
+                var indicator = isSelected ? "> " : "  ";
+                var optionStyle = isSelected
+                    ? VdomSpectreTranslator.GetAttribute(node, "data-selected-color") ?? "chartreuse1"
+                    : VdomSpectreTranslator.GetAttribute(node, "data-option-color") ?? "white";
+
+                if (isSelected)
+                {
+                    optionStyle = $"{optionStyle} bold";
+                }
+
+                var optionText = $"{indicator}{option.Label}";
+                var optionMarkup = ComponentMarkupUtilities.CreateStyledMarkup(optionStyle, optionText, requiresEscape: true);
+                optionRenderables.Add(new Markup(optionMarkup));
             }
         }
 
-        if (expand)
-        {
-            panel = panel.Expand();
-        }
-
-        renderable = panel;
+        // Create a Rows renderable with all options
+        renderable = new Rows(optionRenderables);
         return true;
     }
 
@@ -108,25 +85,6 @@ public sealed class HtmlSelectElementTranslator : IVdomElementTranslator
         }
 
         return options;
-    }
-
-    private static BoxBorder ResolveBorderStyle(string? borderStyleAttr)
-    {
-        if (string.IsNullOrWhiteSpace(borderStyleAttr))
-        {
-            return BoxBorder.Rounded;
-        }
-
-        return borderStyleAttr.ToLowerInvariant() switch
-        {
-            "none" => BoxBorder.None,
-            "square" => BoxBorder.Square,
-            "rounded" => BoxBorder.Rounded,
-            "heavy" => BoxBorder.Heavy,
-            "double" => BoxBorder.Double,
-            "ascii" => BoxBorder.Ascii,
-            _ => BoxBorder.Rounded,
-        };
     }
 
     private readonly struct SelectOption

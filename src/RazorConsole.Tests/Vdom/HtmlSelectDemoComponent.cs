@@ -12,8 +12,7 @@ public class HtmlSelectDemoComponent : ComponentBase
     {
         // Basic select with options
         builder.OpenElement(0, "select");
-        builder.AddAttribute(1, "placeholder", "Choose a framework");
-        builder.AddAttribute(2, "data-expand", "true");
+        builder.AddAttribute(1, "value", "blazor");
 
         builder.OpenElement(3, "option");
         builder.AddAttribute(4, "value", "react");

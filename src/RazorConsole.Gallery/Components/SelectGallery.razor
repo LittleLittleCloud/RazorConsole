@@ -24,7 +24,7 @@
     </Panel>
     <Newline />
     <Markup Content="HTML Select Tag Support" Foreground="@Color.Yellow" Decoration="@Decoration.Bold" />
-    <Markup Content="You can also use standard HTML select tags which are automatically translated to the appropriate renderable." Foreground="@Color.Grey70" />
+    <Markup Content="HTML select tags display all options at once with the selected option marked with '>'." Foreground="@Color.Grey70" />
     <Newline />
     <Panel Title="HTML Syntax" Border="BoxBorder.Rounded" Expand="true">
         <SyntaxHighlighter Language="html"
@@ -32,7 +32,7 @@
                            ShowLineNumbers="true" />
     </Panel>
     <Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
-        <select data-expand="true" placeholder="Choose a language" value="csharp" data-border-color="dodgerblue2">
+        <select value="csharp">
             <option value="csharp">C#</option>
             <option value="python">Python</option>
             <option value="javascript">JavaScript</option>
@@ -53,10 +53,7 @@
            Decoration=""Decoration.Bold"" />
 </Rows>".Trim();
 
-    private static readonly string _htmlExampleCode = @"<select data-expand=""true"" 
-        placeholder=""Choose a language"" 
-        value=""csharp""
-        data-border-color=""dodgerblue2"">
+    private static readonly string _htmlExampleCode = @"<select value=""csharp"">
     <option value=""csharp"">C#</option>
     <option value=""python"">Python</option>
     <option value=""javascript"">JavaScript</option>
