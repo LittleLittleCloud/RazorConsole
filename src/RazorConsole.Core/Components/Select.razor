@@ -14,49 +14,29 @@
      @onfocusout="OnFocusOut"
      @onclick="ToggleDropdownAsync"
      @onkeydown="OnKeyDown">
-    <Panel BorderColor="@_inputBorderColor" Border="@BorderStyle" Expand="@Expand">
-        <Columns>
-            <Markup Content="@DisplayValue"
-                    Foreground="@DisplayForeground"
-                    Decoration="@DisplayDecoration" />
-        </Columns>
-    </Panel>
-</div>
-
-
-@if (_isOpen)
-{
-    <Rows>
-        @if (Options.Length == 0)
+    <Rows Expand="@Expand">
+        @foreach (var option in Options)
         {
-                <Markup Content="@EmptyLabel"
-                        Foreground="@EmptyForeground"
-                        Decoration="@EmptyDecoration" />
-        }
-        else
-        {
-            @foreach (var option in Options)
-            {
-                var isHighlighted = string.Equals(option, _highlightedValue, StringComparison.Ordinal);
-                var indicator = isHighlighted ? ">" : " ";
-                    <Columns>
-                        <Markup Content="@($" {indicator}")" />
-                        <Markup Content="@option"
-                                Foreground="@(isHighlighted ? SelectedOptionForeground : OptionForeground)"
-                                Decoration="@(isHighlighted ? SelectedOptionDecoration : OptionDecoration)" />
-                    </Columns>
-            }
+            var isHighlighted = string.Equals(option, _highlightedValue, StringComparison.Ordinal);
+            var indicator = isHighlighted ? ">" : " ";
+            <Columns>
+                <Markup Content="@($" {indicator} {option}")"
+                        Foreground="@(isHighlighted ? GetFocusAdjustedColor(SelectedOptionForeground) : GetFocusAdjustedColor(OptionForeground))"
+                        Decoration="@(isHighlighted ? GetFocusAdjustedDecoration(SelectedOptionDecoration) : GetFocusAdjustedDecoration(OptionDecoration))" />
+            </Columns>
         }
     </Rows>
-}
+</div>
 
 @code {
-    private readonly string _focusKey = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+    // Private fields
     private bool _isOpen;
     private string? _selectedValue;
     private string? _highlightedValue;
     private string? _lastSuppliedValue;
+    private bool _isFocused;
 
+    // Basic parameters
     [Parameter]
     public string[] Options
     {
@@ -68,46 +48,13 @@
     public string? Value { get; set; }
 
     [Parameter]
+    public bool Expand { get; set; } = false;
+
+    [Parameter]
     public EventCallback<string?> ValueChanged { get; set; }
 
     [Parameter]
-    public string Placeholder { get; set; } = "Select an option";
-
-    [Parameter]
     public EventCallback<string?> OnSelected { get; set; }
-
-    [Parameter]
-    public EventCallback OnClear { get; set; }
-
-    [Parameter]
-    public bool Expand { get; set; }
-
-    [Parameter]
-    public int? FocusOrder { get; set; }
-
-    [Parameter]
-    public BoxBorder BorderStyle { get; set; } = BoxBorder.Rounded;
-
-    [Parameter]
-    public Color PlaceholderColor { get; set; } = Color.Grey70;
-
-    [Parameter]
-    public Decoration PlaceholderDecoration { get; set; } = Decoration.Italic | Decoration.Dim;
-
-    [Parameter]
-    public Color ValueColor { get; set; } = Color.White;
-
-    [Parameter]
-    public Decoration ValueDecoration { get; set; } = Decoration.None;
-
-    [Parameter]
-    public string EmptyLabel { get; set; } = "No options available";
-
-    [Parameter]
-    public Color EmptyForeground { get; set; } = Color.Grey70;
-
-    [Parameter]
-    public Decoration EmptyDecoration { get; set; } = Decoration.Italic;
 
     [Parameter]
     public Color OptionForeground { get; set; } = Color.White;
@@ -123,15 +70,7 @@
 
     private string[] _options = Array.Empty<string>();
 
-    private bool HasSelection => !string.IsNullOrEmpty(_selectedValue);
-
     private Color _inputBorderColor = Color.Grey37;
-
-    private string DisplayValue => HasSelection ? _selectedValue ?? string.Empty : Placeholder ?? string.Empty;
-
-    private Color DisplayForeground => HasSelection ? ValueColor : PlaceholderColor;
-
-    private Decoration DisplayDecoration => HasSelection ? ValueDecoration : PlaceholderDecoration;
 
     protected override void OnParametersSet()
     {
@@ -160,6 +99,13 @@
         await InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
 
+    // Focus-adjusted styling methods
+    private Color GetFocusAdjustedColor(Color color) => _isFocused ? color : Color.Grey50;
+
+    private Decoration GetFocusAdjustedDecoration(Decoration decoration) => 
+        _isFocused ? decoration : decoration | Decoration.Dim;
+
+
     private async Task SelectOptionAsync(string option)
     {
         _selectedValue = option;
@@ -180,13 +126,14 @@
     }
     private void OnFocus()
     {
+        _isFocused = true;
         _inputBorderColor = Color.Yellow;
     }
 
     private void OnFocusOut()
     {
+        _isFocused = false;
         _inputBorderColor = Color.Grey37;
-        _isOpen = false;
         _highlightedValue = _selectedValue;
     }
 
