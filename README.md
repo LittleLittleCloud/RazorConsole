@@ -263,6 +263,17 @@ A Claude Code-inspired chat interface that demonstrates:
 
 See [`examples/LLMAgentTUI/`](examples/LLMAgentTUI/) for the complete implementation and setup instructions.
 
+### HTop
+
+A system monitoring tool inspired by htop that demonstrates:
+- Real-time system performance tracking (CPU, memory, processes)
+- Interactive process list with sortable columns
+- Color-coded resource usage indicators
+- Auto-refreshing UI with timed updates
+- Proper resource cleanup with `IDisposable`
+
+See [`examples/HTop/`](examples/HTop/) for the complete implementation.
+
 ## HotReload
 
 RazorConsole supports hotreload via metadata update handler so you can apply UI changes on the fly.

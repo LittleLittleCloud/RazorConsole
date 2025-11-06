@@ -1,0 +1,300 @@
+@namespace HTop.Components
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using RazorConsole.Components
+@using Spectre.Console
+@using System.Diagnostics
+@using System.Runtime.InteropServices
+
+@implements IDisposable
+
+<Figlet Content="HTop Monitor" />
+<Newline />
+
+<Panel Title="System Overview" Border="BoxBorder.Rounded" Expand="true">
+    <Rows>
+        <Columns>
+            <Markup Content="CPU Usage:" Foreground="@Color.Grey70" />
+            <Markup Content="@($"{_cpuUsage:F1}%")" Foreground="@GetCpuColor()" Decoration="@Decoration.Bold" />
+        </Columns>
+        <Columns>
+            <Markup Content="Memory:" Foreground="@Color.Grey70" />
+            <Markup Content="@($"{_usedMemoryMB:N0} MB / {_totalMemoryMB:N0} MB ({_memoryUsagePercent:F1}%)")" 
+                    Foreground="@GetMemoryColor()" Decoration="@Decoration.Bold" />
+        </Columns>
+        <Columns>
+            <Markup Content="Processes:" Foreground="@Color.Grey70" />
+            <Markup Content="@_processCount.ToString()" Foreground="@Color.Aqua" />
+        </Columns>
+        <Columns>
+            <Markup Content="Uptime:" Foreground="@Color.Grey70" />
+            <Markup Content="@_uptime" Foreground="@Color.Yellow" />
+        </Columns>
+    </Rows>
+</Panel>
+
+<Newline />
+
+<Panel Title="@($"Top Processes (Sorted by {_sortColumn})")" Border="BoxBorder.Rounded" Expand="true">
+    <SpectreTable Expand="true" Border="TableBorder.Rounded">
+        <SpectreTHead>
+            <SpectreTR>
+                <SpectreTH Align="Justify.Right">
+                    <TextButton Content="PID"
+                                OnClick="@(() => SetSortColumn("PID"))"
+                                BackgroundColor="@Color.Black"
+                                FocusedColor="@Color.Blue" />
+                </SpectreTH>
+                <SpectreTH Align="Justify.Left">
+                    <TextButton Content="Process Name"
+                                OnClick="@(() => SetSortColumn("Name"))"
+                                BackgroundColor="@Color.Black"
+                                FocusedColor="@Color.Blue" />
+                </SpectreTH>
+                <SpectreTH Align="Justify.Right">
+                    <TextButton Content="CPU %"
+                                OnClick="@(() => SetSortColumn("CPU"))"
+                                BackgroundColor="@Color.Black"
+                                FocusedColor="@Color.Blue" />
+                </SpectreTH>
+                <SpectreTH Align="Justify.Right">
+                    <TextButton Content="Memory (MB)"
+                                OnClick="@(() => SetSortColumn("Memory"))"
+                                BackgroundColor="@Color.Black"
+                                FocusedColor="@Color.Blue" />
+                </SpectreTH>
+                <SpectreTH Align="Justify.Left">
+                    <TextButton Content="Status"
+                                OnClick="@(() => SetSortColumn("Status"))"
+                                BackgroundColor="@Color.Black"
+                                FocusedColor="@Color.Blue" />
+                </SpectreTH>
+            </SpectreTR>
+        </SpectreTHead>
+        <SpectreTBody>
+            @foreach (var process in _displayProcesses)
+            {
+                <SpectreTR>
+                    <SpectreTD>
+                        <Markup Content="@process.Id.ToString()" Foreground="@Color.Grey70" />
+                    </SpectreTD>
+                    <SpectreTD>
+                        <Markup Content="@process.Name" Foreground="@Color.White" />
+                    </SpectreTD>
+                    <SpectreTD>
+                        <Markup Content="@($"{process.CpuPercent:F1}")" Foreground="@GetProcessCpuColor(process.CpuPercent)" />
+                    </SpectreTD>
+                    <SpectreTD>
+                        <Markup Content="@($"{process.MemoryMB:F1}")" Foreground="@GetProcessMemoryColor(process.MemoryMB)" />
+                    </SpectreTD>
+                    <SpectreTD>
+                        <Markup Content="@process.Status" Foreground="@GetStatusColor(process.Status)" />
+                    </SpectreTD>
+                </SpectreTR>
+            }
+        </SpectreTBody>
+    </SpectreTable>
+</Panel>
+
+<Newline />
+<Markup Content="Click column headers to sort • Updates every 2 seconds • Press Ctrl+C to exit" Foreground="@Color.Grey58" />
+
+@code {
+    private class ProcessInfo
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public double CpuPercent { get; set; }
+        public double MemoryMB { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
+
+    private Timer? _updateTimer;
+    private double _cpuUsage;
+    private long _usedMemoryMB;
+    private long _totalMemoryMB;
+    private double _memoryUsagePercent;
+    private int _processCount;
+    private string _uptime = string.Empty;
+    private List<ProcessInfo> _displayProcesses = new();
+    private string _sortColumn = "CPU";
+    private readonly DateTime _startTime = DateTime.Now;
+    
+    // For CPU calculation
+    private readonly Dictionary<int, (DateTime Time, TimeSpan TotalProcessorTime)> _previousCpuUsage = new();
+
+    protected override void OnInitialized()
+    {
+        UpdateMetrics();
+        _updateTimer = new Timer(async _ =>
+        {
+            UpdateMetrics();
+            await InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+    }
+
+    private void UpdateMetrics()
+    {
+        try
+        {
+            // Update uptime
+            var uptime = DateTime.Now - _startTime;
+            _uptime = $"{(int)uptime.TotalHours:D2}:{uptime.Minutes:D2}:{uptime.Seconds:D2}";
+
+            // Get memory info
+            var gcMemoryInfo = GC.GetGCMemoryInfo();
+            _totalMemoryMB = gcMemoryInfo.TotalAvailableMemoryBytes / (1024 * 1024);
+            
+            // Calculate used memory from all processes
+            var processes = Process.GetProcesses();
+            _processCount = processes.Length;
+            long totalUsedMemory = 0;
+            
+            var processList = new List<ProcessInfo>();
+
+            foreach (var process in processes)
+            {
+                try
+                {
+                    var memoryMB = process.WorkingSet64 / (1024.0 * 1024.0);
+                    totalUsedMemory += process.WorkingSet64;
+                    
+                    // Calculate CPU usage
+                    var cpuPercent = CalculateCpuUsage(process);
+
+                    processList.Add(new ProcessInfo
+                    {
+                        Id = process.Id,
+                        Name = process.ProcessName,
+                        CpuPercent = cpuPercent,
+                        MemoryMB = memoryMB,
+                        Status = GetProcessStatus(process)
+                    });
+                }
+                catch
+                {
+                    // Process may have exited or we don't have access
+                }
+            }
+
+            _usedMemoryMB = totalUsedMemory / (1024 * 1024);
+            _memoryUsagePercent = (_usedMemoryMB / (double)_totalMemoryMB) * 100;
+
+            // Calculate overall CPU usage (average of top processes)
+            _cpuUsage = processList.OrderByDescending(p => p.CpuPercent).Take(10).Average(p => p.CpuPercent);
+
+            // Sort and take top 20 processes
+            _displayProcesses = SortProcesses(processList).Take(20).ToList();
+        }
+        catch (Exception)
+        {
+            // Silently handle any errors
+        }
+    }
+
+    private double CalculateCpuUsage(Process process)
+    {
+        try
+        {
+            var currentTime = DateTime.Now;
+            var currentCpuTime = process.TotalProcessorTime;
+
+            if (_previousCpuUsage.TryGetValue(process.Id, out var previous))
+            {
+                var timeDiff = (currentTime - previous.Time).TotalMilliseconds;
+                var cpuDiff = (currentCpuTime - previous.TotalProcessorTime).TotalMilliseconds;
+                
+                if (timeDiff > 0)
+                {
+                    var cpuUsagePercent = (cpuDiff / (timeDiff * Environment.ProcessorCount)) * 100;
+                    _previousCpuUsage[process.Id] = (currentTime, currentCpuTime);
+                    return Math.Min(cpuUsagePercent, 100); // Cap at 100%
+                }
+            }
+
+            _previousCpuUsage[process.Id] = (currentTime, currentCpuTime);
+            return 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    private static string GetProcessStatus(Process process)
+    {
+        try
+        {
+            if (process.Responding)
+                return "Running";
+            return "Not Responding";
+        }
+        catch
+        {
+            return "Unknown";
+        }
+    }
+
+    private List<ProcessInfo> SortProcesses(List<ProcessInfo> processes)
+    {
+        return _sortColumn switch
+        {
+            "PID" => processes.OrderBy(p => p.Id).ToList(),
+            "Name" => processes.OrderBy(p => p.Name).ToList(),
+            "CPU" => processes.OrderByDescending(p => p.CpuPercent).ToList(),
+            "Memory" => processes.OrderByDescending(p => p.MemoryMB).ToList(),
+            "Status" => processes.OrderBy(p => p.Status).ToList(),
+            _ => processes.OrderByDescending(p => p.CpuPercent).ToList()
+        };
+    }
+
+    private void SetSortColumn(string column)
+    {
+        _sortColumn = column;
+        UpdateMetrics();
+    }
+
+    private Color GetCpuColor()
+    {
+        if (_cpuUsage < 30) return Color.Green;
+        if (_cpuUsage < 70) return Color.Yellow;
+        return Color.Red;
+    }
+
+    private Color GetMemoryColor()
+    {
+        if (_memoryUsagePercent < 50) return Color.Green;
+        if (_memoryUsagePercent < 80) return Color.Yellow;
+        return Color.Red;
+    }
+
+    private static Color GetProcessCpuColor(double cpuPercent)
+    {
+        if (cpuPercent < 10) return Color.Green;
+        if (cpuPercent < 30) return Color.Yellow;
+        return Color.Red;
+    }
+
+    private static Color GetProcessMemoryColor(double memoryMB)
+    {
+        if (memoryMB < 100) return Color.Green;
+        if (memoryMB < 500) return Color.Yellow;
+        return Color.Red;
+    }
+
+    private static Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Running" => Color.Green,
+            "Not Responding" => Color.Red,
+            _ => Color.Grey
+        };
+    }
+
+    public void Dispose()
+    {
+        _updateTimer?.Dispose();
+    }
+}
