@@ -252,7 +252,8 @@
     private void SetSortColumn(string column)
     {
         _sortColumn = column;
-        UpdateMetrics();
+        // Re-sort existing processes immediately, next timer update will refresh data
+        _displayProcesses = SortProcesses(_displayProcesses).ToList();
     }
 
     private Color GetCpuColor()
