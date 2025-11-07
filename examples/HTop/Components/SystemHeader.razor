@@ -2,6 +2,11 @@
 
 @using RazorConsole.Components
 @using Spectre.Console
+@using System.Diagnostics
+@using System.Linq
+@using System.Threading
+
+@implements IDisposable
 
 <Columns>
     <Rows>
@@ -16,7 +21,7 @@
         }
         <Columns>
             <Markup Content="Mem" Foreground="@Color.Aqua" />
-            <ProgressBar Percentage="@((double)UsedMemoryMB / TotalMemoryMB * 100)" Length="25" />
+            <ProgressBar Percentage="@(TotalMemoryMB > 0 ? (double)UsedMemoryMB / TotalMemoryMB * 100 : 0)" Length="25" />
             <Markup Content="@($"{UsedMemoryMB,4}/{TotalMemoryMB}MB")" Foreground="@Color.Grey70" />
         </Columns>
         <Columns>
@@ -34,35 +39,172 @@
 </Columns>
 
 @code {
-    [Parameter]
-    public List<double> CpuCores { get; set; } = new();
+    private const long SimulatedSwapTotalMb = 8099;
 
-    [Parameter]
-    public long UsedMemoryMB { get; set; }
+    private readonly List<double> _cpuCores = Enumerable.Repeat(0.0, Math.Max(1, Environment.ProcessorCount)).ToList();
+    private readonly Dictionary<int, (DateTime Time, TimeSpan TotalProcessorTime)> _previousCpuUsage = new();
+    private readonly DateTime _startTime = DateTime.Now;
 
-    [Parameter]
-    public long TotalMemoryMB { get; set; }
+    private Timer? _updateTimer;
+    private long _usedMemoryMB;
+    private long _totalMemoryMB;
+    private long _swapUsedMB;
+    private long _swapTotalMB = SimulatedSwapTotalMb;
+    private int _processCount;
+    private int _runningCount;
+    private int _runningProcesses;
+    private string _loadAverage = "0.00 0.00 0.00";
+    private string _uptime = string.Empty;
 
-    [Parameter]
-    public long SwapUsedMB { get; set; }
+    protected override void OnInitialized()
+    {
+        UpdateMetrics();
+        _updateTimer = new Timer(async _ =>
+        {
+            UpdateMetrics();
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+        }, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+    }
 
-    [Parameter]
-    public long SwapTotalMB { get; set; }
+    private void UpdateMetrics()
+    {
+        try
+        {
+            UpdateUptime();
+            UpdateSystemOverview();
+        }
+        catch (Exception)
+        {
+            // Best-effort metrics collection; ignore transient failures.
+        }
+    }
 
-    [Parameter]
-    public int ProcessCount { get; set; }
+    private void UpdateUptime()
+    {
+        var uptime = DateTime.Now - _startTime;
+        _uptime = uptime.TotalDays >= 1
+            ? $"{(int)uptime.TotalDays} day, {uptime.Hours:D2}:{uptime.Minutes:D2}:{uptime.Seconds:D2}"
+            : $"{uptime.Hours:D2}:{uptime.Minutes:D2}:{uptime.Seconds:D2}";
+    }
 
-    [Parameter]
-    public int RunningCount { get; set; }
+    private void UpdateSystemOverview()
+    {
+        var gcMemoryInfo = GC.GetGCMemoryInfo();
+        _totalMemoryMB = gcMemoryInfo.TotalAvailableMemoryBytes / (1024 * 1024);
 
-    [Parameter]
-    public int RunningProcesses { get; set; }
+        _swapTotalMB = SimulatedSwapTotalMb;
+        _swapUsedMB = 0;
 
-    [Parameter]
-    public string LoadAverage { get; set; } = string.Empty;
+        var processes = Process.GetProcesses();
+        var processCount = processes.Length;
+        var cpuSamples = new List<double>(processCount);
+        long usedMemoryBytes = 0;
+        int runningProcesses = 0;
+        int totalThreads = 0;
 
-    [Parameter]
-    public string Uptime { get; set; } = string.Empty;
+        foreach (var process in processes)
+        {
+            using (process)
+            {
+                try
+                {
+                    var cpuPercent = CalculateCpuUsage(process);
+                    cpuSamples.Add(cpuPercent);
 
+                    if (cpuPercent > 0 || !process.Responding)
+                    {
+                        runningProcesses++;
+                    }
 
+                    try
+                    {
+                        totalThreads += process.Threads.Count;
+                    }
+                    catch
+                    {
+                        // Some processes may not expose thread counts; ignore.
+                    }
+
+                    usedMemoryBytes += process.WorkingSet64;
+                }
+                catch
+                {
+                    // Process may have exited or be inaccessible; skip.
+                }
+            }
+        }
+
+        _processCount = processCount;
+        _usedMemoryMB = usedMemoryBytes / (1024 * 1024);
+        _runningProcesses = runningProcesses;
+        _runningCount = totalThreads;
+
+        var topCpu = cpuSamples
+            .OrderByDescending(value => value)
+            .Take(3)
+            .ToList();
+
+        var load1 = topCpu.Count > 0 ? topCpu[0] / 10.0 : 0;
+        var load5 = topCpu.Count > 1 ? topCpu[1] / 10.0 : 0;
+        var load15 = topCpu.Count > 2 ? topCpu[2] / 10.0 : 0;
+        _loadAverage = $"{load1:F2} {load5:F2} {load15:F2}";
+
+        var coreCount = _cpuCores.Count;
+        if (coreCount > 0)
+        {
+            var totalCpu = cpuSamples.Sum();
+            var avgPerCore = totalCpu / coreCount;
+
+            for (int i = 0; i < coreCount; i++)
+            {
+                var scaledValue = avgPerCore * (0.8 + (i * 0.1));
+                _cpuCores[i] = Math.Clamp(scaledValue, 0, 100);
+            }
+        }
+    }
+
+    private double CalculateCpuUsage(Process process)
+    {
+        try
+        {
+            var currentTime = DateTime.Now;
+            var currentCpuTime = process.TotalProcessorTime;
+
+            if (_previousCpuUsage.TryGetValue(process.Id, out var previous))
+            {
+                var timeDiff = (currentTime - previous.Time).TotalMilliseconds;
+                var cpuDiff = (currentCpuTime - previous.TotalProcessorTime).TotalMilliseconds;
+
+                if (timeDiff > 0)
+                {
+                    var cpuUsagePercent = (cpuDiff / (timeDiff * Environment.ProcessorCount)) * 100;
+                    _previousCpuUsage[process.Id] = (currentTime, currentCpuTime);
+                    return Math.Min(cpuUsagePercent, 100);
+                }
+            }
+
+            _previousCpuUsage[process.Id] = (currentTime, currentCpuTime);
+            return 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public void Dispose()
+    {
+        _updateTimer?.Dispose();
+    }
+
+    private IReadOnlyList<double> CpuCores => _cpuCores;
+    private long UsedMemoryMB => _usedMemoryMB;
+    private long TotalMemoryMB => _totalMemoryMB;
+    private long SwapUsedMB => _swapUsedMB;
+    private long SwapTotalMB => _swapTotalMB;
+    private int ProcessCount => _processCount;
+    private int RunningCount => _runningCount;
+    private int RunningProcesses => _runningProcesses;
+    private string LoadAverage => _loadAverage;
+    private string Uptime => _uptime;
 }

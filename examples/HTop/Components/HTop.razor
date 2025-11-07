@@ -9,42 +9,24 @@
 
 @implements IDisposable
 
-@if (_cpuCores.Count > 0)
+<SystemHeader />
+
+@if (_displayProcesses.Count > 0)
 {
-    <SystemHeader CpuCores="@_cpuCores"
-                  UsedMemoryMB="@_usedMemoryMB"
-                  TotalMemoryMB="@_totalMemoryMB"
-                  SwapUsedMB="@_swapUsedMB"
-                  SwapTotalMB="@_swapTotalMB"
-                  ProcessCount="@_processCount"
-                  RunningCount="@_runningCount"
-                  RunningProcesses="@_runningProcesses"
-                  LoadAverage="@_loadAverage"
-                  Uptime="@_uptime" />
     <ProcessTable Processes="@_displayProcesses"
                   OnSortColumnChanged="SetSortColumn" />
-    <FunctionKeyBar />
 }
 else
 {
     <Markup Content="Initializing..." Foreground="@Color.Yellow" />
 }
 
+<FunctionKeyBar />
+
 @code {
     private Timer? _updateTimer;
-    private List<double> _cpuCores = Enumerable.Repeat(0.0, Environment.ProcessorCount).ToList();
-    private long _usedMemoryMB;
-    private long _totalMemoryMB;
-    private long _swapUsedMB = 0;
-    private long _swapTotalMB = 8099;
-    private int _processCount;
-    private int _runningCount;
-    private int _runningProcesses;
-    private string _loadAverage = "0.00 0.00 0.00";
-    private string _uptime = string.Empty;
     private List<ProcessTable.ProcessInfo> _displayProcesses = new();
     private string _sortColumn = "CPU";
-    private readonly DateTime _startTime = DateTime.Now;
     
     // For CPU calculation
     private readonly Dictionary<int, (DateTime Time, TimeSpan TotalProcessorTime)> _previousCpuUsage = new();
@@ -55,7 +37,7 @@ else
         _updateTimer = new Timer(async _ =>
         {
             UpdateMetrics();
-            await InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
         }, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
     }
 
@@ -63,24 +45,12 @@ else
     {
         try
         {
-            // Update uptime
-            var uptime = DateTime.Now - _startTime;
-            if (uptime.TotalDays >= 1)
-                _uptime = $"{(int)uptime.TotalDays} day, {uptime.Hours:D2}:{uptime.Minutes:D2}:{uptime.Seconds:D2}";
-            else
-                _uptime = $"{uptime.Hours:D2}:{uptime.Minutes:D2}:{uptime.Seconds:D2}";
-
             // Get memory info
             var gcMemoryInfo = GC.GetGCMemoryInfo();
-            _totalMemoryMB = gcMemoryInfo.TotalAvailableMemoryBytes / (1024 * 1024);
+            var totalMemoryMB = gcMemoryInfo.TotalAvailableMemoryBytes / (1024 * 1024);
             
             // Calculate used memory and process info
             var processes = Process.GetProcesses();
-            _processCount = processes.Length;
-            long totalUsedMemory = 0;
-            int runningProcesses = 0;
-            int totalThreads = 0;
-            
             var processList = new List<ProcessTable.ProcessInfo>();
 
             foreach (var process in processes)
@@ -88,17 +58,9 @@ else
                 try
                 {
                     var memoryBytes = process.WorkingSet64;
-                    totalUsedMemory += memoryBytes;
                     
                     // Calculate CPU usage
                     var cpuPercent = CalculateCpuUsage(process);
-                    
-                    // Count running processes
-                    if (cpuPercent > 0 || !process.Responding)
-                        runningProcesses++;
-                    
-                    // Count threads
-                    try { totalThreads += process.Threads.Count; } catch { }
 
                     // Get user name
                     string userName = "user";
@@ -123,7 +85,7 @@ else
                         ResidentMemory = FormatMemory(memoryBytes),
                         State = state,
                         CpuPercent = cpuPercent,
-                        MemPercent = _totalMemoryMB > 0 ? (memoryBytes / (1024.0 * 1024.0) / _totalMemoryMB) * 100 : 0,
+                        MemPercent = totalMemoryMB > 0 ? (memoryBytes / (1024.0 * 1024.0) / totalMemoryMB) * 100 : 0,
                         CpuTime = FormatCpuTime(process.TotalProcessorTime),
                         Command = process.ProcessName
                     });
@@ -132,30 +94,6 @@ else
                 {
                     // Process may have exited or we don't have access
                 }
-            }
-
-            _usedMemoryMB = totalUsedMemory / (1024 * 1024);
-            _runningCount = totalThreads;
-            _runningProcesses = runningProcesses;
-
-            // Simulate swap (not easily accessible in .NET)
-            _swapTotalMB = 8099;
-            _swapUsedMB = 0;
-
-            // Simulate load average (not easily accessible in .NET on all platforms)
-            var topCpu = processList.OrderByDescending(p => p.CpuPercent).Take(3).ToList();
-            var load1 = topCpu.Count > 0 ? topCpu[0].CpuPercent / 10.0 : 0;
-            var load5 = topCpu.Count > 1 ? topCpu[1].CpuPercent / 10.0 : 0;
-            var load15 = topCpu.Count > 2 ? topCpu[2].CpuPercent / 10.0 : 0;
-            _loadAverage = $"{load1:F2} {load5:F2} {load15:F2}";
-
-            // Simulate per-core CPU usage (simplified)
-            var totalCpu = processList.Sum(p => p.CpuPercent);
-            var avgPerCore = totalCpu / Environment.ProcessorCount;
-            for (int i = 0; i < _cpuCores.Count; i++)
-            {
-                // Add some variation
-                _cpuCores[i] = Math.Min(100, avgPerCore * (0.8 + (i * 0.1)));
             }
 
             // Sort and take top 20 processes
