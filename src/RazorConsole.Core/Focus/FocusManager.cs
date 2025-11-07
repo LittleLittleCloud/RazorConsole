@@ -23,6 +23,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
     private List<FocusTarget> _targets = new();
     private int _currentIndex = -1;
     private ConsoleLiveDisplayContext? _context;
+    private CancellationTokenSource? _sessionCts;
 
     /// <summary>
     /// Raised when the focused element changes.
@@ -114,6 +115,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
             ResetState_NoLock();
 
             _context = context;
+            _sessionCts = linkedCts;
 
             if (initialView.VdomRoot is not null)
             {
@@ -338,6 +340,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
     private void ResetState_NoLock()
     {
         _context = null;
+        _sessionCts = null;
         _targets = new List<FocusTarget>();
         _currentIndex = -1;
         CurrentFocusKey = null;
@@ -501,9 +504,30 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 
     void IObserver<ConsoleRenderer.RenderSnapshot>.OnNext(ConsoleRenderer.RenderSnapshot value)
     {
+        FocusTarget? newFocusTarget = null;
+        FocusTarget? previousTarget = null;
+        CancellationToken token;
+
         lock (_sync)
         {
-            UpdateFocusTargets_NoLock(value);
+            // Store the previous target before updating
+            if (_currentIndex >= 0 && _currentIndex < _targets.Count)
+            {
+                previousTarget = _targets[_currentIndex];
+            }
+
+            newFocusTarget = UpdateFocusTargets_NoLock(value);
+            token = _sessionCts?.Token ?? CancellationToken.None;
+        }
+
+        // If UpdateFocusTargets_NoLock returned a non-null target, it means focus changed
+        if (newFocusTarget is not null)
+        {
+            // Fire the focus changed event synchronously
+            FocusChanged?.Invoke(this, new FocusChangedEventArgs(newFocusTarget.Key));
+
+            // Dispatch async focus events without awaiting (fire and forget)
+            _ = DispatchFocusEventsAsync(previousTarget, newFocusTarget, token);
         }
     }
 

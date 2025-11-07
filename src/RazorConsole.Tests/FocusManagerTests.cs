@@ -173,6 +173,120 @@ public sealed class FocusManagerTests
         Assert.Equal("second", manager.CurrentFocusKey);
     }
 
+    [Fact]
+    public async Task OnNext_AutomaticallyRefocusesWhenCurrentElementRemoved()
+    {
+        var dispatcher = new TestFocusEventDispatcher();
+        var manager = new FocusManager(dispatcher);
+
+        var first = VNode.CreateElement("input");
+        first.SetAttribute("data-focus-key", "first");
+        first.SetEvent("onfocus", 1UL);
+        first.SetEvent("onfocusin", 2UL);
+        first.SetEvent("onfocusout", 3UL);
+
+        var second = VNode.CreateElement("input");
+        second.SetAttribute("data-focus-key", "second");
+        second.SetEvent("onfocus", 4UL);
+        second.SetEvent("onfocusin", 5UL);
+        second.SetEvent("onfocusout", 6UL);
+
+        var third = VNode.CreateElement("input");
+        third.SetAttribute("data-focus-key", "third");
+        third.SetEvent("onfocus", 7UL);
+        third.SetEvent("onfocusin", 8UL);
+        third.SetEvent("onfocusout", 9UL);
+
+        var root = VNode.CreateElement("div");
+        root.AddChild(first);
+        root.AddChild(second);
+        root.AddChild(third);
+
+        var view = ConsoleViewResult.Create(
+            "focus",
+            root,
+            new FakeRenderable("focus"),
+            Array.Empty<IAnimatedConsoleRenderable>());
+
+        using var context = ConsoleLiveDisplayContext.CreateForTesting(
+            new TestCanvas(),
+            view,
+            new VdomDiffService());
+        using var session = manager.BeginSession(context, view, CancellationToken.None);
+        await session.InitializationTask;
+
+        PushInitialSnapshot(manager, view);
+
+        Assert.Equal("first", manager.CurrentFocusKey);
+
+        // Move focus to the second element
+        await manager.FocusNextAsync(session.Token);
+        Assert.Equal("second", manager.CurrentFocusKey);
+
+        dispatcher.Events.Clear();
+
+        // Remove the currently focused element (second) from the render list
+        var updatedRoot = VNode.CreateElement("div");
+        updatedRoot.AddChild(first);
+        updatedRoot.AddChild(third);
+
+        var updatedView = ConsoleViewResult.Create(
+            "focus",
+            updatedRoot,
+            new FakeRenderable("focus"),
+            Array.Empty<IAnimatedConsoleRenderable>());
+
+        var snapshot = new ConsoleRenderer.RenderSnapshot(
+            updatedView.VdomRoot!,
+            updatedView.Renderable,
+            updatedView.AnimatedRenderables);
+
+        ((IObserver<ConsoleRenderer.RenderSnapshot>)manager).OnNext(snapshot);
+
+        // Focus should automatically move to the first available element
+        Assert.Equal("first", manager.CurrentFocusKey);
+
+        // Focus events should have been dispatched
+        Assert.Collection(
+            dispatcher.Events,
+            e => Assert.Equal(("focusout", 6UL), e),
+            e => Assert.Equal(("focusin", 2UL), e),
+            e => Assert.Equal(("focus", 1UL), e));
+    }
+
+    [Fact]
+    public async Task OnNext_ClearsFocusWhenAllElementsRemoved()
+    {
+        var manager = new FocusManager();
+        var keys = new[] { "first", "second" };
+        var initial = CreateView(keys, focusedKey: null);
+
+        using var context = ConsoleLiveDisplayContext.CreateForTesting(
+            new TestCanvas(),
+            initial,
+            new VdomDiffService());
+        using var session = manager.BeginSession(context, initial, CancellationToken.None);
+        await session.InitializationTask;
+
+        PushInitialSnapshot(manager, initial);
+
+        Assert.True(manager.HasFocusables);
+        Assert.Equal("first", manager.CurrentFocusKey);
+
+        // Remove all focusable elements
+        var emptyView = CreateView(Array.Empty<string>(), focusedKey: null);
+        var snapshot = new ConsoleRenderer.RenderSnapshot(
+            emptyView.VdomRoot!,
+            emptyView.Renderable,
+            emptyView.AnimatedRenderables);
+
+        ((IObserver<ConsoleRenderer.RenderSnapshot>)manager).OnNext(snapshot);
+
+        // Focus should be cleared
+        Assert.False(manager.HasFocusables);
+        Assert.Null(manager.CurrentFocusKey);
+    }
+
     private static void PushInitialSnapshot(FocusManager manager, ConsoleViewResult view)
     {
         if (view.VdomRoot is null)
