@@ -243,6 +243,9 @@ public sealed class FocusManagerTests
 
         ((IObserver<ConsoleRenderer.RenderSnapshot>)manager).OnNext(snapshot);
 
+        // Wait a bit for the async dispatch to complete
+        await Task.Delay(100);
+
         // Focus should automatically move to the first available element
         Assert.Equal("first", manager.CurrentFocusKey);
 

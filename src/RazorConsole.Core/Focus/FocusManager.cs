@@ -527,7 +527,23 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
             FocusChanged?.Invoke(this, new FocusChangedEventArgs(newFocusTarget.Key));
 
             // Dispatch async focus events without awaiting (fire and forget)
-            _ = DispatchFocusEventsAsync(previousTarget, newFocusTarget, token);
+            // Wrap in Task.Run to ensure exceptions don't go unobserved
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await DispatchFocusEventsAsync(previousTarget, newFocusTarget, token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when session is cancelled, ignore
+                }
+                catch
+                {
+                    // Swallow exceptions to prevent unobserved task exceptions
+                    // The dispatcher should handle its own exceptions
+                }
+            }, token);
         }
     }
 
