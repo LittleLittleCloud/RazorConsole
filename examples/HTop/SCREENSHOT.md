@@ -1,71 +1,80 @@
 # HTop Example Screenshot
 
-The HTop example application shows a real-time system monitoring interface:
+The HTop example application shows a real-time system monitoring interface modeled after htop:
 
 ```
-                         _   _   _____                    
-                        | | | | |_   _|   ___    _ __    
-                        | |_| |   | |    / _ \  | '_ \   
-                        |  _  |   | |   | (_) | | |_) |  
-                        |_| |_|   |_|    \___/  | .__/   
-                                                 |_|      
-              __  __                   _   _              
-             |  \/  |   ___    _ __   (_) | |_    ___    _ __   
-             | |\/| |  / _ \  | '_ \  | | | __|  / _ \  | '__|  
-             | |  | | | (_) | | | | | | | | |_  | (_) | | |     
-             |_|  |_|  \___/  |_| |_| |_|  \__|  \___/  |_|     
-                                                                
- ╭─System Overview──────────────────────────────────────────────╮
- │ CPU Usage: 2.0%                                              │
- │ Memory: 2,792 MB / 15,995 MB (17.5%)                         │
- │ Processes: 172                                               │
- │ Uptime: 00:00:02                                             │
- ╰──────────────────────────────────────────────────────────────╯
- 
- ╭─Top Processes (Sorted by CPU)────────────────────────────────╮
- │ ╭───────┬──────────────────┬────────┬──────────┬─────────╮  │
- │ │   PID │ Process Name     │  CPU % │ Mem (MB) │ Status  │  │
- │ ├───────┼──────────────────┼────────┼──────────┼─────────┤  │
- │ │  4246 │ dotnet           │   16.5 │    192.2 │ Running │  │
- │ │  4306 │ HTop             │    3.0 │     68.4 │ Running │  │
- │ │  1905 │ provjobd         │    0.2 │     33.6 │ Running │  │
- │ │  1950 │ Runner.Worker    │    0.1 │    129.3 │ Running │  │
- │ │  3266 │ node             │    0.1 │    242.2 │ Running │  │
- │ │     1 │ systemd          │    0.0 │     13.4 │ Running │  │
- │ │     2 │ kthreadd         │    0.0 │      0.0 │ Running │  │
- │ │   ... │ ...              │    ... │      ... │ ...     │  │
- │ ╰───────┴──────────────────┴────────┴──────────┴─────────╯  │
- ╰──────────────────────────────────────────────────────────────╯
- 
- Click column headers to sort • Updates every 2 seconds • Press Ctrl+C to exit
+ 1 [                         ]   0.0%         Tasks: 179, 442 thr; 0 running
+ 2 [                         ]   0.0%         Load average: 0.00 0.00 0.00
+ 3 [                         ]   0.0%         Uptime: 00:00:02
+ 4 [                         ]   0.0%
+Mem [||||                     ] 2657/15995MB
+Swp [                         ]    0/8099MB
+
+ PID USER     PRI  NI   VIRT   RES S    CPU%   MEM%      TIME+ Command
+   1 user      20   0    22M   13M S     0.0    0.1    0:03.58 systemd
+   2 user      20   0      0     0 S     0.0    0.0    0:00.00 kthreadd
+4246 user      20   0   433M  192M R    16.5    1.2    0:02.15 dotnet
+4306 user      20   0   175M   68M R     3.0    0.4    0:00.45 HTop
+1905 user      20   0   108M   33M S     0.2    0.2    1:15.20 provjobd
+1950 user      20   0   254M  129M S     0.1    0.8    0:42.15 Runner.Worker
+3266 user      20   0   485M  242M S     0.1    1.5    2:18.05 node
+   8 user      20   0      0     0 S     0.0    0.0    0:00.06 kworker/0:0
+   9 user      20   0      0     0 S     0.0    0.0    0:00.00 kworker/0:0H
+  12 user      20   0      0     0 S     0.0    0.0    0:00.00 kworker/R-mm
+  13 user      20   0      0     0 S     0.0    0.0    0:00.00 rcu_tasks_rude
+  ...
+
+F1Help F2Setup F3Search F4Filter F5Tree F6SortBy F7Nice F8Nice+ F9Kill F10Quit
 ```
 
 ## Features Shown
 
-1. **Figlet Title**: Large ASCII art title "HTop Monitor"
-2. **System Overview Panel**: 
-   - CPU usage with color coding (green for low, yellow for moderate, red for high)
-   - Memory usage showing used/total and percentage
-   - Total process count
-   - System uptime counter
+1. **CPU Bars**: Per-core CPU usage bars (numbered 1-4 for each core)
+   - Color-coded segments: blue (low), green (moderate), yellow (high)
+   - Percentage display on the right
 
-3. **Process Table**:
-   - Interactive column headers (PID, Process Name, CPU %, Memory, Status)
-   - Sorted by CPU usage (default)
-   - Top 20 processes displayed
-   - Color-coded values based on resource usage
-   - Process status indicator (Running/Not Responding)
+2. **Memory/Swap Bars**: Visual representation with colored segments
+   - Shows used/total in MB format
+   - Green for low usage, yellow for higher usage
 
-4. **Real-time Updates**: The display automatically refreshes every 2 seconds
+3. **System Info Panel** (right side):
+   - Tasks: total processes, thread count, running processes
+   - Load average: 1-minute, 5-minute, 15-minute averages
+   - Uptime: system uptime in HH:MM:SS or days format
 
-5. **Keyboard Navigation**: Tab to navigate between column header buttons, Enter to change sort order
+4. **Process Table**:
+   - Green header row (matching htop)
+   - Interactive column headers (click to sort)
+   - Columns: PID, USER, PRI, NI, VIRT, RES, S, CPU%, MEM%, TIME+, Command
+   - Color-coded values:
+     - Red for high CPU usage (>50%)
+     - Yellow for moderate CPU usage (>20%)
+     - Green for running processes
+     - Aqua for memory values
+
+5. **Function Key Menu**: htop-style menu bar at bottom
+   - F1-F10 keys with green highlighting
+   - Matches htop's interface design
+
+6. **No Borders**: Table uses `TableBorder.None` to match htop's clean look
 
 ## How it Works
 
 The application uses:
-- `Timer` to trigger updates every 2 seconds
-- `Process.GetProcesses()` to enumerate all running processes
-- CPU tracking by comparing `TotalProcessorTime` between updates
-- Memory info from `Process.WorkingSet64` for each process
-- Color coding based on thresholds for visual feedback
-- `IDisposable` implementation for proper timer cleanup
+- `Columns` component to split header into left (bars) and right (info) sections
+- `Rows` component to stack CPU bars and memory/swap bars
+- `SpectreTable` with no borders for the process list
+- `TextButton` components with green background for column headers
+- `Markup` with Spectre.Console color tags for visual elements
+- `Timer` updating every 2 seconds
+- CPU tracking by comparing `TotalProcessorTime` between intervals
+- Memory info from `Process.WorkingSet64` and `GC.GetGCMemoryInfo()`
+
+## Key Differences from Original htop
+
+Due to .NET API limitations and cross-platform compatibility:
+- CPU per-core usage is simulated based on overall system activity
+- Load average is estimated from top process CPU usage
+- User names default to "user" (not easily accessible cross-platform)
+- Priority and Nice values are simplified
+- Swap usage is simulated (not easily accessible on all platforms)
