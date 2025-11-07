@@ -169,7 +169,7 @@
             Id = _nextId++,
             Description = description,
             IsCompleted = isCompleted,
-            CreatedAt = DateTime.Now.AddMinutes(-_nextId * 5)
+            CreatedAt = DateTime.UtcNow.AddMinutes(-_nextId * 5)
         });
     }
 
@@ -182,7 +182,7 @@
                 Id = _nextId++,
                 Description = _newTaskDescription.Trim(),
                 IsCompleted = false,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             });
             _newTaskDescription = string.Empty;
         }
