@@ -144,9 +144,13 @@
                         Modified = file.LastWriteTime
                     });
                 }
-                catch
+                catch (UnauthorizedAccessException)
                 {
-                    // Skip files we can't access
+                    // Skip files we don't have permission to access
+                }
+                catch (IOException)
+                {
+                    // Skip files with I/O errors
                 }
             }
 
@@ -175,9 +179,13 @@
                         });
                     }
                 }
-                catch
+                catch (UnauthorizedAccessException)
                 {
-                    // Skip directories we can't access
+                    // Skip directories we don't have permission to access
+                }
+                catch (IOException)
+                {
+                    // Skip directories with I/O errors
                 }
             }
         }
