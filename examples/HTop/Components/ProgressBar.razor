@@ -1,0 +1,39 @@
+@namespace HTop.Components
+
+@using Microsoft.AspNetCore.Components
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Markup Content="[" />@for (int i = 0; i < Length; i++)
+{
+    @if (i < filled)
+    {
+        var position = (int)((double)i / Length * 100);
+        @if (position < 10)
+        {
+            <Markup Content="|" Foreground="@Color.Blue" />
+        }
+        else if (position < 20)
+        {
+            <Markup Content="|" Foreground="@Color.Green" />
+        }
+        else
+        {
+            <Markup Content="|" Foreground="@Color.Yellow" />
+        }
+    }
+    else
+    {
+        <Markup Content=" " />
+    }
+}<Markup Content="]" />
+
+@code {
+    [Parameter]
+    public double Percentage { get; set; }
+
+    [Parameter]
+    public int Length { get; set; } = 25;
+
+    private int filled => (int)(Percentage / 100.0 * Length);
+}
