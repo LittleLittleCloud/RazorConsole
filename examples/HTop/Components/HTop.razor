@@ -11,159 +11,25 @@
 
 @if (_cpuCores.Count > 0)
 {
-    @* Header with CPU bars and system info *@
-    <Columns>
-        <div>
-            <Rows>
-                @for (int i = 0; i < _cpuCores.Count; i++)
-                {
-                    var cpuIndex = i; // Capture for closure
-                    <Columns>
-                        <Markup Content="@($"{cpuIndex + 1,2}")" Foreground="@Color.Aqua" />
-                        <Markup Content="@BuildCpuBar(_cpuCores[cpuIndex])" />
-                        <Markup Content="@($"{_cpuCores[cpuIndex],5:F1}%")" Foreground="@Color.Grey70" />
-                    </Columns>
-                }
-                <Columns>
-                    <Markup Content="Mem" Foreground="@Color.Aqua" />
-                    <Markup Content="@BuildMemoryBar()" />
-                    <Markup Content="@($"{_usedMemoryMB,4}/{_totalMemoryMB}MB")" Foreground="@Color.Grey70" />
-                </Columns>
-                <Columns>
-                    <Markup Content="Swp" Foreground="@Color.Aqua" />
-                    <Markup Content="@BuildSwapBar()" />
-                    <Markup Content="@($"{_swapUsedMB,4}/{_swapTotalMB}MB")" Foreground="@Color.Grey70" />
-                </Columns>
-            </Rows>
-        </div>
-        <div>
-            <Rows>
-                <Markup Content="@($"Tasks: {_processCount}, {_runningCount} thr; {_runningProcesses} running")" Foreground="@Color.Aqua" />
-                <Markup Content="@($"Load average: {_loadAverage}")" Foreground="@Color.Aqua" />
-                <Markup Content="@($"Uptime: {_uptime}")" Foreground="@Color.Aqua" />
-            </Rows>
-        </div>
-    </Columns>
+    <SystemHeader CpuCores="@_cpuCores"
+                  UsedMemoryMB="@_usedMemoryMB"
+                  TotalMemoryMB="@_totalMemoryMB"
+                  SwapUsedMB="@_swapUsedMB"
+                  SwapTotalMB="@_swapTotalMB"
+                  ProcessCount="@_processCount"
+                  RunningCount="@_runningCount"
+                  RunningProcesses="@_runningProcesses"
+                  LoadAverage="@_loadAverage"
+                  Uptime="@_uptime" />
 
     <Newline />
 
-    @* Process table without border *@
-    <SpectreTable Expand="true" Border="TableBorder.None">
-    <SpectreTHead>
-        <SpectreTR>
-            <SpectreTH Align="Justify.Right">
-                <TextButton Content="PID"
-                            OnClick="@(() => SetSortColumn("PID"))"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Blue" />
-            </SpectreTH>
-            <SpectreTH Align="Justify.Left">
-                <TextButton Content="USER"
-                            OnClick="@(() => SetSortColumn("USER"))"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Blue" />
-            </SpectreTH>
-            <SpectreTH Align="Justify.Right">
-                <TextButton Content="PRI"
-                            OnClick="@(() => SetSortColumn("PRI"))"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Blue" />
-            </SpectreTH>
-            <SpectreTH Align="Justify.Right">
-                <TextButton Content="NI"
-                            OnClick="@(() => SetSortColumn("NI"))"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Blue" />
-            </SpectreTH>
-            <SpectreTH Align="Justify.Right">
-                <TextButton Content="VIRT"
-                            OnClick="@(() => SetSortColumn("VIRT"))"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Blue" />
-            </SpectreTH>
-            <SpectreTH Align="Justify.Right">
-                <TextButton Content="RES"
-                            OnClick="@(() => SetSortColumn("RES"))"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Blue" />
-            </SpectreTH>
-            <SpectreTH Align="Justify.Center">
-                <TextButton Content="S"
-                            OnClick="@(() => SetSortColumn("S"))"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Blue" />
-            </SpectreTH>
-            <SpectreTH Align="Justify.Right">
-                <TextButton Content="CPU%"
-                            OnClick="@(() => SetSortColumn("CPU"))"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Blue" />
-            </SpectreTH>
-            <SpectreTH Align="Justify.Right">
-                <TextButton Content="MEM%"
-                            OnClick="@(() => SetSortColumn("MEM"))"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Blue" />
-            </SpectreTH>
-            <SpectreTH Align="Justify.Right">
-                <TextButton Content="TIME+"
-                            OnClick="@(() => SetSortColumn("TIME"))"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Blue" />
-            </SpectreTH>
-            <SpectreTH Align="Justify.Left">
-                <TextButton Content="Command"
-                            OnClick="@(() => SetSortColumn("Command"))"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Blue" />
-            </SpectreTH>
-        </SpectreTR>
-    </SpectreTHead>
-    <SpectreTBody>
-        @foreach (var process in _displayProcesses)
-        {
-            <SpectreTR>
-                <SpectreTD>
-                    <Markup Content="@process.Id.ToString()" Foreground="@Color.White" />
-                </SpectreTD>
-                <SpectreTD>
-                    <Markup Content="@process.User" Foreground="@Color.White" />
-                </SpectreTD>
-                <SpectreTD>
-                    <Markup Content="@process.Priority.ToString()" Foreground="@Color.White" />
-                </SpectreTD>
-                <SpectreTD>
-                    <Markup Content="@process.Nice.ToString()" Foreground="@(process.Nice < 0 ? Color.Red : Color.White)" />
-                </SpectreTD>
-                <SpectreTD>
-                    <Markup Content="@process.VirtualMemory" Foreground="@Color.Aqua" />
-                </SpectreTD>
-                <SpectreTD>
-                    <Markup Content="@process.ResidentMemory" Foreground="@Color.Aqua" />
-                </SpectreTD>
-                <SpectreTD>
-                    <Markup Content="@process.State" Foreground="@GetStateColor(process.State)" />
-                </SpectreTD>
-                <SpectreTD>
-                    <Markup Content="@($"{process.CpuPercent:F1}")" Foreground="@GetProcessCpuColor(process.CpuPercent)" />
-                </SpectreTD>
-                <SpectreTD>
-                    <Markup Content="@($"{process.MemPercent:F1}")" Foreground="@Color.White" />
-                </SpectreTD>
-                <SpectreTD>
-                    <Markup Content="@process.CpuTime" Foreground="@Color.White" />
-                </SpectreTD>
-                <SpectreTD>
-                    <Markup Content="@process.Command" Foreground="@Color.White" />
-                </SpectreTD>
-            </SpectreTR>
-        }
-    </SpectreTBody>
-    </SpectreTable>
+    <ProcessTable Processes="@_displayProcesses"
+                  OnSortColumnChanged="SetSortColumn" />
 
     <Newline />
-    @* Function keys *@
-    <Markup Content="[green]F1[/]Help [green]F2[/]Setup [green]F3[/]Search [green]F4[/]Filter [green]F5[/]Tree [green]F6[/]SortBy [green]F7[/]Nice [green]F8[/]Nice+ [green]F9[/]Kill [green]F10[/]Quit" />
+
+    <FunctionKeyBar />
 }
 else
 {
@@ -171,21 +37,6 @@ else
 }
 
 @code {
-    private class ProcessInfo
-    {
-        public int Id { get; set; }
-        public string User { get; set; } = string.Empty;
-        public int Priority { get; set; }
-        public int Nice { get; set; }
-        public string VirtualMemory { get; set; } = string.Empty;
-        public string ResidentMemory { get; set; } = string.Empty;
-        public string State { get; set; } = string.Empty;
-        public double CpuPercent { get; set; }
-        public double MemPercent { get; set; }
-        public string CpuTime { get; set; } = string.Empty;
-        public string Command { get; set; } = string.Empty;
-    }
-
     private Timer? _updateTimer;
     private List<double> _cpuCores = Enumerable.Repeat(0.0, Environment.ProcessorCount).ToList();
     private long _usedMemoryMB;
@@ -197,7 +48,7 @@ else
     private int _runningProcesses;
     private string _loadAverage = "0.00 0.00 0.00";
     private string _uptime = string.Empty;
-    private List<ProcessInfo> _displayProcesses = new();
+    private List<ProcessTable.ProcessInfo> _displayProcesses = new();
     private string _sortColumn = "CPU";
     private readonly DateTime _startTime = DateTime.Now;
     
@@ -236,7 +87,7 @@ else
             int runningProcesses = 0;
             int totalThreads = 0;
             
-            var processList = new List<ProcessInfo>();
+            var processList = new List<ProcessTable.ProcessInfo>();
 
             foreach (var process in processes)
             {
@@ -268,7 +119,7 @@ else
                     if (cpuPercent > 0) state = "R"; // Running
                     if (!process.Responding) state = "D"; // Uninterruptible sleep
 
-                    processList.Add(new ProcessInfo
+                    processList.Add(new ProcessTable.ProcessInfo
                     {
                         Id = process.Id,
                         User = userName,
@@ -366,60 +217,7 @@ else
         return $"{time.Minutes}:{time.Seconds:D2}.{time.Milliseconds / 10:D2}";
     }
 
-    private string BuildCpuBar(double percentage)
-    {
-        const int barLength = 25;
-        int filled = (int)(percentage / 100.0 * barLength);
-        
-        var bar = "[";
-        for (int i = 0; i < barLength; i++)
-        {
-            if (i < filled * 0.3)
-                bar += "[blue]|[/]";
-            else if (i < filled * 0.7)
-                bar += "[green]|[/]";
-            else if (i < filled)
-                bar += "[yellow]|[/]";
-            else
-                bar += " ";
-        }
-        bar += "]";
-        return bar;
-    }
-
-    private string BuildMemoryBar()
-    {
-        const int barLength = 25;
-        double percentage = _totalMemoryMB > 0 ? (_usedMemoryMB / (double)_totalMemoryMB) * 100 : 0;
-        int filled = (int)(percentage / 100.0 * barLength);
-        
-        var bar = "[";
-        for (int i = 0; i < barLength; i++)
-        {
-            if (i < filled * 0.5)
-                bar += "[green]|[/]";
-            else if (i < filled)
-                bar += "[yellow]|[/]";
-            else
-                bar += " ";
-        }
-        bar += "]";
-        return bar;
-    }
-
-    private string BuildSwapBar()
-    {
-        const int barLength = 25;
-        var bar = "[";
-        for (int i = 0; i < barLength; i++)
-        {
-            bar += " ";
-        }
-        bar += "]";
-        return bar;
-    }
-
-    private List<ProcessInfo> SortProcesses(List<ProcessInfo> processes)
+    private List<ProcessTable.ProcessInfo> SortProcesses(List<ProcessTable.ProcessInfo> processes)
     {
         return _sortColumn switch
         {
@@ -443,24 +241,6 @@ else
         _sortColumn = column;
         // Re-sort existing processes immediately, next timer update will refresh data
         _displayProcesses = SortProcesses(_displayProcesses).ToList();
-    }
-
-    private static Color GetProcessCpuColor(double cpuPercent)
-    {
-        if (cpuPercent > 50) return Color.Red;
-        if (cpuPercent > 20) return Color.Yellow;
-        return Color.Green;
-    }
-
-    private static Color GetStateColor(string state)
-    {
-        return state switch
-        {
-            "R" => Color.Green, // Running
-            "S" => Color.White, // Sleeping
-            "D" => Color.Red,   // Uninterruptible sleep
-            _ => Color.Grey
-        };
     }
 
     public void Dispose()

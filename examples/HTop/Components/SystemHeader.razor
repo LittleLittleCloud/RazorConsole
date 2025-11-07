@@ -1,0 +1,122 @@
+@namespace HTop.Components
+
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Columns>
+    <div>
+        <Rows>
+            @for (int i = 0; i < CpuCores.Count; i++)
+            {
+                var cpuIndex = i; // Capture for closure
+                <Columns>
+                    <Markup Content="@($"{cpuIndex + 1,2}")" Foreground="@Color.Aqua" />
+                    <Markup Content="@BuildCpuBar(CpuCores[cpuIndex])" />
+                    <Markup Content="@($"{CpuCores[cpuIndex],5:F1}%")" Foreground="@Color.Grey70" />
+                </Columns>
+            }
+            <Columns>
+                <Markup Content="Mem" Foreground="@Color.Aqua" />
+                <Markup Content="@BuildMemoryBar()" />
+                <Markup Content="@($"{UsedMemoryMB,4}/{TotalMemoryMB}MB")" Foreground="@Color.Grey70" />
+            </Columns>
+            <Columns>
+                <Markup Content="Swp" Foreground="@Color.Aqua" />
+                <Markup Content="@BuildSwapBar()" />
+                <Markup Content="@($"{SwapUsedMB,4}/{SwapTotalMB}MB")" Foreground="@Color.Grey70" />
+            </Columns>
+        </Rows>
+    </div>
+    <div>
+        <Rows>
+            <Markup Content="@($"Tasks: {ProcessCount}, {RunningCount} thr; {RunningProcesses} running")" Foreground="@Color.Aqua" />
+            <Markup Content="@($"Load average: {LoadAverage}")" Foreground="@Color.Aqua" />
+            <Markup Content="@($"Uptime: {Uptime}")" Foreground="@Color.Aqua" />
+        </Rows>
+    </div>
+</Columns>
+
+@code {
+    [Parameter]
+    public List<double> CpuCores { get; set; } = new();
+
+    [Parameter]
+    public long UsedMemoryMB { get; set; }
+
+    [Parameter]
+    public long TotalMemoryMB { get; set; }
+
+    [Parameter]
+    public long SwapUsedMB { get; set; }
+
+    [Parameter]
+    public long SwapTotalMB { get; set; }
+
+    [Parameter]
+    public int ProcessCount { get; set; }
+
+    [Parameter]
+    public int RunningCount { get; set; }
+
+    [Parameter]
+    public int RunningProcesses { get; set; }
+
+    [Parameter]
+    public string LoadAverage { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Uptime { get; set; } = string.Empty;
+
+    private string BuildCpuBar(double percentage)
+    {
+        const int barLength = 25;
+        int filled = (int)(percentage / 100.0 * barLength);
+        
+        var bar = "[";
+        for (int i = 0; i < barLength; i++)
+        {
+            if (i < filled * 0.3)
+                bar += "[blue]|[/]";
+            else if (i < filled * 0.7)
+                bar += "[green]|[/]";
+            else if (i < filled)
+                bar += "[yellow]|[/]";
+            else
+                bar += " ";
+        }
+        bar += "]";
+        return bar;
+    }
+
+    private string BuildMemoryBar()
+    {
+        const int barLength = 25;
+        double percentage = TotalMemoryMB > 0 ? (UsedMemoryMB / (double)TotalMemoryMB) * 100 : 0;
+        int filled = (int)(percentage / 100.0 * barLength);
+        
+        var bar = "[";
+        for (int i = 0; i < barLength; i++)
+        {
+            if (i < filled * 0.5)
+                bar += "[green]|[/]";
+            else if (i < filled)
+                bar += "[yellow]|[/]";
+            else
+                bar += " ";
+        }
+        bar += "]";
+        return bar;
+    }
+
+    private string BuildSwapBar()
+    {
+        const int barLength = 25;
+        var bar = "[";
+        for (int i = 0; i < barLength; i++)
+        {
+            bar += " ";
+        }
+        bar += "]";
+        return bar;
+    }
+}
