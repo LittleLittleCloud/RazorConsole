@@ -1,0 +1,182 @@
+@namespace HTop.Components
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using RazorConsole.Components
+@using Spectre.Console
+@using System.Diagnostics
+@using System.Runtime.InteropServices
+
+@implements IDisposable
+
+<SystemHeader />
+
+@if (_displayProcesses.Count > 0)
+{
+    <ProcessTable Processes="@_displayProcesses"
+                  OnSortColumnChanged="SetSortColumn" />
+}
+else
+{
+    <Markup Content="Initializing..." Foreground="@Color.Yellow" />
+}
+
+<FunctionKeyBar />
+
+@code {
+    private Timer? _updateTimer;
+    private List<ProcessTable.ProcessInfo> _displayProcesses = new();
+    private string _sortColumn = "CPU";
+    
+    // For CPU calculation
+    private readonly Dictionary<int, (DateTime Time, TimeSpan TotalProcessorTime)> _previousCpuUsage = new();
+
+    protected override void OnInitialized()
+    {        
+        UpdateMetrics();
+        _updateTimer = new Timer(async _ =>
+        {
+            UpdateMetrics();
+            await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+        }, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+    }
+
+    private void UpdateMetrics()
+    {
+        try
+        {
+            // Get memory info
+            var gcMemoryInfo = GC.GetGCMemoryInfo();
+            var totalMemoryMB = gcMemoryInfo.TotalAvailableMemoryBytes / (1024 * 1024);
+            
+            // Calculate used memory and process info
+            var processes = Process.GetProcesses();
+            var processList = new List<ProcessTable.ProcessInfo>();
+
+            foreach (var process in processes)
+            {
+                try
+                {
+                    var memoryBytes = process.WorkingSet64;
+                    
+                    // Calculate CPU usage
+                    var cpuPercent = CalculateCpuUsage(process);
+
+                    // Get user name
+                    string userName = "user";
+                    try
+                    {
+                        userName = process.StartInfo?.UserName ?? Environment.UserName;
+                    }
+                    catch { }
+
+                    // Get process state
+                    string state = "S"; // Sleeping
+                    if (cpuPercent > 0) state = "R"; // Running
+                    if (!process.Responding) state = "D"; // Uninterruptible sleep
+
+                    processList.Add(new ProcessTable.ProcessInfo
+                    {
+                        Id = process.Id,
+                        User = userName,
+                        Priority = 20, // Default priority (simplified)
+                        Nice = 0, // Default nice value
+                        VirtualMemory = FormatMemory(process.VirtualMemorySize64),
+                        ResidentMemory = FormatMemory(memoryBytes),
+                        State = state,
+                        CpuPercent = cpuPercent,
+                        MemPercent = totalMemoryMB > 0 ? (memoryBytes / (1024.0 * 1024.0) / totalMemoryMB) * 100 : 0,
+                        CpuTime = FormatCpuTime(process.TotalProcessorTime),
+                        Command = process.ProcessName
+                    });
+                }
+                catch
+                {
+                    // Process may have exited or we don't have access
+                }
+            }
+
+            // Sort and take top 20 processes
+            _displayProcesses = SortProcesses(processList).Take(20).ToList();
+        }
+        catch (Exception)
+        {
+            // Silently handle any errors
+        }
+    }
+
+    private double CalculateCpuUsage(Process process)
+    {
+        try
+        {
+            var currentTime = DateTime.Now;
+            var currentCpuTime = process.TotalProcessorTime;
+
+            if (_previousCpuUsage.TryGetValue(process.Id, out var previous))
+            {
+                var timeDiff = (currentTime - previous.Time).TotalMilliseconds;
+                var cpuDiff = (currentCpuTime - previous.TotalProcessorTime).TotalMilliseconds;
+                
+                if (timeDiff > 0)
+                {
+                    var cpuUsagePercent = (cpuDiff / (timeDiff * Environment.ProcessorCount)) * 100;
+                    _previousCpuUsage[process.Id] = (currentTime, currentCpuTime);
+                    return Math.Min(cpuUsagePercent, 100); // Cap at 100%
+                }
+            }
+
+            _previousCpuUsage[process.Id] = (currentTime, currentCpuTime);
+            return 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    private static string FormatMemory(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes}";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024}K";
+        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024 * 1024)}M";
+        return $"{bytes / (1024 * 1024 * 1024)}G";
+    }
+
+    private static string FormatCpuTime(TimeSpan time)
+    {
+        if (time.TotalHours >= 1)
+            return $"{(int)time.TotalHours}:{time.Minutes:D2}:{time.Seconds:D2}";
+        return $"{time.Minutes}:{time.Seconds:D2}.{time.Milliseconds / 10:D2}";
+    }
+
+    private List<ProcessTable.ProcessInfo> SortProcesses(List<ProcessTable.ProcessInfo> processes)
+    {
+        return _sortColumn switch
+        {
+            "PID" => processes.OrderBy(p => p.Id).ToList(),
+            "USER" => processes.OrderBy(p => p.User).ToList(),
+            "PRI" => processes.OrderByDescending(p => p.Priority).ToList(),
+            "NI" => processes.OrderBy(p => p.Nice).ToList(),
+            "VIRT" => processes.OrderByDescending(p => p.VirtualMemory).ToList(),
+            "RES" => processes.OrderByDescending(p => p.ResidentMemory).ToList(),
+            "S" => processes.OrderBy(p => p.State).ToList(),
+            "CPU" => processes.OrderByDescending(p => p.CpuPercent).ToList(),
+            "MEM" => processes.OrderByDescending(p => p.MemPercent).ToList(),
+            "TIME" => processes.OrderByDescending(p => p.CpuTime).ToList(),
+            "Command" => processes.OrderBy(p => p.Command).ToList(),
+            _ => processes.OrderByDescending(p => p.CpuPercent).ToList()
+        };
+    }
+
+    private void SetSortColumn(string column)
+    {
+        _sortColumn = column;
+        // Re-sort existing processes immediately, next timer update will refresh data
+        _displayProcesses = SortProcesses(_displayProcesses).ToList();
+    }
+
+    public void Dispose()
+    {
+        _updateTimer?.Dispose();
+    }
+}

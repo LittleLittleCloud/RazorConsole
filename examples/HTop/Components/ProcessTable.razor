@@ -1,0 +1,163 @@
+@namespace HTop.Components
+
+@using RazorConsole.Components
+@using Spectre.Console
+
+<SpectreTable Expand="true" Border="TableBorder.None">
+    <SpectreTHead>
+        <SpectreTR>
+            <SpectreTH Align="Justify.Right">
+                <TextButton Content="PID"
+                            OnClick="@(() => HandleSortClick("PID"))"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Blue" />
+            </SpectreTH>
+            <SpectreTH Align="Justify.Left">
+                <TextButton Content="USER"
+                            OnClick="@(() => HandleSortClick("USER"))"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Blue" />
+            </SpectreTH>
+            <SpectreTH Align="Justify.Right">
+                <TextButton Content="PRI"
+                            OnClick="@(() => HandleSortClick("PRI"))"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Blue" />
+            </SpectreTH>
+            <SpectreTH Align="Justify.Right">
+                <TextButton Content="NI"
+                            OnClick="@(() => HandleSortClick("NI"))"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Blue" />
+            </SpectreTH>
+            <SpectreTH Align="Justify.Right">
+                <TextButton Content="VIRT"
+                            OnClick="@(() => HandleSortClick("VIRT"))"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Blue" />
+            </SpectreTH>
+            <SpectreTH Align="Justify.Right">
+                <TextButton Content="RES"
+                            OnClick="@(() => HandleSortClick("RES"))"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Blue" />
+            </SpectreTH>
+            <SpectreTH Align="Justify.Center">
+                <TextButton Content="S"
+                            OnClick="@(() => HandleSortClick("S"))"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Blue" />
+            </SpectreTH>
+            <SpectreTH Align="Justify.Right">
+                <TextButton Content="CPU%"
+                            OnClick="@(() => HandleSortClick("CPU"))"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Blue" />
+            </SpectreTH>
+            <SpectreTH Align="Justify.Right">
+                <TextButton Content="MEM%"
+                            OnClick="@(() => HandleSortClick("MEM"))"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Blue" />
+            </SpectreTH>
+            <SpectreTH Align="Justify.Right">
+                <TextButton Content="TIME+"
+                            OnClick="@(() => HandleSortClick("TIME"))"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Blue" />
+            </SpectreTH>
+            <SpectreTH Align="Justify.Left">
+                <TextButton Content="Command"
+                            OnClick="@(() => HandleSortClick("Command"))"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Blue" />
+            </SpectreTH>
+        </SpectreTR>
+    </SpectreTHead>
+    <SpectreTBody>
+        @foreach (var process in Processes)
+        {
+            <SpectreTR>
+                <SpectreTD>
+                    <Markup Content="@process.Id.ToString()" Foreground="@Color.White" />
+                </SpectreTD>
+                <SpectreTD>
+                    <Markup Content="@process.User" Foreground="@Color.White" />
+                </SpectreTD>
+                <SpectreTD>
+                    <Markup Content="@process.Priority.ToString()" Foreground="@Color.White" />
+                </SpectreTD>
+                <SpectreTD>
+                    <Markup Content="@process.Nice.ToString()" Foreground="@(process.Nice < 0 ? Color.Red : Color.White)" />
+                </SpectreTD>
+                <SpectreTD>
+                    <Markup Content="@process.VirtualMemory" Foreground="@Color.Aqua" />
+                </SpectreTD>
+                <SpectreTD>
+                    <Markup Content="@process.ResidentMemory" Foreground="@Color.Aqua" />
+                </SpectreTD>
+                <SpectreTD>
+                    <Markup Content="@process.State" Foreground="@GetStateColor(process.State)" />
+                </SpectreTD>
+                <SpectreTD>
+                    <Markup Content="@($"{process.CpuPercent:F1}")" Foreground="@GetProcessCpuColor(process.CpuPercent)" />
+                </SpectreTD>
+                <SpectreTD>
+                    <Markup Content="@($"{process.MemPercent:F1}")" Foreground="@Color.White" />
+                </SpectreTD>
+                <SpectreTD>
+                    <Markup Content="@process.CpuTime" Foreground="@Color.White" />
+                </SpectreTD>
+                <SpectreTD>
+                    <Markup Content="@process.Command" Foreground="@Color.White" />
+                </SpectreTD>
+            </SpectreTR>
+        }
+    </SpectreTBody>
+</SpectreTable>
+
+@code {
+    public class ProcessInfo
+    {
+        public int Id { get; set; }
+        public string User { get; set; } = string.Empty;
+        public int Priority { get; set; }
+        public int Nice { get; set; }
+        public string VirtualMemory { get; set; } = string.Empty;
+        public string ResidentMemory { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public double CpuPercent { get; set; }
+        public double MemPercent { get; set; }
+        public string CpuTime { get; set; } = string.Empty;
+        public string Command { get; set; } = string.Empty;
+    }
+
+    [Parameter]
+    public List<ProcessInfo> Processes { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<string> OnSortColumnChanged { get; set; }
+
+    private async Task HandleSortClick(string column)
+    {
+        await OnSortColumnChanged.InvokeAsync(column);
+    }
+
+    private static Color GetProcessCpuColor(double cpuPercent)
+    {
+        if (cpuPercent > 50) return Color.Red;
+        if (cpuPercent > 20) return Color.Yellow;
+        return Color.Green;
+    }
+
+    private static Color GetStateColor(string state)
+    {
+        return state switch
+        {
+            "R" => Color.Green, // Running
+            "S" => Color.White, // Sleeping
+            "D" => Color.Red,   // Uninterruptible sleep
+            _ => Color.Grey
+        };
+    }
+}
