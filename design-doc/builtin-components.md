@@ -4,7 +4,7 @@ This reference summarizes the Razor components that ship with RazorConsole. Each
 
 > **Tip:** Components marked with `RenderFragment? ChildContent` accept arbitrary nested markup.
 
-Current catalog: `Align`, `Border`, `Columns`, `Figlet`, `Grid`, `Markup`, `Newline`, `Padder`, `Panel`, `Rows`, `Select`, `Spinner`, `SyntaxHighlighter`, `Table`, `TextButton`, `TextInput`.
+Current catalog: `Align`, `Border`, `Box`, `BoxItem`, `Columns`, `Figlet`, `Grid`, `Markup`, `Newline`, `Padder`, `Panel`, `Rows`, `Select`, `Spinner`, `SyntaxHighlighter`, `Table`, `TextButton`, `TextInput`.
 
 ## Align
 Wraps child content in an alignment container.
@@ -26,6 +26,34 @@ Creates a bordered panel around its children.
 | `BorderColor` | `Color?` | `null` | Optional border color. |
 | `BoxBorder` | `BoxBorder` | `Rounded` | Border style (`Rounded`, `Square`, `Double`, etc.). |
 | `Padding` | `Padding` | `new(0,0,0,0)` | Inner padding inside the border. |
+
+## Box
+A flexible layout container using the Yoga layout engine, implementing CSS-like flexbox behavior.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `ChildContent` | `RenderFragment?` | — | Child elements to layout. |
+| `FlexDirection` | `string` | `"row"` | Layout direction: `row`, `column`, `row-reverse`, `column-reverse`. |
+| `JustifyContent` | `string` | `"flex-start"` | Main axis alignment: `flex-start`, `flex-end`, `center`, `space-between`, `space-around`. |
+| `AlignItems` | `string` | `"stretch"` | Cross axis alignment: `flex-start`, `flex-end`, `center`, `stretch`, `baseline`. |
+| `FlexWrap` | `string` | `"nowrap"` | Wrapping behavior: `nowrap`, `wrap`, `wrap-reverse`. |
+| `Width` | `int?` | `null` | Fixed width in characters. |
+| `Height` | `int?` | `null` | Fixed height in lines. |
+| `Padding` | `string` | `"0"` | Padding around content (e.g., "2" for all sides, "2 4" for vertical/horizontal, "1 2 3 4" for left/top/right/bottom). |
+| `Gap` | `int` | `0` | Space between child items in characters. |
+
+## BoxItem
+A child element within a Box container with flexible sizing properties.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `ChildContent` | `RenderFragment?` | — | Content to render in this flex item. |
+| `FlexGrow` | `float` | `0` | How much the item should grow relative to siblings. |
+| `FlexShrink` | `float` | `1` | How much the item should shrink relative to siblings. |
+| `FlexBasis` | `string` | `"auto"` | Initial size before flex distribution. |
+| `AlignSelf` | `string` | `"auto"` | Override parent's align-items for this item: `auto`, `flex-start`, `flex-end`, `center`, `stretch`, `baseline`. |
+| `Width` | `int?` | `null` | Fixed width in characters. |
+| `Height` | `int?` | `null` | Fixed height in lines. |
 
 ## Columns
 Flow child renderables in Spectre.Console columns.

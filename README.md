@@ -89,8 +89,8 @@ Build your console UI using familiar Razor components with full support for data
 Create engaging user experiences with interactive elements like buttons, text inputs, selectors, and keyboard navigation - all with focus management handled automatically.
 
 ### 🎯 **Built-in Component Library**
-Get started quickly with 15+ pre-built components covering layout, input, display, and navigation needs:
-- **Layout**: `Grid`, `Columns`, `Rows`, `Align`, `Padder`
+Get started quickly with 17+ pre-built components covering layout, input, display, and navigation needs:
+- **Layout**: `Grid`, `Columns`, `Rows`, `Align`, `Padder`, `Box`, `BoxItem`
 - **Input**: `TextInput`, `TextButton`, `Select`
 - **Display**: `Markdown`, `Markup`, `Panel`, `Border`, `Figlet`, `SyntaxHighlighter`, `Table`
 - **Utilities**: `Spinner`, `Newline`
@@ -112,6 +112,8 @@ RazorConsole ships with a catalog of ready-to-use components that wrap Spectre.C
 
 - `Align` – position child content horizontally and vertically within a fixed box.
 - `Border` – draw Spectre borders with customizable style, color, and padding.
+- `Box` – flexible layout container using Yoga layout engine for CSS-like flexbox behavior.
+- `BoxItem` – child element within a Box with flexible sizing properties (flex-grow, flex-shrink, etc.).
 - `Columns` – arrange items side-by-side, optionally stretching to fill the console width.
 - `Figlet` – render big ASCII art text using FIGlet fonts.
 - `Grid` – build multi-row, multi-column layouts with precise cell control.
