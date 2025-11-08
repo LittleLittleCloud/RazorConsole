@@ -1,0 +1,77 @@
+@namespace RazorConsole.Components
+
+@using Microsoft.AspNetCore.Components
+
+<div class="box"
+    data-flex-direction="@FlexDirectionAttribute"
+    data-justify-content="@JustifyContentAttribute"
+    data-align-items="@AlignItemsAttribute"
+    data-flex-wrap="@FlexWrapAttribute"
+    data-width="@WidthAttribute"
+    data-height="@HeightAttribute"
+    data-padding="@PaddingAttribute"
+    data-gap="@GapAttribute">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Flex direction (row, column, row-reverse, column-reverse)
+    /// </summary>
+    [Parameter]
+    public string FlexDirection { get; set; } = "row";
+
+    /// <summary>
+    /// Justify content alignment (flex-start, flex-end, center, space-between, space-around, space-evenly)
+    /// </summary>
+    [Parameter]
+    public string JustifyContent { get; set; } = "flex-start";
+
+    /// <summary>
+    /// Align items (flex-start, flex-end, center, stretch, baseline)
+    /// </summary>
+    [Parameter]
+    public string AlignItems { get; set; } = "stretch";
+
+    /// <summary>
+    /// Flex wrap (nowrap, wrap, wrap-reverse)
+    /// </summary>
+    [Parameter]
+    public string FlexWrap { get; set; } = "nowrap";
+
+    /// <summary>
+    /// Fixed width in characters
+    /// </summary>
+    [Parameter]
+    public int? Width { get; set; }
+
+    /// <summary>
+    /// Fixed height in lines
+    /// </summary>
+    [Parameter]
+    public int? Height { get; set; }
+
+    /// <summary>
+    /// Padding (left, top, right, bottom)
+    /// </summary>
+    [Parameter]
+    public string Padding { get; set; } = "0";
+
+    /// <summary>
+    /// Gap between items in characters
+    /// </summary>
+    [Parameter]
+    public int Gap { get; set; } = 0;
+
+    private string FlexDirectionAttribute => FlexDirection;
+    private string JustifyContentAttribute => JustifyContent;
+    private string AlignItemsAttribute => AlignItems;
+    private string FlexWrapAttribute => FlexWrap;
+    private string? WidthAttribute => Width?.ToString();
+    private string? HeightAttribute => Height?.ToString();
+    private string PaddingAttribute => Padding;
+    private string GapAttribute => Gap.ToString();
+}

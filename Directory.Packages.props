@@ -25,6 +25,7 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="ColorCode.Core" Version="2.0.15" />
     <PackageVersion Include="Markdig" Version="0.39.0" />
+    <PackageVersion Include="Facebook.Yoga" Version="1.5.0-pre1" />
     
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />

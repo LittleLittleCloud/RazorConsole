@@ -9,6 +9,7 @@
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="ColorCode.Core" />
     <PackageReference Include="Markdig" />
+    <PackageReference Include="Facebook.Yoga" />
   </ItemGroup>
   <Import Project="$(RepoRoot)/nuget/nuget-package.props" />
 

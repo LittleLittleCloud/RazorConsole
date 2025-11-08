@@ -1,0 +1,61 @@
+@namespace RazorConsole.Components
+
+@using Microsoft.AspNetCore.Components
+
+<div class="box-item"
+    data-flex-grow="@FlexGrowAttribute"
+    data-flex-shrink="@FlexShrinkAttribute"
+    data-flex-basis="@FlexBasisAttribute"
+    data-align-self="@AlignSelfAttribute"
+    data-width="@WidthAttribute"
+    data-height="@HeightAttribute">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Flex grow factor
+    /// </summary>
+    [Parameter]
+    public float FlexGrow { get; set; } = 0;
+
+    /// <summary>
+    /// Flex shrink factor
+    /// </summary>
+    [Parameter]
+    public float FlexShrink { get; set; } = 1;
+
+    /// <summary>
+    /// Flex basis (auto or number)
+    /// </summary>
+    [Parameter]
+    public string FlexBasis { get; set; } = "auto";
+
+    /// <summary>
+    /// Align self (auto, flex-start, flex-end, center, stretch, baseline)
+    /// </summary>
+    [Parameter]
+    public string AlignSelf { get; set; } = "auto";
+
+    /// <summary>
+    /// Fixed width in characters
+    /// </summary>
+    [Parameter]
+    public int? Width { get; set; }
+
+    /// <summary>
+    /// Fixed height in lines
+    /// </summary>
+    [Parameter]
+    public int? Height { get; set; }
+
+    private string FlexGrowAttribute => FlexGrow.ToString();
+    private string FlexShrinkAttribute => FlexShrink.ToString();
+    private string FlexBasisAttribute => FlexBasis;
+    private string AlignSelfAttribute => AlignSelf;
+    private string? WidthAttribute => Width?.ToString();
+    private string? HeightAttribute => Height?.ToString();
+}

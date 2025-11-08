@@ -138,6 +138,7 @@ public sealed class VdomSpectreTranslator
             new HtmlHrElementTranslator(),
             new PanelElementTranslator(),
             new RowsElementTranslator(),
+            new BoxElementTranslator(),
             new ColumnsElementTranslator(),
             new GridElementTranslator(),
             new PadderElementTranslator(),
