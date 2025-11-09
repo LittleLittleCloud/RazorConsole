@@ -2,6 +2,8 @@
 
 A CLI login screen that demonstrates form validation, input handling, and error highlighting in RazorConsole.
 
+![login-portal](../../assets/example/login_portal.png)
+
 ## Features
 
 This example showcases:
