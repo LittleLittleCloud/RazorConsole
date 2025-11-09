@@ -11,37 +11,53 @@
 
 <Panel Title="@($"Current Directory: {_currentPath}")" Border="BoxBorder.Rounded" Expand="true">
     <Rows>
-        @if (!string.IsNullOrEmpty(_parentPath))
+        @if (_selectedFilePath == null)
         {
-            <Columns>
-                <TextButton Content="📁 .. (Parent Directory)"
-                            OnClick="NavigateToParent"
-                            BackgroundColor="@Color.Grey"
-                            FocusedColor="@Color.Blue" />
-            </Columns>
-            <Newline />
-        }
+            @if (!string.IsNullOrEmpty(_parentPath))
+            {
+                <Columns>
+                    <TextButton Content="📁 .. (Parent Directory)"
+                                OnClick="NavigateToParent"
+                                BackgroundColor="@Color.Grey"
+                                FocusedColor="@Color.Blue" />
+                </Columns>
+                <Newline />
+            }
 
-        <Columns>
-            <Panel Title="Files" Border="BoxBorder.Rounded" Expand="false" Width="40">
-                <Rows>
-                    @if (_markdownFiles.Count == 0)
+            <Columns>
+                <Panel Title="Files" Border="BoxBorder.Rounded" Expand="false" Width="40">
+                    <Rows>
+                        @if (_markdownFiles.Count == 0)
+                        {
+                            <Markup Content="No markdown files found in this directory." Foreground="@Color.Grey58" />
+                        }
+                        else
+                        {
+                            @foreach (var file in _markdownFiles)
+                            {
+                                <TextButton Content="@($"📄 {file.Name}")"
+                                            OnClick="@(() => SelectFile(file.FullPath))"
+                                            BackgroundColor="@(file.FullPath == _selectedFilePath ? Color.Grey23 : Color.Black)"
+                                            FocusedColor="@Color.Green" />
+                            }
+                        }
+                    </Rows>
+                </Panel>
+
+                <Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
+                    @if (_error != null)
                     {
-                        <Markup Content="No markdown files found in this directory." Foreground="@Color.Grey58" />
+                        <Markup Content="@_error" Foreground="@Color.Red" />
                     }
                     else
                     {
-                        @foreach (var file in _markdownFiles)
-                        {
-                            <TextButton Content="@($"📄 {file.Name}")"
-                                        OnClick="@(() => SelectFile(file.FullPath))"
-                                        BackgroundColor="@(file.FullPath == _selectedFilePath ? Color.Grey23 : Color.Black)"
-                                        FocusedColor="@Color.Green" />
-                        }
+                        <Markup Content="Select a markdown file to preview" Foreground="@Color.Grey58" />
                     }
-                </Rows>
-            </Panel>
-
+                </Panel>
+            </Columns>
+        }
+        else
+        {
             <Panel Title="@(_selectedFileName ?? "Preview")" Border="BoxBorder.Rounded" Expand="true">
                 @if (!string.IsNullOrEmpty(_selectedFileContent))
                 {
@@ -51,15 +67,8 @@
                 {
                     <Markup Content="@_error" Foreground="@Color.Red" />
                 }
-                else
-                {
-                    <Markup Content="Select a markdown file to preview" Foreground="@Color.Grey58" />
-                }
             </Panel>
-        </Columns>
 
-        @if (!string.IsNullOrEmpty(_selectedFilePath))
-        {
             <Newline />
             <Panel Title="File Info" Border="BoxBorder.Rounded" Expand="true">
                 <Rows>
@@ -77,6 +86,14 @@
                     </Columns>
                 </Rows>
             </Panel>
+
+            <Newline />
+            <Columns>
+                <TextButton Content="⬅ Exit Preview"
+                            OnClick="ExitPreview"
+                            BackgroundColor="@Color.Grey23"
+                            FocusedColor="@Color.Blue" />
+            </Columns>
         }
     </Rows>
 </Panel>
@@ -242,5 +259,15 @@
             len = len / 1024;
         }
         return $"{len:0.##} {sizes[order]}";
+    }
+
+    private void ExitPreview()
+    {
+        _selectedFilePath = null;
+        _selectedFileName = null;
+        _selectedFileContent = null;
+        _selectedFileSize = string.Empty;
+        _selectedFileModified = string.Empty;
+        _error = null;
     }
 }
