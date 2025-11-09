@@ -62,12 +62,12 @@ internal static class HtmlVdomConverter
                     vnode.AddChild(VNode.CreateText(text.Value));
                     break;
                 case XElement childElement:
-                    {
-                        var childPath = new List<int>(path) { childElementIndex };
-                        vnode.AddChild(ConvertElement(childElement, childPath));
-                        childElementIndex++;
-                        break;
-                    }
+                {
+                    var childPath = new List<int>(path) { childElementIndex };
+                    vnode.AddChild(ConvertElement(childElement, childPath));
+                    childElementIndex++;
+                    break;
+                }
             }
         }
 

@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🚀 RazorConsole
+<img src="./assets/razor_console logo_dark_icon (128x128).svg" alt="RazorConsole Logo" width="128" height="128" />
+
+# RazorConsole
 
 [![NuGet (Stable)](https://img.shields.io/nuget/v/RazorConsole.Core.svg?style=flat-square&logo=nuget&label=stable)](https://www.nuget.org/packages/RazorConsole.Core)
 [![NuGet (Nightly)](https://img.shields.io/nuget/vpre/RazorConsole.Core.svg?style=flat-square&logo=nuget&label=nightly&color=orange)](https://www.nuget.org/packages/RazorConsole.Core/absoluteLatest)
@@ -11,7 +13,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-512BD4?style=flat-square)](https://dotnet.microsoft.com/)
 
-[![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/tpJ3brxB)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/DphHAnJxCM)
 
 **Build rich, interactive console applications using familiar Razor syntax and the power of Spectre.Console**
 
@@ -240,6 +242,16 @@ After installation, run `razorconsole-gallery` to open the showcase and browse c
 
 Check out the [`examples/`](examples/) folder for complete sample applications that demonstrate RazorConsole in action:
 
+### Counter
+
+A simple counter application that demonstrates the basics of RazorConsole:
+- Interactive buttons with keyboard navigation
+- State management and event handling
+- Layout with Rows, Columns, and Panels
+- Styled text with Markup and Figlet components
+
+Perfect for getting started with RazorConsole. See [`examples/Counter/`](examples/Counter/) for the complete implementation.
+
 ### LLM Agent TUI
 
 A Claude Code-inspired chat interface that demonstrates:
@@ -277,8 +289,9 @@ The following file types are automatically tracked by Git LFS:
 
 ## Community & support
 
-- Join our [Discord server](https://discord.gg/tpJ3brxB) to chat with the community and get help.
+- Join our [Discord server](https://discord.gg/DphHAnJxCM) to chat with the community and get help.
 - File issues using the GitHub **Issues** tab.
+- Read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
 
 ## License
 

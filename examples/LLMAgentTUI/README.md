@@ -1,5 +1,7 @@
 # LLM Agent TUI Example
 
+![alt text](../../assets/example/chatbot.png)
+
 This example demonstrates how to build an AI-powered chat application using RazorConsole and Microsoft.Extensions.AI SDK. The interface is inspired by Claude Code's terminal UI.
 
 ## Features

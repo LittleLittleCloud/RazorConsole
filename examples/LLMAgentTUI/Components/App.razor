@@ -12,9 +12,6 @@
 
 <Figlet Content="ChatBot" />
 
-<Align Horizontal="@HorizontalAlignment.Center">
-	<Markup Content="AI-Powered Console ChatBot • Tab to change focus • Enter to submit • Ctrl+C to exit" Foreground="@Color.Grey58" />
-</Align>
 <Padder Padding="@(new(1, 0, 0, 0))">
 	<Rows>
 		@if (_messages.Count == 0)
@@ -45,10 +42,11 @@
 	</Rows>
 </Padder>
 
-<TextInput @bind-Value="_currentInput" Placeholder="Type your message here..." OnSubmit="SendMessage" Expand="true" />
-<Padder Padding="@(new(1, 0, 0, 0))">
-	<TextButton Content="Send" OnClick="SendMessage" BackgroundColor="@Color.Blue" FocusedColor="@Color.DodgerBlue1" />
-</Padder>
+<TextInput @bind-Value="_currentInput" Placeholder="Type your message here..." OnSubmit="SendMessage" Expand="true" onclick="SendMessage" />
+
+<Align Horizontal="@HorizontalAlignment.Center">
+	<Markup Content="AI-Powered Console ChatBot • Tab to change focus • Enter to submit • Ctrl+C to exit" Foreground="@Color.Grey58" />
+</Align>
 
 @code {
 	private List<ChatMessage> _messages = new();

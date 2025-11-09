@@ -14,10 +14,9 @@
     <Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
         <Rows>
             <Select Options="@(new[] { "Align", "Border", "Columns", "Panel", "Select", "Text Input" })"
-                    Placeholder="Choose a component"
-                    Value="Select"
+                    @bind-Value="Select"
                     Expand="true" />
-            <Markup Content="Selected: Select."
+            <Markup Content=@($"Selected: {Select}.")
                     Foreground="@Color.Chartreuse1"
                     Decoration="@Decoration.Bold" />
         </Rows>
@@ -25,12 +24,12 @@
 </Rows>
 
 @code {
+    private string Select = "Align";
     private static readonly string _exampleCode = @"<Rows>
     <Select Options=""@(new[] { ""Align"", ""Border"", ""Columns"", ""Panel"", ""Select"", ""Text Input"" })""
-            Placeholder=""Choose a component""
-            Value=""Select""
+            @bind-Value=""Select""
             Expand=""true"" />
-    <Markup Content=""Selected: Select.""
+    <Markup Content=@($""Selected: {Select}."")
            Foreground=""Color.Chartreuse1""
            Decoration=""Decoration.Bold"" />
 </Rows>".Trim();

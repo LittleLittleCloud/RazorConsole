@@ -68,6 +68,18 @@ Outputs Spectre markup with styling.
 ## Newline
 Emits a single line break via `<Markup>` with `Environment.NewLine`. No parameters.
 
+## Spectre Canvas 
+SpectreCanvas component renders an array of pixels with different colors.
+
+| Parameter         | Type                            | Default | Description                                                                                                        |
+|-------------------|---------------------------------|---------|--------------------------------------------------------------------------------------------------------------------|
+| `Pixels` ⚠️       | `(int x, int y, Color color)[]` | —       | Pixels to render;  Required.                                                                                       |
+| `CanvasWidth` ⚠️  | `int`                           | —       | Canvas width; Required.                                                                                            |
+| `CanvasHeight` ⚠️ | `int`                           | —       | Canvas height; Required.                                                                                           |
+| `MaxWidth`        | `int?`                          | `null`    | Max width of the canvas.                                                                                           |
+| `PixelWidth`      | `int`                           | `2`     | Number of rectangles that will render as a pixel. One rectangle's width is half of square, so default value is 2. |
+| `Scale`           | `bool`                          | `false` | The value indicating whether or not to scale the canvas when rendering.                                            |
+
 ## Padder
 Adds padding around nested content.
 

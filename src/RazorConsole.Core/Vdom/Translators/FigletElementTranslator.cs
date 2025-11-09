@@ -45,8 +45,9 @@ public sealed class FigletElementTranslator : IVdomElementTranslator
         var styleAttribute = VdomSpectreTranslator.GetAttribute(node, "data-style");
         var style = new Style(Color.Default);
         if (!string.IsNullOrWhiteSpace(styleAttribute))
+        {
             style = Style.Parse(styleAttribute);
-
+        }
 
         var justifyAttribute = VdomSpectreTranslator.GetAttribute(node, "data-justify");
         var justify = (justifyAttribute?.ToLowerInvariant()) switch

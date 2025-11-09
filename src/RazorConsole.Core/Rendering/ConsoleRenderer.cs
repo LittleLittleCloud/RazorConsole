@@ -170,118 +170,118 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
             switch (edit.Type)
             {
                 case RenderTreeEditType.PrependFrame:
+                {
+                    var parent = _cursor.Peek();
+                    var referenceFrame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
+                    if (referenceFrame.FrameType == RenderTreeFrameType.Attribute)
                     {
-                        var parent = _cursor.Peek();
-                        var referenceFrame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-                        if (referenceFrame.FrameType == RenderTreeFrameType.Attribute)
-                        {
-                            ApplyAttributeFrame(parent, referenceFrame);
-                            break;
-                        }
-
-                        var (child, _) = BuildSubtree(batch.ReferenceFrames, edit.ReferenceFrameIndex);
-                        parent.InsertChild(edit.SiblingIndex, child);
+                        ApplyAttributeFrame(parent, referenceFrame);
                         break;
                     }
+
+                    var (child, _) = BuildSubtree(batch.ReferenceFrames, edit.ReferenceFrameIndex);
+                    parent.InsertChild(edit.SiblingIndex, child);
+                    break;
+                }
 
                 case RenderTreeEditType.RemoveFrame:
-                    {
-                        var parent = _cursor.Peek();
-                        parent.RemoveChildAt(edit.SiblingIndex);
-                        break;
-                    }
+                {
+                    var parent = _cursor.Peek();
+                    parent.RemoveChildAt(edit.SiblingIndex);
+                    break;
+                }
 
                 case RenderTreeEditType.SetAttribute:
+                {
+                    var parent = _cursor.Peek();
+                    RenderTreeFrame frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
+                    if (frame.FrameType == RenderTreeFrameType.Attribute)
                     {
-                        var parent = _cursor.Peek();
-                        RenderTreeFrame frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-                        if (frame.FrameType == RenderTreeFrameType.Attribute)
+                        if ((uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
                         {
-                            if ((uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
-                            {
-                                var child = parent.Children[edit.SiblingIndex];
-                                ApplyAttributeFrame(child, frame);
-                            }
-
-                            break;
+                            var child = parent.Children[edit.SiblingIndex];
+                            ApplyAttributeFrame(child, frame);
                         }
+
                         break;
                     }
+                    break;
+                }
 
                 case RenderTreeEditType.RemoveAttribute:
+                {
+                    var parent = _cursor.Peek();
+                    var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
+                    if (frame.FrameType == RenderTreeFrameType.Attribute && (uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
                     {
-                        var parent = _cursor.Peek();
-                        var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-                        if (frame.FrameType == RenderTreeFrameType.Attribute && (uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
+                        var child = parent.Children[edit.SiblingIndex];
+                        if (frame.AttributeEventHandlerId != 0)
                         {
-                            var child = parent.Children[edit.SiblingIndex];
-                            if (frame.AttributeEventHandlerId != 0)
+                            child.RemoveEvent(frame.AttributeName!);
+                        }
+                        else
+                        {
+                            child.RemoveAttribute(frame.AttributeName!);
+                            if (IsKeyAttribute(frame.AttributeName!))
                             {
-                                child.RemoveEvent(frame.AttributeName!);
-                            }
-                            else
-                            {
-                                child.RemoveAttribute(frame.AttributeName!);
-                                if (IsKeyAttribute(frame.AttributeName!))
-                                {
-                                    parent.SetKey(null);
-                                }
+                                parent.SetKey(null);
                             }
                         }
-
-                        break;
                     }
+
+                    break;
+                }
 
                 case RenderTreeEditType.UpdateText:
+                {
+                    var parent = _cursor.Peek();
+                    if ((uint)edit.SiblingIndex < (uint)parent.Children.Count)
                     {
-                        var parent = _cursor.Peek();
-                        if ((uint)edit.SiblingIndex < (uint)parent.Children.Count)
-                        {
-                            var child = parent.Children[edit.SiblingIndex];
-                            var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-                            var textContent = frame.FrameType == RenderTreeFrameType.Text
-                                ? frame.TextContent
-                                : frame.MarkupContent;
-                            child.SetText(textContent);
-                        }
-
-                        break;
+                        var child = parent.Children[edit.SiblingIndex];
+                        var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
+                        var textContent = frame.FrameType == RenderTreeFrameType.Text
+                            ? frame.TextContent
+                            : frame.MarkupContent;
+                        child.SetText(textContent);
                     }
+
+                    break;
+                }
 
                 case RenderTreeEditType.StepIn:
+                {
+                    var parent = _cursor.Peek();
+
+                    // process region
+                    if (parent.Children is { Count: 1 } && parent.Children[0].Kind == VNodeKind.Region)
                     {
-                        var parent = _cursor.Peek();
-
-                        // process region
-                        if (parent.Children is { Count: 1 } && parent.Children[0].Kind == VNodeKind.Region)
-                        {
-                            _cursor.Push(parent.Children[0]);
-                            parent = _cursor.Peek();
-                        }
-
-                        if ((uint)edit.SiblingIndex < (uint)parent.Children.Count)
-                        {
-                            _cursor.Push(parent.Children[edit.SiblingIndex]);
-                        }
-
-                        break;
+                        _cursor.Push(parent.Children[0]);
+                        parent = _cursor.Peek();
                     }
+
+                    if ((uint)edit.SiblingIndex < (uint)parent.Children.Count)
+                    {
+                        _cursor.Push(parent.Children[edit.SiblingIndex]);
+                    }
+
+                    break;
+                }
 
                 case RenderTreeEditType.StepOut:
+                {
+                    if (_cursor.Count > 0)
                     {
-                        if (_cursor.Count > 0)
+                        var parent = _cursor.Pop();
+
+                        // process region
+                        if (parent.Kind == VNodeKind.Region && _cursor.Count > 0)
                         {
-                            var parent = _cursor.Pop();
-
-                            // process region
-                            if (parent.Kind == VNodeKind.Region && _cursor.Count > 0)
-                            {
-                                _cursor.Pop();
-                            }
+                            _cursor.Pop();
                         }
-
-                        break;
                     }
+
+                    break;
+                }
             }
         }
     }
@@ -292,40 +292,40 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         switch (frame.FrameType)
         {
             case RenderTreeFrameType.Element:
+            {
+                var element = VNode.CreateElement(frame.ElementName!);
+                var end = index + frame.ElementSubtreeLength;
+                index++;
+
+                while (index < end && frames.Array[index].FrameType == RenderTreeFrameType.Attribute)
                 {
-                    var element = VNode.CreateElement(frame.ElementName!);
-                    var end = index + frame.ElementSubtreeLength;
+                    var attribute = frames.Array[index];
+                    if (attribute.AttributeEventHandlerId != 0)
+                    {
+                        element.SetEvent(attribute.AttributeName!, attribute.AttributeEventHandlerId);
+                    }
+                    else
+                    {
+                        var value = FormatAttributeValue(attribute.AttributeValue);
+                        element.SetAttribute(attribute.AttributeName!, value);
+                        if (IsKeyAttribute(attribute.AttributeName!))
+                        {
+                            element.SetKey(string.IsNullOrWhiteSpace(value) ? null : value);
+                        }
+                    }
+
                     index++;
-
-                    while (index < end && frames.Array[index].FrameType == RenderTreeFrameType.Attribute)
-                    {
-                        var attribute = frames.Array[index];
-                        if (attribute.AttributeEventHandlerId != 0)
-                        {
-                            element.SetEvent(attribute.AttributeName!, attribute.AttributeEventHandlerId);
-                        }
-                        else
-                        {
-                            var value = FormatAttributeValue(attribute.AttributeValue);
-                            element.SetAttribute(attribute.AttributeName!, value);
-                            if (IsKeyAttribute(attribute.AttributeName!))
-                            {
-                                element.SetKey(string.IsNullOrWhiteSpace(value) ? null : value);
-                            }
-                        }
-
-                        index++;
-                    }
-
-                    while (index < end)
-                    {
-                        var (child, next) = BuildSubtree(frames, index);
-                        element.AddChild(child);
-                        index = next;
-                    }
-
-                    return (element, index);
                 }
+
+                while (index < end)
+                {
+                    var (child, next) = BuildSubtree(frames, index);
+                    element.AddChild(child);
+                    index = next;
+                }
+
+                return (element, index);
+            }
 
             case RenderTreeFrameType.Text:
                 return (VNode.CreateText(frame.TextContent), index + 1);
@@ -341,49 +341,49 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 }
 
             case RenderTreeFrameType.Region:
+            {
+                var region = VNode.CreateRegion();
+                var end = index + frame.RegionSubtreeLength;
+                index++;
+
+                while (index < end)
                 {
-                    var region = VNode.CreateRegion();
-                    var end = index + frame.RegionSubtreeLength;
-                    index++;
-
-                    while (index < end)
-                    {
-                        var (child, next) = BuildSubtree(frames, index);
-                        region.AddChild(child);
-                        index = next;
-                    }
-
-                    return (region, index);
+                    var (child, next) = BuildSubtree(frames, index);
+                    region.AddChild(child);
+                    index = next;
                 }
+
+                return (region, index);
+            }
 
             case RenderTreeFrameType.Component:
+            {
+                var componentId = frame.ComponentId;
+                var component = VNode.CreateComponent();
+                component.SetAttribute("component-id", componentId.ToString(CultureInfo.InvariantCulture));
+                if (frame.ComponentType is not null)
                 {
-                    var componentId = frame.ComponentId;
-                    var component = VNode.CreateComponent();
-                    component.SetAttribute("component-id", componentId.ToString(CultureInfo.InvariantCulture));
-                    if (frame.ComponentType is not null)
-                    {
-                        component.SetAttribute("component-type", frame.ComponentType.FullName);
-                    }
-
-                    var end = index + frame.ComponentSubtreeLength;
-                    index++;
-
-                    while (index < end && frames.Array[index].FrameType == RenderTreeFrameType.Attribute)
-                    {
-                        var attribute = frames.Array[index];
-                        if (attribute.AttributeEventHandlerId == 0)
-                        {
-                            var value = FormatAttributeValue(attribute.AttributeValue);
-                            component.SetAttribute(attribute.AttributeName!, value);
-                        }
-
-                        index++;
-                    }
-
-                    index = end;
-                    return (component, index);
+                    component.SetAttribute("component-type", frame.ComponentType.FullName);
                 }
+
+                var end = index + frame.ComponentSubtreeLength;
+                index++;
+
+                while (index < end && frames.Array[index].FrameType == RenderTreeFrameType.Attribute)
+                {
+                    var attribute = frames.Array[index];
+                    if (attribute.AttributeEventHandlerId == 0)
+                    {
+                        var value = FormatAttributeValue(attribute.AttributeValue);
+                        component.SetAttribute(attribute.AttributeName!, value);
+                    }
+
+                    index++;
+                }
+
+                index = end;
+                return (component, index);
+            }
 
             default:
                 return (VNode.CreateRegion(), index + 1);

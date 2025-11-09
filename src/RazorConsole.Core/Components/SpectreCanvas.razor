@@ -1,0 +1,83 @@
+@using RazorConsole.Core.Rendering
+@using Spectre.Console
+@namespace RazorConsole.Components
+@implements IDisposable
+
+<div class="spectre-canvas"
+     data-canvas="true"
+     data-width="@CanvasWidth"
+     data-height="@CanvasHeight"
+     data-maxwidth="@MaxWidthAttribute"
+     data-pixelwidth="@PixelWidth"
+     data-scale="@ScaleAttribute"
+     data-canvas-data-id="@_dataId"
+     data-update-token="@_updateToken"/>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public (int x, int y, Color color)[] Pixels { get; set; } = [];
+
+    [Parameter]
+    [EditorRequired]
+    public int CanvasWidth { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public int CanvasHeight { get; set; }
+
+    [Parameter]
+    public int? MaxWidth { get; set; }
+
+    [Parameter]
+    public int PixelWidth { get; set; } = 2;
+
+    [Parameter]
+    public bool Scale { get; set; }
+
+    private string? MaxWidthAttribute => MaxWidth?.ToString();
+    private string ScaleAttribute => Scale ? "true" : "false";
+
+    private readonly Guid _dataId = Guid.NewGuid();
+    private Guid _updateToken; // Token that forces re-render when pixels array has changed
+    private (int x, int y, Color color)[]? _lastPixelsReference;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ValidatePixelsLength();
+        UpdateRegistry();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        ValidatePixelsLength();
+
+        if (!ReferenceEquals(_lastPixelsReference, Pixels))
+        {
+            _updateToken = Guid.NewGuid();
+            _lastPixelsReference = Pixels;
+            UpdateRegistry();
+        }
+    }
+
+    private void ValidatePixelsLength()
+    {
+        if (Pixels.Length > CanvasWidth * CanvasHeight)
+        {
+            throw new ArgumentException(
+                $"Canvas pixels count ({Pixels.Length}) must be <= canvas area ({CanvasWidth * CanvasHeight}).");
+        }
+    }
+
+    private void UpdateRegistry()
+    {
+        CanvasDataRegistry.Register(_dataId, Pixels);
+    }
+
+    public void Dispose()
+    {
+        CanvasDataRegistry.Unregister(_dataId);
+    }
+}
