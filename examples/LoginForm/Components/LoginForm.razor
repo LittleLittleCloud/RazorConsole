@@ -4,7 +4,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @using RazorConsole.Components
 @using Spectre.Console
-
+@using RazorConsole.Core.Focus
 <Figlet Content="Login Portal" />
 <Newline />
 
@@ -12,10 +12,7 @@
     <Rows>
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
-            <Panel BorderColor="@Color.Red" Border="BoxBorder.Rounded">
-                <Markup Content="@_errorMessage" Foreground="@Color.Red" Decoration="@Decoration.Bold" />
-            </Panel>
-            <Newline />
+            <Markup Content="@_errorMessage" Foreground="@Color.Red" Decoration="@Decoration.Bold" />
         }
 
         @if (_isLoggedIn)
@@ -43,11 +40,6 @@
                        BorderPadding="@_inputPadding"
                        Expand="true" />
 
-            @if (_usernameError)
-            {
-                <Markup Content="⚠ Username is required" Foreground="@Color.Red" Decoration="@Decoration.Italic" />
-            }
-
             <TextInput Label="Password"
                        Value="@_password"
                        ValueChanged="OnPasswordChanged"
@@ -59,17 +51,6 @@
                        Expand="true"
                        OnFocused="OnPasswordFocused"
                        OnBlurred="OnPasswordBlurred" />
-
-            @if (_passwordError)
-            {
-                <Markup Content="⚠ Password is required" Foreground="@Color.Red" Decoration="@Decoration.Italic" />
-            }
-            else if (_showPasswordHint)
-            {
-                <Markup Content="💡 Password must be at least 6 characters" Foreground="@Color.Grey70" Decoration="@Decoration.Italic" />
-            }
-
-            <Newline />
 
             <Columns>
                 <TextButton Content="Login"
