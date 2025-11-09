@@ -9,16 +9,18 @@
 		<SyntaxHighlighter Language="razor" Code="@_exampleCodeString" ShowLineNumbers="true" />
 	</Panel>
 	<Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
-	<Markup Content="Emphasize important labels"
-			 Foreground="@Color.Chartreuse1"
-			 Decoration="@Decoration.Bold" />
-	<Markup Content="Callouts can be dimmed"
-			Foreground="@Color.Grey70"
-			Decoration="@(Decoration.Dim | Decoration.Italic)" />
-	<Markup Content="Link to the repository"
-			Foreground="@Color.DeepSkyBlue1"
-			Decoration="@Decoration.Underline"
-			link="https://github.com/LittleLittleCloud/RazorConsole" />
+	<Rows>
+		<Markup Content="Emphasize important labels"
+				 Foreground="@Color.Chartreuse1"
+				 Decoration="@Decoration.Bold" />
+		<Markup Content="Callouts can be dimmed"
+				Foreground="@Color.Grey70"
+				Decoration="@(Decoration.Dim | Decoration.Italic)" />
+		<Markup Content="Link to the repository"
+				Foreground="@Color.DeepSkyBlue1"
+				Decoration="@Decoration.Underline"
+				link="https://github.com/LittleLittleCloud/RazorConsole" />
+	</Rows>
 	</Panel>
 	</Rows>
 

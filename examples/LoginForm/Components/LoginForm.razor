@@ -1,0 +1,191 @@
+@namespace LoginForm.Components
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using RazorConsole.Components
+@using Spectre.Console
+@using RazorConsole.Core.Focus
+<Figlet Content="Login Portal" />
+<Newline />
+
+<Panel Title="User Login" Border="BoxBorder.Rounded" Expand="true">
+    <Rows>
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <Markup Content="@_errorMessage" Foreground="@Color.Red" Decoration="@Decoration.Bold" />
+        }
+
+        @if (_isLoggedIn)
+        {
+            <Panel BorderColor="@Color.Green" Border="BoxBorder.Rounded">
+                <Rows>
+                    <Markup Content="✓ Login Successful!" Foreground="@Color.Green" Decoration="@Decoration.Bold" />
+                    <Markup Content="@($"Welcome, {_username}!")" Foreground="@Color.Cyan1" />
+                </Rows>
+            </Panel>
+            <Newline />
+            <TextButton Content="Logout"
+                        OnClick="HandleLogout"
+                        BackgroundColor="@Color.Grey"
+                        FocusedColor="@Color.Yellow" />
+        }
+        else
+        {
+            <TextInput Label="Username"
+                       Value="@_username"
+                       ValueChanged="OnUsernameChanged"
+                       Placeholder="Enter your username"
+                       FocusedBorderColor="@(_usernameError ? Color.Red : Color.DeepSkyBlue1)"
+                       BorderColor="@(_usernameError ? Color.Red3 : Color.Grey37)"
+                       BorderPadding="@_inputPadding"
+                       Expand="true" />
+
+            <TextInput Label="Password"
+                       Value="@_password"
+                       ValueChanged="OnPasswordChanged"
+                       Placeholder="Enter your password"
+                       MaskInput="true"
+                       FocusedBorderColor="@(_passwordError ? Color.Red : Color.MediumOrchid)"
+                       BorderColor="@(_passwordError ? Color.Red3 : Color.Grey37)"
+                       BorderPadding="@_inputPadding"
+                       Expand="true"
+                       OnFocused="OnPasswordFocused"
+                       OnBlurred="OnPasswordBlurred" />
+
+            <Columns>
+                <TextButton Content="Login"
+                            OnClick="HandleLogin"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.Lime" />
+                <TextButton Content="Clear"
+                            OnClick="HandleClear"
+                            BackgroundColor="@Color.Grey"
+                            FocusedColor="@Color.Yellow" />
+            </Columns>
+        }
+    </Rows>
+</Panel>
+
+<Newline />
+<Markup Content="Press Tab to change focus • Press Enter to submit • Press Ctrl+C to exit" Foreground="@Color.Grey58" />
+
+@code {
+    private static readonly Padding _inputPadding = new(1, 0, 1, 0);
+
+    private string _username = string.Empty;
+    private string _password = string.Empty;
+    private string _errorMessage = string.Empty;
+    private bool _usernameError = false;
+    private bool _passwordError = false;
+    private bool _isLoggedIn = false;
+    private bool _showPasswordHint = false;
+
+    // Simple validation: username must be at least 3 characters, password at least 6
+    private const int MinUsernameLength = 3;
+    private const int MinPasswordLength = 6;
+
+    [Inject]
+    private FocusManager FocusManager { get; set; } = null!;
+
+    private Task OnUsernameChanged(string? value)
+    {
+        _username = value ?? string.Empty;
+        _usernameError = false;
+        _errorMessage = string.Empty;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnPasswordChanged(string? value)
+    {
+        _password = value ?? string.Empty;
+        _passwordError = false;
+        _errorMessage = string.Empty;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnPasswordFocused()
+    {
+        _showPasswordHint = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnPasswordBlurred()
+    {
+        _showPasswordHint = false;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleLogin()
+    {
+        _usernameError = false;
+        _passwordError = false;
+        _errorMessage = string.Empty;
+
+        // Validation logic
+        if (string.IsNullOrWhiteSpace(_username))
+        {
+            _usernameError = true;
+            _errorMessage = "Username cannot be empty";
+            StateHasChanged();
+            return Task.CompletedTask;
+        }
+
+        if (_username.Length < MinUsernameLength)
+        {
+            _usernameError = true;
+            _errorMessage = $"Username must be at least {MinUsernameLength} characters";
+            StateHasChanged();
+            return Task.CompletedTask;
+        }
+
+        if (string.IsNullOrWhiteSpace(_password))
+        {
+            _passwordError = true;
+            _errorMessage = "Password cannot be empty";
+            StateHasChanged();
+            return Task.CompletedTask;
+        }
+
+        if (_password.Length < MinPasswordLength)
+        {
+            _passwordError = true;
+            _errorMessage = $"Password must be at least {MinPasswordLength} characters";
+            StateHasChanged();
+            return Task.CompletedTask;
+        }
+
+        // Simulate authentication check (for demo purposes)
+        // In a real application, this would validate against a backend
+        _isLoggedIn = true;
+        _errorMessage = string.Empty;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleClear()
+    {
+        _username = string.Empty;
+        _password = string.Empty;
+        _errorMessage = string.Empty;
+        _usernameError = false;
+        _passwordError = false;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleLogout()
+    {
+        _isLoggedIn = false;
+        _username = string.Empty;
+        _password = string.Empty;
+        _errorMessage = string.Empty;
+        _usernameError = false;
+        _passwordError = false;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+}
