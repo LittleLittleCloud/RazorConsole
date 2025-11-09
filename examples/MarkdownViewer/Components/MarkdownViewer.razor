@@ -1,0 +1,273 @@
+@namespace MarkdownViewer.Components
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using RazorConsole.Components
+@using Spectre.Console
+@using System.IO
+
+<Figlet Content="Markdown Viewer" />
+<Newline />
+
+<Panel Title="@($"Current Directory: {_currentPath}")" Border="BoxBorder.Rounded" Expand="true">
+    <Rows>
+        @if (_selectedFilePath == null)
+        {
+            @if (!string.IsNullOrEmpty(_parentPath))
+            {
+                <Columns>
+                    <TextButton Content="📁 .. (Parent Directory)"
+                                OnClick="NavigateToParent"
+                                BackgroundColor="@Color.Grey"
+                                FocusedColor="@Color.Blue" />
+                </Columns>
+                <Newline />
+            }
+
+            <Columns>
+                <Panel Title="Files" Border="BoxBorder.Rounded" Expand="false" Width="40">
+                    <Rows>
+                        @if (_markdownFiles.Count == 0)
+                        {
+                            <Markup Content="No markdown files found in this directory." Foreground="@Color.Grey58" />
+                        }
+                        else
+                        {
+                            @foreach (var file in _markdownFiles)
+                            {
+                                <TextButton Content="@($"📄 {file.Name}")"
+                                            OnClick="@(() => SelectFile(file.FullPath))"
+                                            BackgroundColor="@(file.FullPath == _selectedFilePath ? Color.Grey23 : Color.Black)"
+                                            FocusedColor="@Color.Green" />
+                            }
+                        }
+                    </Rows>
+                </Panel>
+
+                <Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
+                    @if (_error != null)
+                    {
+                        <Markup Content="@_error" Foreground="@Color.Red" />
+                    }
+                    else
+                    {
+                        <Markup Content="Select a markdown file to preview" Foreground="@Color.Grey58" />
+                    }
+                </Panel>
+            </Columns>
+        }
+        else
+        {
+            <Panel Title="@(_selectedFileName ?? "Preview")" Border="BoxBorder.Rounded" Expand="true">
+                @if (!string.IsNullOrEmpty(_selectedFileContent))
+                {
+                    <Markdown Content="@_selectedFileContent" />
+                }
+                else if (_error != null)
+                {
+                    <Markup Content="@_error" Foreground="@Color.Red" />
+                }
+            </Panel>
+
+            <Newline />
+            <Panel Title="File Info" Border="BoxBorder.Rounded" Expand="true">
+                <Rows>
+                    <Columns>
+                        <Markup Content="Path:" Foreground="@Color.Grey70" />
+                        <Markup Content="@_selectedFilePath" Foreground="@Color.Green" />
+                    </Columns>
+                    <Columns>
+                        <Markup Content="Size:" Foreground="@Color.Grey70" />
+                        <Markup Content="@_selectedFileSize" Foreground="@Color.Yellow" />
+                    </Columns>
+                    <Columns>
+                        <Markup Content="Last Modified:" Foreground="@Color.Grey70" />
+                        <Markup Content="@_selectedFileModified" Foreground="@Color.Aqua" />
+                    </Columns>
+                </Rows>
+            </Panel>
+
+            <Newline />
+            <Columns>
+                <TextButton Content="⬅ Exit Preview"
+                            OnClick="ExitPreview"
+                            BackgroundColor="@Color.Grey23"
+                            FocusedColor="@Color.Blue" />
+            </Columns>
+        }
+    </Rows>
+</Panel>
+
+<Newline />
+<Markup Content="Use Tab to navigate • Press Enter to select • Press Ctrl+C to exit" Foreground="@Color.Grey58" />
+
+@code {
+    private class MarkdownFileItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string FullPath { get; set; } = string.Empty;
+        public long Size { get; set; }
+        public DateTime Modified { get; set; }
+    }
+
+    private string _currentPath = string.Empty;
+    private string? _parentPath;
+    private List<MarkdownFileItem> _markdownFiles = new();
+    private string? _selectedFilePath;
+    private string? _selectedFileName;
+    private string? _selectedFileContent;
+    private string _selectedFileSize = string.Empty;
+    private string _selectedFileModified = string.Empty;
+    private string? _error;
+
+    protected override void OnInitialized()
+    {
+        // Start in the current directory
+        _currentPath = Directory.GetCurrentDirectory();
+        LoadDirectory(_currentPath);
+    }
+
+    private void LoadDirectory(string path)
+    {
+        try
+        {
+            _currentPath = Path.GetFullPath(path);
+            _markdownFiles.Clear();
+            _selectedFilePath = null;
+            _selectedFileName = null;
+            _selectedFileContent = null;
+            _error = null;
+
+            // Get parent directory
+            var parent = Directory.GetParent(_currentPath);
+            _parentPath = parent?.FullName;
+
+            // Get all markdown files in the directory
+            var markdownExtensions = new[] { ".md", ".markdown", ".mdown", ".mkd" };
+            var files = Directory.GetFiles(_currentPath)
+                .Where(f => markdownExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
+                .Select(f => new FileInfo(f))
+                .OrderBy(f => f.Name);
+
+            foreach (var file in files)
+            {
+                try
+                {
+                    _markdownFiles.Add(new MarkdownFileItem
+                    {
+                        Name = file.Name,
+                        FullPath = file.FullName,
+                        Size = file.Length,
+                        Modified = file.LastWriteTime
+                    });
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // Skip files we don't have permission to access
+                }
+                catch (IOException)
+                {
+                    // Skip files with I/O errors
+                }
+            }
+
+            // Also check subdirectories (we'll show them as buttons to navigate)
+            var directories = Directory.GetDirectories(_currentPath)
+                .Select(d => new DirectoryInfo(d))
+                .OrderBy(d => d.Name);
+
+            // If there are subdirectories with markdown files, show them
+            foreach (var dir in directories)
+            {
+                try
+                {
+                    var hasMarkdown = Directory.GetFiles(dir.FullName, "*.*", SearchOption.TopDirectoryOnly)
+                        .Any(f => markdownExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()));
+                    
+                    if (hasMarkdown)
+                    {
+                        // Add a pseudo-file that represents the directory
+                        _markdownFiles.Insert(0, new MarkdownFileItem
+                        {
+                            Name = $"📁 {dir.Name}/",
+                            FullPath = dir.FullName,
+                            Size = 0,
+                            Modified = dir.LastWriteTime
+                        });
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // Skip directories we don't have permission to access
+                }
+                catch (IOException)
+                {
+                    // Skip directories with I/O errors
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error loading directory: {ex.Message}";
+        }
+    }
+
+    private void NavigateToParent()
+    {
+        if (!string.IsNullOrEmpty(_parentPath))
+        {
+            LoadDirectory(_parentPath);
+        }
+    }
+
+    private void SelectFile(string path)
+    {
+        try
+        {
+            // Check if it's a directory
+            if (Directory.Exists(path))
+            {
+                LoadDirectory(path);
+                return;
+            }
+
+            var fileInfo = new FileInfo(path);
+            _selectedFilePath = path;
+            _selectedFileName = fileInfo.Name;
+            _selectedFileSize = FormatFileSize(fileInfo.Length);
+            _selectedFileModified = fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss");
+            
+            // Read the file content
+            _selectedFileContent = File.ReadAllText(path);
+            _error = null;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error reading file: {ex.Message}";
+            _selectedFileContent = null;
+        }
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private void ExitPreview()
+    {
+        _selectedFilePath = null;
+        _selectedFileName = null;
+        _selectedFileContent = null;
+        _selectedFileSize = string.Empty;
+        _selectedFileModified = string.Empty;
+        _error = null;
+    }
+}

@@ -263,6 +263,30 @@ A Claude Code-inspired chat interface that demonstrates:
 
 See [`examples/LLMAgentTUI/`](examples/LLMAgentTUI/) for the complete implementation and setup instructions.
 
+### File Explorer
+
+A local file explorer application that demonstrates:
+- Browse directories and navigate the file system
+- Display files and directories in a table
+- Show file details dynamically
+- Handle file I/O operations
+- Update components in response to user interaction
+- Use keyboard navigation for selection
+
+See [`examples/FileExplorer/`](examples/FileExplorer/) for the complete implementation.
+
+### Markdown Viewer
+
+A glow-like TUI application for viewing markdown files, inspired by [glow](https://github.com/charmbracelet/glow). This example demonstrates:
+- Markdown file discovery in current directory
+- Directory navigation for browsing markdown files
+- Live markdown preview with syntax highlighting
+- Split-view interface (file list + preview)
+- File metadata display (size, last modified)
+- Beautiful rendering with the Markdown component
+
+See [`examples/MarkdownViewer/`](examples/MarkdownViewer/) for the complete implementation.
+
 ## HotReload
 
 RazorConsole supports hotreload via metadata update handler so you can apply UI changes on the fly.

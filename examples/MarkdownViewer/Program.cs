@@ -1,0 +1,10 @@
+using MarkdownViewer.Components;
+using Microsoft.Extensions.Hosting;
+using RazorConsole.Core;
+
+var builder = Host.CreateDefaultBuilder(args)
+    .UseRazorConsole<MarkdownViewer.Components.MarkdownViewer>();
+
+var host = builder.Build();
+
+await host.RunAsync();
