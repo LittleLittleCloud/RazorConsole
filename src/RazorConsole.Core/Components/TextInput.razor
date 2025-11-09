@@ -43,7 +43,6 @@
     private readonly string _generatedFocusKey = Guid.NewGuid().ToString("N");
     private bool _isFocused;
     private string _currentValue = string.Empty;
-    private string _lastSetValue = string.Empty;
     private string _lastIncomingValue = string.Empty;
 
     [Parameter]
@@ -171,7 +170,6 @@
         if (!string.Equals(incoming, _lastIncomingValue, StringComparison.Ordinal))
         {
             _currentValue = incoming;
-            _lastSetValue = incoming;
             _lastIncomingValue = incoming;
         }
     }
@@ -185,7 +183,6 @@
 
         var newValue = ExtractValue(args) ?? string.Empty;
         _currentValue = newValue;
-        _lastSetValue = newValue;
 
         if (ValueChanged.HasDelegate)
         {
@@ -209,7 +206,6 @@
 
         var submittedValue = ExtractValue(args);
         _currentValue = submittedValue ?? string.Empty;
-        _lastSetValue = _currentValue;
 
         if (OnSubmit.HasDelegate)
         {
