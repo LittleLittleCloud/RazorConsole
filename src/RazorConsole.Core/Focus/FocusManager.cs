@@ -523,27 +523,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
         // If UpdateFocusTargets_NoLock returned a non-null target, it means focus changed
         if (newFocusTarget is not null)
         {
-            // Fire the focus changed event synchronously
-            FocusChanged?.Invoke(this, new FocusChangedEventArgs(newFocusTarget.Key));
-
-            // Dispatch async focus events without awaiting (fire and forget)
-            // Wrap in Task.Run to ensure exceptions don't go unobserved
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await DispatchFocusEventsAsync(previousTarget, newFocusTarget, token).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    // Expected when session is cancelled, ignore
-                }
-                catch
-                {
-                    // Swallow exceptions to prevent unobserved task exceptions
-                    // The dispatcher should handle its own exceptions
-                }
-            }, token);
+            _ = Task.Run(async () => await TriggerFocusChangedAsync(previousTarget, newFocusTarget, token).ConfigureAwait(false));
         }
     }
 
