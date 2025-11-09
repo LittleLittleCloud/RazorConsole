@@ -12,51 +12,29 @@
 <div
      @onfocus="OnFocus"
      @onfocusout="OnFocusOut"
-     @onclick="ToggleDropdownAsync"
      @onkeydown="OnKeyDown">
-    <Panel BorderColor="@_inputBorderColor" Border="@BorderStyle" Expand="@Expand">
-        <Columns>
-            <Markup Content="@DisplayValue"
-                    Foreground="@DisplayForeground"
-                    Decoration="@DisplayDecoration" />
-        </Columns>
-    </Panel>
-</div>
-
-
-@if (_isOpen)
-{
-    <Rows>
-        @if (Options.Length == 0)
+    <Rows Expand="@Expand">
+        @foreach (var option in Options)
         {
-                <Markup Content="@EmptyLabel"
-                        Foreground="@EmptyForeground"
-                        Decoration="@EmptyDecoration" />
-        }
-        else
-        {
-            @foreach (var option in Options)
-            {
-                var isHighlighted = string.Equals(option, _highlightedValue, StringComparison.Ordinal);
-                var indicator = isHighlighted ? ">" : " ";
-                    <Columns>
-                        <Markup Content="@($" {indicator}")" />
-                        <Markup Content="@option"
-                                Foreground="@(isHighlighted ? SelectedOptionForeground : OptionForeground)"
-                                Decoration="@(isHighlighted ? SelectedOptionDecoration : OptionDecoration)" />
-                    </Columns>
-            }
+            var isHighlighted = string.Equals(option, _highlightedValue, StringComparison.Ordinal);
+            var indicator = isHighlighted ? ">" : " ";
+            <Columns>
+                <Markup Content="@($" {indicator} {option}")"
+                        Foreground="@(isHighlighted ? GetFocusAdjustedColor(SelectedOptionForeground) : GetFocusAdjustedColor(OptionForeground))"
+                        Decoration="@(isHighlighted ? GetFocusAdjustedDecoration(SelectedOptionDecoration) : GetFocusAdjustedDecoration(OptionDecoration))" />
+            </Columns>
         }
     </Rows>
-}
+</div>
 
 @code {
-    private readonly string _focusKey = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-    private bool _isOpen;
+    // Private fields
     private string? _selectedValue;
     private string? _highlightedValue;
     private string? _lastSuppliedValue;
+    private bool _isFocused;
 
+    // Basic parameters
     [Parameter]
     public string[] Options
     {
@@ -68,46 +46,13 @@
     public string? Value { get; set; }
 
     [Parameter]
+    public bool Expand { get; set; } = false;
+
+    [Parameter]
     public EventCallback<string?> ValueChanged { get; set; }
 
     [Parameter]
-    public string Placeholder { get; set; } = "Select an option";
-
-    [Parameter]
     public EventCallback<string?> OnSelected { get; set; }
-
-    [Parameter]
-    public EventCallback OnClear { get; set; }
-
-    [Parameter]
-    public bool Expand { get; set; }
-
-    [Parameter]
-    public int? FocusOrder { get; set; }
-
-    [Parameter]
-    public BoxBorder BorderStyle { get; set; } = BoxBorder.Rounded;
-
-    [Parameter]
-    public Color PlaceholderColor { get; set; } = Color.Grey70;
-
-    [Parameter]
-    public Decoration PlaceholderDecoration { get; set; } = Decoration.Italic | Decoration.Dim;
-
-    [Parameter]
-    public Color ValueColor { get; set; } = Color.White;
-
-    [Parameter]
-    public Decoration ValueDecoration { get; set; } = Decoration.None;
-
-    [Parameter]
-    public string EmptyLabel { get; set; } = "No options available";
-
-    [Parameter]
-    public Color EmptyForeground { get; set; } = Color.Grey70;
-
-    [Parameter]
-    public Decoration EmptyDecoration { get; set; } = Decoration.Italic;
 
     [Parameter]
     public Color OptionForeground { get; set; } = Color.White;
@@ -123,16 +68,6 @@
 
     private string[] _options = Array.Empty<string>();
 
-    private bool HasSelection => !string.IsNullOrEmpty(_selectedValue);
-
-    private Color _inputBorderColor = Color.Grey37;
-
-    private string DisplayValue => HasSelection ? _selectedValue ?? string.Empty : Placeholder ?? string.Empty;
-
-    private Color DisplayForeground => HasSelection ? ValueColor : PlaceholderColor;
-
-    private Decoration DisplayDecoration => HasSelection ? ValueDecoration : PlaceholderDecoration;
-
     protected override void OnParametersSet()
     {
         var incomingValue = Value;
@@ -145,20 +80,14 @@
         SyncHighlightedValue();
     }
 
-    private async Task ToggleDropdownAsync()
-    {
-        if (_isOpen)
-        {
-            EnsureHighlightedValue();
-            _isOpen = false;
-        }
-        else
-        {
-            _isOpen = true;
-        }
 
-        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-    }
+
+    // Focus-adjusted styling methods
+    private Color GetFocusAdjustedColor(Color color) => _isFocused ? color : Color.Grey50;
+
+    private Decoration GetFocusAdjustedDecoration(Decoration decoration) => 
+        _isFocused ? decoration : decoration | Decoration.Dim;
+
 
     private async Task SelectOptionAsync(string option)
     {
@@ -180,13 +109,12 @@
     }
     private void OnFocus()
     {
-        _inputBorderColor = Color.Yellow;
+        _isFocused = true;
     }
 
     private void OnFocusOut()
     {
-        _inputBorderColor = Color.Grey37;
-        _isOpen = false;
+        _isFocused = false;
         _highlightedValue = _selectedValue;
     }
 
@@ -204,48 +132,40 @@
             return;
         }
 
-        if (IsToggleKey(key))
-        {
-            await ToggleDropdownAsync().ConfigureAwait(false);
-            return;
-        }
-
         if (_options.Length == 0)
         {
             return;
         }
 
-        if (IsCommitKey(key) && _isOpen && _highlightedValue is not null)
+        if (IsCommitKey(key) && _highlightedValue is not null)
         {
             await SelectOptionAsync(_highlightedValue).ConfigureAwait(false);
             return;
         }
 
-        if (IsCancelKey(key) && _isOpen)
+        if (IsCancelKey(key))
         {
-            _isOpen = false;
             _highlightedValue = _selectedValue;
             await InvokeAsync(StateHasChanged).ConfigureAwait(false);
             return;
         }
 
         var selectionChanged = false;
-        var dropdownOpened = false;
 
         if (IsDownKey(key))
         {
-            selectionChanged = TryMoveSelection(1, out dropdownOpened);
+            selectionChanged = TryMoveSelection(1);
         }
         else if (IsUpKey(key))
         {
-            selectionChanged = TryMoveSelection(-1, out dropdownOpened);
+            selectionChanged = TryMoveSelection(-1);
         }
         else if (IsTypeAheadCandidate(key))
         {
-            selectionChanged = TryTypeAhead(key[0], out dropdownOpened);
+            selectionChanged = TryTypeAhead(key[0]);
         }
 
-        if (!selectionChanged && !dropdownOpened)
+        if (!selectionChanged)
         {
             return;
         }
@@ -253,9 +173,8 @@
         await InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
 
-    private bool TryMoveSelection(int offset, out bool opened)
+    private bool TryMoveSelection(int offset)
     {
-        opened = EnsureOpen();
         EnsureHighlightedValue();
 
         if (_options.Length == 0)
@@ -294,9 +213,8 @@
         return true;
     }
 
-    private bool TryTypeAhead(char key, out bool opened)
+    private bool TryTypeAhead(char key)
     {
-        opened = EnsureOpen();
         EnsureHighlightedValue();
 
         if (char.IsControl(key))
@@ -331,20 +249,7 @@
         return false;
     }
 
-    private bool EnsureOpen()
-    {
-        if (_isOpen)
-        {
-            EnsureHighlightedValue();
-            return false;
-        }
 
-        _isOpen = true;
-
-        EnsureHighlightedValue();
-
-        return true;
-    }
 
     private static bool IsTypeAheadCandidate(string value)
         => value.Length == 1 && !char.IsControl(value[0]);
@@ -357,10 +262,7 @@
         => string.Equals(key, "UpArrow", StringComparison.OrdinalIgnoreCase)
             || string.Equals(key, "ArrowUp", StringComparison.OrdinalIgnoreCase);
 
-    private static bool IsToggleKey(string key)
-        => string.Equals(key, " ", StringComparison.Ordinal)
-            || string.Equals(key, "Space", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(key, "Spacebar", StringComparison.OrdinalIgnoreCase);
+
 
     private static bool IsCommitKey(string key)
         => string.Equals(key, "Enter", StringComparison.OrdinalIgnoreCase)
@@ -402,12 +304,6 @@
 
     private void SyncHighlightedValue()
     {
-        if (_isOpen)
-        {
-            EnsureHighlightedValue();
-            return;
-        }
-
         _highlightedValue = _selectedValue;
     }
 }

@@ -1,0 +1,245 @@
+@namespace FileExplorer.Components
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using RazorConsole.Components
+@using Spectre.Console
+@using System.IO
+
+<Figlet Content="File Explorer" />
+<Newline />
+
+<Panel Title="@($"Current Directory: {_currentPath}")" Border="BoxBorder.Rounded" Expand="true">
+    <Rows>
+        @if (!string.IsNullOrEmpty(_parentPath))
+        {
+            <Columns>
+                <TextButton Content="📁 .. (Parent Directory)"
+                            OnClick="NavigateToParent"
+                            BackgroundColor="@Color.Grey"
+                            FocusedColor="@Color.Blue" />
+            </Columns>
+            <Newline />
+        }
+
+        <Panel Title="Files and Directories" Border="BoxBorder.Rounded" Expand="true">
+            <SpectreTable Expand="true" Border="TableBorder.Rounded">
+                <SpectreTHead>
+                    <SpectreTR>
+                        <SpectreTH Align="Justify.Left">Name</SpectreTH>
+                        <SpectreTH Align="Justify.Center">Type</SpectreTH>
+                        <SpectreTH Align="Justify.Right">Size</SpectreTH>
+                        <SpectreTH Align="Justify.Center">Modified</SpectreTH>
+                    </SpectreTR>
+                </SpectreTHead>
+                <SpectreTBody>
+                    @foreach (var item in _items)
+                    {
+                        <SpectreTR>
+                            <SpectreTD>
+                                @if (item.IsDirectory)
+                                {
+                                    <TextButton Content="@($"📁 {item.Name}")"
+                                                OnClick="@(() => NavigateToDirectory(item.FullPath))"
+                                                BackgroundColor="@Color.Black"
+                                                FocusedColor="@Color.Blue" />
+                                }
+                                else
+                                {
+                                    <TextButton Content="@($"📄 {item.Name}")"
+                                                OnClick="@(() => SelectFile(item.FullPath))"
+                                                BackgroundColor="@Color.Black"
+                                                FocusedColor="@Color.Green" />
+                                }
+                            </SpectreTD>
+                            <SpectreTD>
+                                <Markup Content="@(item.IsDirectory ? "Directory" : "File")" 
+                                        Foreground="@(item.IsDirectory ? Color.Blue : Color.Grey70)" />
+                            </SpectreTD>
+                            <SpectreTD>
+                                <Markup Content="@item.Size" Foreground="@Color.Grey70" />
+                            </SpectreTD>
+                            <SpectreTD>
+                                <Markup Content="@item.Modified" Foreground="@Color.Grey70" />
+                            </SpectreTD>
+                        </SpectreTR>
+                    }
+                </SpectreTBody>
+            </SpectreTable>
+        </Panel>
+
+        @if (!string.IsNullOrEmpty(_selectedFile))
+        {
+            <Newline />
+            <Panel Title="File Details" Border="BoxBorder.Rounded" Expand="true">
+                <Rows>
+                    <Columns>
+                        <Markup Content="Path:" Foreground="@Color.Grey70" />
+                        <Markup Content="@_selectedFile" Foreground="@Color.Green" />
+                    </Columns>
+                    <Columns>
+                        <Markup Content="Size:" Foreground="@Color.Grey70" />
+                        <Markup Content="@_selectedFileSize" Foreground="@Color.Yellow" />
+                    </Columns>
+                    <Columns>
+                        <Markup Content="Last Modified:" Foreground="@Color.Grey70" />
+                        <Markup Content="@_selectedFileModified" Foreground="@Color.Aqua" />
+                    </Columns>
+                    <Columns>
+                        <Markup Content="Extension:" Foreground="@Color.Grey70" />
+                        <Markup Content="@_selectedFileExtension" Foreground="@Color.Purple" />
+                    </Columns>
+                </Rows>
+            </Panel>
+        }
+    </Rows>
+</Panel>
+
+<Newline />
+<Markup Content="Use Tab to navigate • Press Enter to select • Press Ctrl+C to exit" Foreground="@Color.Grey58" />
+
+@code {
+    private class FileSystemItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string FullPath { get; set; } = string.Empty;
+        public bool IsDirectory { get; set; }
+        public string Size { get; set; } = string.Empty;
+        public string Modified { get; set; } = string.Empty;
+    }
+
+    private string _currentPath = string.Empty;
+    private string? _parentPath;
+    private List<FileSystemItem> _items = new();
+    private string? _selectedFile;
+    private string _selectedFileSize = string.Empty;
+    private string _selectedFileModified = string.Empty;
+    private string _selectedFileExtension = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        // Start in the current directory
+        _currentPath = Directory.GetCurrentDirectory();
+        LoadDirectory(_currentPath);
+    }
+
+    private void LoadDirectory(string path)
+    {
+        try
+        {
+            _currentPath = Path.GetFullPath(path);
+            _items.Clear();
+            _selectedFile = null;
+
+            // Get parent directory
+            var parent = Directory.GetParent(_currentPath);
+            _parentPath = parent?.FullName;
+
+            // Get directories
+            var directories = Directory.GetDirectories(_currentPath)
+                .Select(d => new DirectoryInfo(d))
+                .OrderBy(d => d.Name);
+
+            foreach (var dir in directories)
+            {
+                try
+                {
+                    _items.Add(new FileSystemItem
+                    {
+                        Name = dir.Name,
+                        FullPath = dir.FullName,
+                        IsDirectory = true,
+                        Size = "-",
+                        Modified = dir.LastWriteTime.ToString("yyyy-MM-dd HH:mm")
+                    });
+                }
+                catch
+                {
+                    // Skip directories we can't access
+                }
+            }
+
+            // Get files
+            var files = Directory.GetFiles(_currentPath)
+                .Select(f => new FileInfo(f))
+                .OrderBy(f => f.Name);
+
+            foreach (var file in files)
+            {
+                try
+                {
+                    _items.Add(new FileSystemItem
+                    {
+                        Name = file.Name,
+                        FullPath = file.FullName,
+                        IsDirectory = false,
+                        Size = FormatFileSize(file.Length),
+                        Modified = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm")
+                    });
+                }
+                catch
+                {
+                    // Skip files we can't access
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // If we can't access the directory, stay where we are
+            _items.Clear();
+            _items.Add(new FileSystemItem
+            {
+                Name = $"Error: {ex.Message}",
+                FullPath = string.Empty,
+                IsDirectory = false,
+                Size = "-",
+                Modified = "-"
+            });
+        }
+    }
+
+    private void NavigateToDirectory(string path)
+    {
+        LoadDirectory(path);
+    }
+
+    private void NavigateToParent()
+    {
+        if (!string.IsNullOrEmpty(_parentPath))
+        {
+            LoadDirectory(_parentPath);
+        }
+    }
+
+    private void SelectFile(string path)
+    {
+        try
+        {
+            var fileInfo = new FileInfo(path);
+            _selectedFile = path;
+            _selectedFileSize = FormatFileSize(fileInfo.Length);
+            _selectedFileModified = fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss");
+            _selectedFileExtension = string.IsNullOrEmpty(fileInfo.Extension) ? "None" : fileInfo.Extension;
+        }
+        catch (Exception ex)
+        {
+            _selectedFile = $"Error: {ex.Message}";
+            _selectedFileSize = "-";
+            _selectedFileModified = "-";
+            _selectedFileExtension = "-";
+        }
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+}
