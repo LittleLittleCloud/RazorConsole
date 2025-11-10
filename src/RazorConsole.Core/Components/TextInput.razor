@@ -26,8 +26,7 @@
     @onfocus="HandleFocusAsync"
     @onfocusout="HandleBlurAsync">
     <Panel BorderColor="@CurrentBorderColor" Border="@BorderStyle" Padding="@BorderPadding" Expand="@Expand">
-        <Columns Expand="@Expand">
-            @if (!string.IsNullOrWhiteSpace(Label))
+        @if (!string.IsNullOrWhiteSpace(Label))
             {
                 <Markup Content="@Label" Foreground="@LabelColor" Decoration="@LabelDecoration" />
             }
@@ -36,7 +35,6 @@
                         Foreground="@DisplayForeground"
                         Decoration="@DisplayDecoration" />
             </Padder>
-        </Columns>
     </Panel>
 </div>
 @code {

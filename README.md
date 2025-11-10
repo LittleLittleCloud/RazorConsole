@@ -263,6 +263,19 @@ A Claude Code-inspired chat interface that demonstrates:
 
 See [`examples/LLMAgentTUI/`](examples/LLMAgentTUI/) for the complete implementation and setup instructions.
 
+### Login Form
+
+A CLI login screen that demonstrates form validation and input handling:
+- TextInput for username entry with validation
+- Password input using TextInput with masking (MaskInput=true)
+- Interactive TextButton components for actions
+- Input validation with minimum length requirements
+- Error highlighting with dynamic border colors
+- Real-time validation feedback and error messages
+- Login/logout state management
+
+See [`examples/LoginForm/`](examples/LoginForm/) for the complete implementation.
+
 ## HotReload
 
 RazorConsole supports hotreload via metadata update handler so you can apply UI changes on the fly.
