@@ -20,7 +20,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 {
     private readonly IFocusEventDispatcher? _eventDispatcher;
     private readonly object _sync = new();
-    private List<FocusTarget> _targets = new();
+    private List<FocusTarget> _focusableVNodes = new();
     private int _currentIndex = -1;
     private ConsoleLiveDisplayContext? _context;
     private CancellationTokenSource? _sessionCts;
@@ -54,7 +54,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
         {
             lock (_sync)
             {
-                return _targets.Count > 0;
+                return _focusableVNodes.Count > 0;
             }
         }
     }
@@ -72,17 +72,17 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
     /// </summary>
     /// <param name="snapshot">Populated with focus target details when available.</param>
     /// <returns><see langword="true"/> when a focus target is active; otherwise <see langword="false"/>.</returns>
-    internal bool TryGetFocusedTarget(out FocusTargetSnapshot snapshot)
+    internal bool TryGetFocusedTarget(out FocusTarget? snapshot)
     {
         lock (_sync)
         {
-            if (_currentIndex < 0 || _currentIndex >= _targets.Count)
+            if (_currentIndex < 0 || _currentIndex >= _focusableVNodes.Count)
             {
                 snapshot = default;
                 return false;
             }
 
-            snapshot = _targets[_currentIndex].ToSnapshot();
+            snapshot = _focusableVNodes[_currentIndex];
             return true;
         }
     }
@@ -174,29 +174,29 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 
         lock (_sync)
         {
-            if (_targets.Count == 0)
+            if (_focusableVNodes.Count == 0)
             {
                 return false;
             }
 
-            if (_currentIndex >= 0 && _currentIndex < _targets.Count)
+            if (_currentIndex >= 0 && _currentIndex < _focusableVNodes.Count)
             {
-                previousTarget = _targets[_currentIndex];
+                previousTarget = _focusableVNodes[_currentIndex];
             }
 
             int nextIndex;
             if (_currentIndex < 0)
             {
-                nextIndex = direction > 0 ? 0 : _targets.Count - 1;
+                nextIndex = direction > 0 ? 0 : _focusableVNodes.Count - 1;
             }
             else
             {
-                nextIndex = (_currentIndex + direction + _targets.Count) % _targets.Count;
+                nextIndex = (_currentIndex + direction + _focusableVNodes.Count) % _focusableVNodes.Count;
             }
 
             _currentIndex = nextIndex;
-            CurrentFocusKey = _targets[nextIndex].Key;
-            nextTarget = _targets[nextIndex];
+            CurrentFocusKey = _focusableVNodes[nextIndex].Key;
+            nextTarget = _focusableVNodes[nextIndex];
             return true;
         }
     }
@@ -219,12 +219,12 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 
         lock (_sync)
         {
-            if (_targets.Count == 0)
+            if (_focusableVNodes.Count == 0)
             {
                 return false;
             }
 
-            var index = _targets.FindIndex(t => string.Equals(t.Key, key, StringComparison.Ordinal));
+            var index = _focusableVNodes.FindIndex(t => string.Equals(t.Key, key, StringComparison.Ordinal));
             if (index < 0)
             {
                 return false;
@@ -235,14 +235,14 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
                 return false;
             }
 
-            if (_currentIndex >= 0 && _currentIndex < _targets.Count)
+            if (_currentIndex >= 0 && _currentIndex < _focusableVNodes.Count)
             {
-                previousTarget = _targets[_currentIndex];
+                previousTarget = _focusableVNodes[_currentIndex];
             }
 
             _currentIndex = index;
-            CurrentFocusKey = _targets[index].Key;
-            target = _targets[index];
+            CurrentFocusKey = _focusableVNodes[index].Key;
+            target = _focusableVNodes[index];
         }
 
         await TriggerFocusChangedAsync(previousTarget, target!, token).ConfigureAwait(false);
@@ -319,7 +319,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
     {
         _context = null;
         _sessionCts = null;
-        _targets = new List<FocusTarget>();
+        _focusableVNodes = new List<FocusTarget>();
         _currentIndex = -1;
         CurrentFocusKey = null;
     }
@@ -331,11 +331,11 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
             : CollectTargets(view.Root);
 
         var previousKey = CurrentFocusKey;
-        var previousFocusTarget = _targets.FirstOrDefault(t => string.Equals(t.Key, previousKey, StringComparison.Ordinal));
+        var previousFocusTarget = _focusableVNodes.FirstOrDefault(t => string.Equals(t.Key, previousKey, StringComparison.Ordinal));
 
-        _targets = targets;
+        _focusableVNodes = targets;
 
-        if (_targets.Count == 0)
+        if (_focusableVNodes.Count == 0)
         {
             _currentIndex = -1;
             CurrentFocusKey = null;
@@ -345,19 +345,19 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
         var matchIndex = -1;
         if (!string.IsNullOrEmpty(previousKey))
         {
-            matchIndex = _targets.FindIndex(t => string.Equals(t.Key, previousKey, StringComparison.Ordinal));
+            matchIndex = _focusableVNodes.FindIndex(t => string.Equals(t.Key, previousKey, StringComparison.Ordinal));
         }
 
         if (matchIndex >= 0)
         {
             _currentIndex = matchIndex;
-            CurrentFocusKey = _targets[matchIndex].Key;
+            CurrentFocusKey = _focusableVNodes[matchIndex].Key;
             return null;
         }
 
         _currentIndex = 0;
-        CurrentFocusKey = _targets[0].Key;
-        return _targets[0];
+        CurrentFocusKey = _focusableVNodes[0].Key;
+        return _focusableVNodes[0];
     }
 
     private static List<FocusTarget> CollectTargets(VNode root)
@@ -366,25 +366,14 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
         var path = new List<int> { 0 };
         var sequence = 0;
         CollectRecursive(root, path, targets, ref sequence);
-        return targets
-            .OrderBy(t => t.Order)
-            .ThenBy(t => t.Sequence)
-            .ToList();
+        return targets;
     }
 
     private static void CollectRecursive(VNode node, List<int> path, List<FocusTarget> targets, ref int sequence)
     {
         if (node.Kind == VNodeKind.Element && IsFocusable(node))
         {
-            var key = ResolveKey(node, path);
-            var currentSequence = sequence++;
-            var order = ResolveOrder(node, currentSequence);
-            var attributes = CreateAttributeSnapshot(node.Attributes);
-            var events = node.Events.Count == 0
-                ? Array.Empty<VNodeEvent>()
-                : node.Events.ToArray();
-
-            targets.Add(new FocusTarget(key, order, currentSequence, path.ToArray(), attributes, events));
+            targets.Add(new FocusTarget(node, [..path]));
         }
 
         var children = node.Children;
@@ -421,35 +410,6 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
         return element.Key ?? string.Join('.', path);
     }
 
-    private static int ResolveOrder(VNode element, int sequence)
-    {
-        if (element.Kind == VNodeKind.Element
-            && element.Attributes.TryGetValue("data-focus-order", out var orderValue)
-            && !string.IsNullOrWhiteSpace(orderValue)
-            && int.TryParse(orderValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var order))
-        {
-            return order;
-        }
-
-        return sequence;
-    }
-
-    private static IReadOnlyDictionary<string, string?> CreateAttributeSnapshot(IReadOnlyDictionary<string, string?> source)
-    {
-        if (source.Count == 0)
-        {
-            return EmptyAttributes;
-        }
-
-        var copy = new Dictionary<string, string?>(source.Count, StringComparer.OrdinalIgnoreCase);
-        foreach (var pair in source)
-        {
-            copy[pair.Key] = pair.Value;
-        }
-
-        return new ReadOnlyDictionary<string, string?>(copy);
-    }
-
     public void OnCompleted()
     {
     }
@@ -468,26 +428,15 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
         //TriggerFocusChangedAsync(null, newFocus, _sessionCts?.Token ?? CancellationToken.None).ConfigureAwait(false);
     }
 
-    private sealed record FocusTarget(
-        string Key,
-        int Order,
-        int Sequence,
-        IReadOnlyList<int> Path,
-        IReadOnlyDictionary<string, string?> Attributes,
-        IReadOnlyList<VNodeEvent> Events)
+    internal sealed class FocusTarget(VNode vnode, int[] path)
     {
-        public FocusTargetSnapshot ToSnapshot()
-            => new(Key, Path, Attributes, Events);
+        public string Key => ResolveKey(vnode, path);
+
+        public IReadOnlyDictionary<string, string?> Attributes => vnode.Attributes;
+
+        public IReadOnlyCollection<VNodeEvent> Events => vnode.Events;
     }
 
-    internal readonly record struct FocusTargetSnapshot(
-        string Key,
-        IReadOnlyList<int> Path,
-        IReadOnlyDictionary<string, string?> Attributes,
-        IReadOnlyList<VNodeEvent> Events);
-
-    private static readonly IReadOnlyDictionary<string, string?> EmptyAttributes =
-        new ReadOnlyDictionary<string, string?>(new Dictionary<string, string?>(0, StringComparer.OrdinalIgnoreCase));
 
     /// <summary>
     /// Disposable scope representing an active focus tracking session.
