@@ -286,7 +286,7 @@ public class KeyboardEventManagerTests
             {
                 var node = VNode.CreateElement(element.TagName);
                 node.SetAttribute("data-focusable", "true");
-                node.SetAttribute("data-focus-key", element.Key);
+                node.SetKey(element.Key);
                 if (!string.IsNullOrEmpty(element.Value))
                 {
                     node.SetAttribute("value", element.Value);

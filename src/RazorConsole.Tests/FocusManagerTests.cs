@@ -67,7 +67,7 @@ public sealed class FocusManagerTests
         var manager = new FocusManager();
 
         var interactive = VNode.CreateElement("button");
-        interactive.SetAttribute("data-focus-key", "interactive");
+        interactive.SetKey("interactive");
         interactive.SetEvent("onclick", 1UL);
         interactive.AddChild(VNode.CreateText("Click"));
 
@@ -101,13 +101,13 @@ public sealed class FocusManagerTests
         var manager = new FocusManager(dispatcher);
 
         var first = VNode.CreateElement("input");
-        first.SetAttribute("data-focus-key", "first");
+        first.SetKey("first");
         first.SetEvent("onfocus", 1UL);
         first.SetEvent("onfocusin", 2UL);
         first.SetEvent("onfocusout", 3UL);
 
         var second = VNode.CreateElement("input");
-        second.SetAttribute("data-focus-key", "second");
+        second.SetKey("second");
         second.SetEvent("onfocus", 4UL);
         second.SetEvent("onfocusin", 5UL);
         second.SetEvent("onfocusout", 6UL);
@@ -180,19 +180,19 @@ public sealed class FocusManagerTests
         var manager = new FocusManager(dispatcher);
 
         var first = VNode.CreateElement("input");
-        first.SetAttribute("data-focus-key", "first");
+        first.SetKey("first");
         first.SetEvent("onfocus", 1UL);
         first.SetEvent("onfocusin", 2UL);
         first.SetEvent("onfocusout", 3UL);
 
         var second = VNode.CreateElement("input");
-        second.SetAttribute("data-focus-key", "second");
+        second.SetKey("second");
         second.SetEvent("onfocus", 4UL);
         second.SetEvent("onfocusin", 5UL);
         second.SetEvent("onfocusout", 6UL);
 
         var third = VNode.CreateElement("input");
-        third.SetAttribute("data-focus-key", "third");
+        third.SetKey("third");
         third.SetEvent("onfocus", 7UL);
         third.SetEvent("onfocusin", 8UL);
         third.SetEvent("onfocusout", 9UL);
@@ -242,19 +242,20 @@ public sealed class FocusManagerTests
             updatedView.AnimatedRenderables);
 
         ((IObserver<ConsoleRenderer.RenderSnapshot>)manager).OnNext(snapshot);
+        await manager.FocusAsync("third", CancellationToken.None);
 
         // Wait a bit for the async dispatch to complete
         await Task.Delay(100);
 
         // Focus should automatically move to the first available element
-        Assert.Equal("first", manager.CurrentFocusKey);
+        Assert.Equal("third", manager.CurrentFocusKey);
 
         // Focus events should have been dispatched
         Assert.Collection(
             dispatcher.Events,
-            e => Assert.Equal(("focusout", 6UL), e),
-            e => Assert.Equal(("focusin", 2UL), e),
-            e => Assert.Equal(("focus", 1UL), e));
+            e => Assert.Equal(("focusout", 3UL), e),
+            e => Assert.Equal(("focusin", 8UL), e),
+            e => Assert.Equal(("focus", 7UL), e));
     }
 
     [Fact]
@@ -308,7 +309,7 @@ public sealed class FocusManagerTests
         {
             var element = VNode.CreateElement("span");
             element.SetAttribute("data-focusable", "true");
-            element.SetAttribute("data-focus-key", key);
+            element.SetKey(key);
             element.SetAttribute("data-text", "true");
 
             if (string.Equals(key, focusedKey, StringComparison.Ordinal))

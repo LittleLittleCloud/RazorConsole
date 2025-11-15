@@ -11,7 +11,7 @@ public enum VNodeKind
     Text,
 }
 
-public sealed class VNode
+public sealed record class VNode
 {
     private readonly List<VNode> _children;
     private readonly Dictionary<string, string?> _attributes;
@@ -157,27 +157,6 @@ public sealed class VNode
         {
             TagName = tagName;
         }
-    }
-
-    public VNode Clone()
-    {
-        var clone = new VNode(Kind, TagName, Text, Key);
-        foreach (var attribute in _attributes)
-        {
-            clone._attributes[attribute.Key] = attribute.Value;
-        }
-
-        foreach (var @event in _events)
-        {
-            clone._events[@event.Key] = @event.Value;
-        }
-
-        foreach (var child in _children)
-        {
-            clone._children.Add(child.Clone());
-        }
-
-        return clone;
     }
 
     public override string ToString()

@@ -54,7 +54,7 @@ public sealed class VdomDiffService
             case VNodeKind.Text:
                 if (!string.Equals(previous.Text, current.Text, StringComparison.Ordinal))
                 {
-                    mutations.Add(CreateMutation(VdomMutationKind.UpdateText, path, current.Clone(), current.Text, null));
+                    mutations.Add(CreateMutation(VdomMutationKind.UpdateText, path, current, current.Text, null));
                 }
 
                 return;
@@ -63,13 +63,13 @@ public sealed class VdomDiffService
                 if (!string.Equals(previous.TagName, current.TagName, StringComparison.Ordinal) ||
                     !string.Equals(previous.Key, current.Key, StringComparison.Ordinal))
                 {
-                    mutations.Add(CreateMutation(VdomMutationKind.ReplaceNode, path, current.Clone()));
+                    mutations.Add(CreateMutation(VdomMutationKind.ReplaceNode, path, current));
                     return;
                 }
 
                 if (!AreAttributesEqual(previous.Attributes, current.Attributes))
                 {
-                    mutations.Add(CreateMutation(VdomMutationKind.UpdateAttributes, path, current.Clone(), null, current.Attributes));
+                    mutations.Add(CreateMutation(VdomMutationKind.UpdateAttributes, path, current, null, current.Attributes));
                 }
 
                 DiffChildren(previous.Children, current.Children, path, mutations);
@@ -97,7 +97,7 @@ public sealed class VdomDiffService
 
             if (i >= previousCount)
             {
-                mutations.Add(CreateMutation(VdomMutationKind.InsertNode, path, current[i].Clone()));
+                mutations.Add(CreateMutation(VdomMutationKind.InsertNode, path, current[i]));
                 path.RemoveAt(path.Count - 1);
                 continue;
             }
