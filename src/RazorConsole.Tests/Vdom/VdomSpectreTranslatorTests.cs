@@ -645,6 +645,60 @@ public class VdomSpectreTranslatorTests
     }
 
     [Fact]
+    public void Translate_OrderedListWithStartAttribute_ReturnsRowsWithCustomStartNumber()
+    {
+        var node = Element("ol", ol =>
+        {
+            ol.SetAttribute("start", "50");
+            ol.AddChild(Element("li", li =>
+            {
+                li.AddChild(Text("Coffee"));
+            }));
+            ol.AddChild(Element("li", li =>
+            {
+                li.AddChild(Text("Tea"));
+            }));
+            ol.AddChild(Element("li", li =>
+            {
+                li.AddChild(Text("Milk"));
+            }));
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.IsType<Rows>(renderable);
+        Assert.Empty(animations);
+    }
+
+    [Fact]
+    public void Translate_OrderedListWithInvalidStartAttribute_UsesDefaultStartNumber()
+    {
+        var node = Element("ol", ol =>
+        {
+            ol.SetAttribute("start", "invalid");
+            ol.AddChild(Element("li", li =>
+            {
+                li.AddChild(Text("First"));
+            }));
+            ol.AddChild(Element("li", li =>
+            {
+                li.AddChild(Text("Second"));
+            }));
+        });
+
+        var translator = new VdomSpectreTranslator();
+
+        var success = translator.TryTranslate(node, out var renderable, out var animations);
+
+        Assert.True(success);
+        Assert.IsType<Rows>(renderable);
+        Assert.Empty(animations);
+    }
+
+    [Fact]
     public void Translate_EmptyList_ReturnsEmptyMarkup()
     {
         var node = Element("ul", ul => { });
