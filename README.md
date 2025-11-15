@@ -90,9 +90,9 @@ Create engaging user experiences with interactive elements like buttons, text in
 
 ### 🎯 **Built-in Component Library**
 Get started quickly with 15+ pre-built components covering layout, input, display, and navigation needs:
-- **Layout**: `Grid`, `Columns`, `Rows`, `Align`, `Padder`
+- **Layout**: `Grid`, `Columns`, `Rows`, `Align`, `Padder`, `Scrollable`
 - **Input**: `TextInput`, `TextButton`, `Select`
-- **Display**: `Markdown`, `Markup`, `Panel`, `Border`, `Figlet`, `SyntaxHighlighter`, `Table`
+- **Display**: `Markdown`, `Markup`, `Panel`, `Border`, `Figlet`, `SpectreCanvas`, `SyntaxHighlighter`, `Table`
 - **Utilities**: `Spinner`, `Newline`
 
 For a full list of components and usage details, see the [Built-in Components](#built-in-components) section below.
@@ -123,6 +123,8 @@ RazorConsole ships with a catalog of ready-to-use components that wrap Spectre.C
 - `Rows` – stack child content vertically with optional expansion behavior.
 - `Select` – present a focusable option list with keyboard navigation.
 - `Spinner` – show animated progress indicators using Spectre spinner presets.
+- `SpectreCanvas` - draws an array of pixels with different colors.
+- `Scrollable` - enables keyboard-based vertical scrolling through the component's content, including nested components or HTML markup.
 - `SyntaxHighlighter` – colorize code snippets using ColorCode themes.
 - `Table` – display structured data in formatted tables with headers, borders, and rich cell content.
 - `TextButton` – display clickable text with focus and pressed-state styling.
