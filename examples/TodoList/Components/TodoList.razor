@@ -1,0 +1,232 @@
+@namespace TodoList.Components
+
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using RazorConsole.Components
+@using Spectre.Console
+
+<Figlet Content="Todo List Manager" />
+<Newline />
+
+<Panel Title="Task Management" Border="BoxBorder.Rounded" Expand="true">
+    <Rows>
+        <!-- Add Task Section -->
+        <Panel Title="Add New Task" Border="BoxBorder.Rounded" Expand="true">
+            <Rows>
+                <Columns>
+                    <Markup Content="Task:" Foreground="@Color.Grey70" />
+                    <TextInput @bind-Value="@_newTaskDescription"
+                               Placeholder="Enter task description..."
+                               Expand="true" />
+                </Columns>
+                <Columns>
+                    <TextButton Content="Add Task"
+                                OnClick="AddTask"
+                                BackgroundColor="@Color.Green"
+                                FocusedColor="@Color.Blue" />
+                    <TextButton Content="Clear"
+                                OnClick="ClearInput"
+                                BackgroundColor="@Color.Grey"
+                                FocusedColor="@Color.Yellow" />
+                </Columns>
+            </Rows>
+        </Panel>
+
+        <Newline />
+
+        <!-- Filter Section -->
+        <Panel Title="Filter Tasks" Border="BoxBorder.Rounded" Expand="true">
+            <Columns>
+                <Markup Content="Show:" Foreground="@Color.Grey70" />
+                <Select Options="@_filterOptions"
+                        @bind-Value="@_currentFilter" />
+            </Columns>
+        </Panel>
+
+        <Newline />
+
+        <!-- Statistics -->
+        <Panel Title="Statistics" Border="BoxBorder.Rounded" Expand="true">
+            <Columns>
+                <Markup Content="Total:" Foreground="@Color.Grey70" />
+                <Markup Content="@_tasks.Count.ToString()" Foreground="@Color.Blue" Decoration="@Decoration.Bold" />
+                <Markup Content="  |  Active:" Foreground="@Color.Grey70" />
+                <Markup Content="@_tasks.Count(t => !t.IsCompleted).ToString()" Foreground="@Color.Green" Decoration="@Decoration.Bold" />
+                <Markup Content="  |  Completed:" Foreground="@Color.Grey70" />
+                <Markup Content="@_tasks.Count(t => t.IsCompleted).ToString()" Foreground="@Color.Grey" Decoration="@Decoration.Bold" />
+            </Columns>
+        </Panel>
+
+        <Newline />
+
+        <!-- Task List Table -->
+        <Panel Title="@($"Tasks ({GetFilteredTasks().Count} items)")" Border="BoxBorder.Rounded" Expand="true">
+            @if (GetFilteredTasks().Count == 0)
+            {
+                <Markup Content="No tasks to display. Add a new task to get started!" 
+                        Foreground="@Color.Grey58" 
+                        Decoration="@Decoration.Italic" />
+            }
+            else
+            {
+                <SpectreTable Expand="true" Border="TableBorder.Rounded">
+                    <SpectreTHead>
+                        <SpectreTR>
+                            <SpectreTH Align="Justify.Left">ID</SpectreTH>
+                            <SpectreTH Align="Justify.Left">Description</SpectreTH>
+                            <SpectreTH Align="Justify.Center">Status</SpectreTH>
+                            <SpectreTH Align="Justify.Center">Created</SpectreTH>
+                            <SpectreTH Align="Justify.Center">Actions</SpectreTH>
+                        </SpectreTR>
+                    </SpectreTHead>
+                    <SpectreTBody>
+                        @foreach (var task in GetFilteredTasks())
+                        {
+                            <SpectreTR>
+                                <SpectreTD>
+                                    <Markup Content="@task.Id.ToString()" Foreground="@Color.Grey70" />
+                                </SpectreTD>
+                                <SpectreTD>
+                                    <Markup Content="@task.Description" 
+                                            Foreground="@(task.IsCompleted ? Color.Grey : Color.White)"
+                                            Decoration="@(task.IsCompleted ? Decoration.Strikethrough : Decoration.None)" />
+                                </SpectreTD>
+                                <SpectreTD>
+                                    @if (task.IsCompleted)
+                                    {
+                                        <Markup Content="✓ Done" Foreground="@Color.Green" Decoration="@Decoration.Bold" />
+                                    }
+                                    else
+                                    {
+                                        <Markup Content="○ Pending" Foreground="@Color.Yellow" />
+                                    }
+                                </SpectreTD>
+                                <SpectreTD>
+                                    <Markup Content="@task.CreatedAt.ToString("MM/dd HH:mm")" Foreground="@Color.Grey70" />
+                                </SpectreTD>
+                                <SpectreTD>
+                                    <Columns>
+                                        @if (!task.IsCompleted)
+                                        {
+                                            <TextButton Content="Complete"
+                                                        OnClick="@(() => CompleteTask(task.Id))"
+                                                        BackgroundColor="@Color.Black"
+                                                        FocusedColor="@Color.Green" />
+                                        }
+                                        else
+                                        {
+                                            <TextButton Content="Reopen"
+                                                        OnClick="@(() => ReopenTask(task.Id))"
+                                                        BackgroundColor="@Color.Black"
+                                                        FocusedColor="@Color.Yellow" />
+                                        }
+                                        <TextButton Content="Delete"
+                                                    OnClick="@(() => DeleteTask(task.Id))"
+                                                    BackgroundColor="@Color.Black"
+                                                    FocusedColor="@Color.Red" />
+                                    </Columns>
+                                </SpectreTD>
+                            </SpectreTR>
+                        }
+                    </SpectreTBody>
+                </SpectreTable>
+            }
+        </Panel>
+    </Rows>
+</Panel>
+
+<Newline />
+<Markup Content="Use Tab to navigate • Press Enter to interact • Press Ctrl+C to exit" Foreground="@Color.Grey58" />
+
+@code {
+    private class TodoTask
+    {
+        public int Id { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public bool IsCompleted { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    private List<TodoTask> _tasks = new();
+    private string _newTaskDescription = string.Empty;
+    private int _nextId = 1;
+    private string _currentFilter = "All";
+    private string[] _filterOptions = { "All", "Active", "Completed" };
+
+    protected override void OnInitialized()
+    {
+        // Add some sample tasks
+        AddSampleTask("Review pull requests", false);
+        AddSampleTask("Update documentation", false);
+        AddSampleTask("Write unit tests", true);
+        AddSampleTask("Fix reported bugs", false);
+    }
+
+    private void AddSampleTask(string description, bool isCompleted)
+    {
+        _tasks.Add(new TodoTask
+        {
+            Id = _nextId++,
+            Description = description,
+            IsCompleted = isCompleted,
+            CreatedAt = DateTime.UtcNow.AddMinutes(-_nextId * 5)
+        });
+    }
+
+    private void AddTask()
+    {
+        if (!string.IsNullOrWhiteSpace(_newTaskDescription))
+        {
+            _tasks.Add(new TodoTask
+            {
+                Id = _nextId++,
+                Description = _newTaskDescription.Trim(),
+                IsCompleted = false,
+                CreatedAt = DateTime.UtcNow
+            });
+            _newTaskDescription = string.Empty;
+        }
+    }
+
+    private void ClearInput()
+    {
+        _newTaskDescription = string.Empty;
+    }
+
+    private void CompleteTask(int taskId)
+    {
+        var task = _tasks.FirstOrDefault(t => t.Id == taskId);
+        if (task != null)
+        {
+            task.IsCompleted = true;
+        }
+    }
+
+    private void ReopenTask(int taskId)
+    {
+        var task = _tasks.FirstOrDefault(t => t.Id == taskId);
+        if (task != null)
+        {
+            task.IsCompleted = false;
+        }
+    }
+
+    private void DeleteTask(int taskId)
+    {
+        var task = _tasks.FirstOrDefault(t => t.Id == taskId);
+        if (task != null)
+        {
+            _tasks.Remove(task);
+        }
+    }
+
+    private List<TodoTask> GetFilteredTasks()
+    {
+        return _currentFilter switch
+        {
+            "Active" => _tasks.Where(t => !t.IsCompleted).OrderBy(t => t.CreatedAt).ToList(),
+            "Completed" => _tasks.Where(t => t.IsCompleted).OrderBy(t => t.CreatedAt).ToList(),
+            _ => _tasks.OrderBy(t => t.CreatedAt).ToList()
+        };
+    }
+}
