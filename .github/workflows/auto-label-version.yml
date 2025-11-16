@@ -63,7 +63,7 @@ jobs:
           echo "Body: $PR_BODY"
           
           # Find issue numbers using common closing keywords
-          # Matches patterns like: "fixes #123", "closes #456", "resolves #789", etc.
+          # Matches patterns like: "fixes #123", "closes #456", "resolves #789", "implements #123", etc.
           ISSUE_NUMBERS=$(echo "$PR_CONTENT" | grep -ioP '(?:fix(?:es|ed)?|close(?:s|d)?|resolve(?:s|d)?|implement(?:s|ed)?)\s+#(\d+)' | grep -oP '#\K\d+' | sort -u || true)
           
           if [ -z "$ISSUE_NUMBERS" ]; then
