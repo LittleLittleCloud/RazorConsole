@@ -151,6 +151,37 @@ Shows a Spectre spinner with optional message.
 | `Style` | `string?` | `null` | Spectre style markup for the spinner and message. |
 | `AutoDismiss` | `bool` | `false` | Remove spinner automatically when completed. |
 
+## Scrollable
+Renders a limited portion of a collection (`PageSize`) and enables keyboard scrolling.
+
+| Parameter | Type | Default                | Description |
+|-----------|------|------------------------|-------------|
+| `Items` | `IReadOnlyList<TItem>` | `Array.Empty<TItem>()` | Full data source. |
+| `PageSize` | `int` | `1`                    | Items shown at once. |
+| `ChildContent` | `RenderFragment<ScrollContext<TItem>>` | —                      | Markup for the visible page. |
+| `ScrollOffset` | `int` | `0`                    | Two-way – start index of current page. |
+| `ScrollOffsetChanged` | `EventCallback<int>` | —                      | Fired when offset changes. |
+
+### `ScrollContext<TItem>`
+Context to get access with paginated items, keyboard event and other info.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `this[int i]` | `TItem` | Visible item at index `i`. |
+| `Count` | `int` | Visible items count. |
+| `GetEnumerator()` | — | Enables `foreach`. |
+| `KeyDownEventHandler` | `Func<KeyboardEventArgs,Task>` | Attach via `@onkeydown`. |
+| `CurrentOffset` | `int` | Same as `ScrollOffset`. |
+| `PagesCount` | `int` | Total pages: `PageSize >= Items.Count ? 1 : Items.Count - PageSize + 1`. |
+
+### Keyboard access (with `@onkeydown="context.KeyDownEventHandler"`)
+| Key | Action |
+|-----|--------|
+| Up / Down | Move 1 row |
+| PageUp / PageDown / Space | Move 1 page |
+| Home | First page |
+| End | Last page |
+
 ## SyntaxHighlighter
 Renders highlighted code blocks with `SyntaxHighlightingService`.
 

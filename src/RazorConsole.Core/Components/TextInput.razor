@@ -42,7 +42,7 @@
     private readonly string _generatedFocusKey = Guid.NewGuid().ToString("N");
     private bool _isFocused;
     private string _currentValue = string.Empty;
-    private string _lastSetValue = string.Empty;
+    private string _lastIncomingValue = string.Empty;
 
     [Parameter]
     public string? Value { get; set; }
@@ -164,10 +164,12 @@
     protected override void OnParametersSet()
     {
         var incoming = Value ?? string.Empty;
-        if (!string.Equals(incoming, _lastSetValue, StringComparison.Ordinal))
+        // Only update _currentValue if the Value parameter actually changed from the parent
+        // This prevents resetting user input when the parent re-renders with the same value
+        if (!string.Equals(incoming, _lastIncomingValue, StringComparison.Ordinal))
         {
             _currentValue = incoming;
-            _lastSetValue = incoming;
+            _lastIncomingValue = incoming;
         }
     }
 
@@ -180,7 +182,6 @@
 
         var newValue = ExtractValue(args) ?? string.Empty;
         _currentValue = newValue;
-        _lastSetValue = newValue;
 
         if (ValueChanged.HasDelegate)
         {
@@ -204,7 +205,6 @@
 
         var submittedValue = ExtractValue(args);
         _currentValue = submittedValue ?? string.Empty;
-        _lastSetValue = _currentValue;
 
         if (OnSubmit.HasDelegate)
         {

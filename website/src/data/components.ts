@@ -84,6 +84,43 @@ export const components: ComponentInfo[] = [
     <Markup Content="Content inside border" />
 </Border>`
   },
+{
+    name: "Scrollable",
+    description: "Renders a limited portion of a large collection (`PageSize`) with keyboard navigation.",
+    category: "Layout",
+    parameters: [
+        {
+            "name": "Items",
+            "type": "IReadOnlyList<TItem>",
+            "default": "Array.Empty<TItem>()",
+            "description": "Full data source to scroll through."
+        },
+        {
+            "name": "PageSize",
+            "type": "int",
+            "default": "1",
+            "description": "Number of items visible at once."
+        },
+        {
+            "name": "ChildContent",
+            "type": "RenderFragment<ScrollContext<TItem>>",
+            "description": "Markup for the current page. Receives `context` with visible items and helpers."
+        },
+        {
+            "name": "ScrollOffset",
+            "type": "int",
+            "default": "0",
+            "description": "Two-way bindable start index of the current page."
+        },
+        {
+            "name": "ScrollOffsetChanged",
+            "type": "EventCallback<int>",
+            "default": "null",
+            "description": "Invoked when offset changes (e.g. via keyboard)."
+        }
+    ],
+    "example": "<Scrollable Items=\"@AlphabetData\" PageSize=\"3\">\n    <table @onkeydown=\"context.KeyDownEventHandler\">\n        <tbody>\n            @foreach (var item in context)\n            {\n                <tr>\n                    <td>@item.Number</td>\n                    <td style=\"color:@item.Color.ToMarkup()\">@item.Letter</td>\n                </tr>\n            }\n        </tbody>\n    </table>\n    <Markup Content=\"Page @(context.CurrentPage) of @context.PagesCount\" />\n</Scrollable>"
+},
   {
     name: "Columns",
     description: "Flow child renderables in Spectre.Console columns.",

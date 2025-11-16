@@ -1,0 +1,76 @@
+﻿@namespace RazorConsole.Components
+
+@typeparam TItem
+
+@if (VisibleItems.Any())
+{
+    @ChildContent(new ScrollContext<TItem>(VisibleItems, HandleKeyDown, ScrollOffset, PagesCount))
+}
+
+
+@code {
+    [Parameter]
+    public IReadOnlyList<TItem> Items { get; set; } = Array.Empty<TItem>();
+    [Parameter]
+    public int PageSize { get; set; } = 1;
+    [Parameter]
+    public required RenderFragment<ScrollContext<TItem>> ChildContent { get; set; }
+
+    private int _offset;
+
+    [Parameter]
+    public int ScrollOffset
+    {
+        get => _offset;
+        set => _offset = Math.Clamp(value, 0, Math.Max(0, Items.Count - PageSize));
+    }
+
+    [Parameter]
+    public EventCallback<int> ScrollOffsetChanged { get; set; }
+
+    private IReadOnlyList<TItem> VisibleItems
+        => Items.Skip(ScrollOffset).Take(PageSize).ToList();
+
+    private int PagesCount => PageSize >= Items.Count ? 1 : Items.Count - PageSize + 1;
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        int newOffset = ScrollOffset;
+        int page = Math.Max(1, PageSize);
+        int max = Math.Max(0, Items.Count - page);
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+            case "DownArrow": newOffset += 1; break;
+            case "ArrowUp":
+            case "UpArrow": newOffset -= 1; break;
+            case "PageDown":
+            case " ": newOffset += page; break;
+            case "PageUp": newOffset -= page; break;
+            case "Home": newOffset = 0; break;
+            case "End": newOffset = max; break;
+            default: return;
+        }
+
+        newOffset = Math.Clamp(newOffset, 0, max);
+
+        if (newOffset != ScrollOffset)
+        {
+            ScrollOffset = newOffset;
+            if (ScrollOffsetChanged.HasDelegate)
+                await ScrollOffsetChanged.InvokeAsync(newOffset);
+            StateHasChanged();
+        }
+    }
+}
+
+@code {
+
+    public sealed record ScrollContext<T>(IReadOnlyList<T> Items, Func<KeyboardEventArgs,Task> KeyDownEventHandler, int CurrentOffset, int PagesCount)
+    {
+        public T this[int i] => Items[i];
+        public int Count => Items.Count;
+        public IEnumerator<T> GetEnumerator() => Items.GetEnumerator();
+    }
+}

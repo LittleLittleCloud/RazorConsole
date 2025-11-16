@@ -26,6 +26,17 @@ public sealed class HtmlListElementTranslator : IVdomElementTranslator
         }
 
         var isOrdered = tagName == "ol";
+        var startNumber = 1;
+
+        // Get start attribute for ordered lists
+        if (isOrdered)
+        {
+            var startAttr = VdomSpectreTranslator.GetAttribute(node, "start");
+            if (!string.IsNullOrWhiteSpace(startAttr) && int.TryParse(startAttr, out var parsedStart))
+            {
+                startNumber = parsedStart;
+            }
+        }
 
         // Get list items (only process li elements)
         var listItems = node.Children.Where(c => c.Kind == VNodeKind.Element &&
@@ -43,7 +54,7 @@ public sealed class HtmlListElementTranslator : IVdomElementTranslator
         for (int i = 0; i < listItems.Count; i++)
         {
             var listItem = listItems[i];
-            var prefix = isOrdered ? $"{i + 1}. " : "• ";
+            var prefix = isOrdered ? $"{startNumber + i}. " : "• ";
 
             // Convert list item children to renderables
             if (!VdomSpectreTranslator.TryConvertChildrenToBlockInlineRenderable(listItem.Children, context, out var itemChildRenderable))
