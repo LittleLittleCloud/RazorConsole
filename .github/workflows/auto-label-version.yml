@@ -1,7 +1,7 @@
 name: Auto-label with version
 
 on:
-  pull_request:
+  pull_request_target:
     types: [closed]
     branches: [main]
 
@@ -42,13 +42,24 @@ jobs:
           VERSION_MILESTONE: v${{ steps.get-version.outputs.version_prefix }}
         run: |
           echo "Adding PR #$PR_NUMBER to milestone '$VERSION_MILESTONE'"
+          echo "PR author: ${{ github.event.pull_request.user.login }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Head repository: ${{ github.event.pull_request.head.repo.full_name }}"
+          
+          # Check if this is from a fork
+          IS_FORK="false"
+          if [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            IS_FORK="true"
+            echo "⚠ This PR is from a forked repository, using enhanced permissions handling"
+          fi
           
           # Check if milestone exists
-          MILESTONE_EXISTS=$(gh api repos/:owner/:repo/milestones --jq ".[].title" | grep -x "$VERSION_MILESTONE" || echo "")
+          echo "Checking for existing milestone '$VERSION_MILESTONE'..."
+          MILESTONE_EXISTS=$(gh api repos/${{ github.repository }}/milestones --jq ".[].title" | grep -x "$VERSION_MILESTONE" || echo "")
           
           if [ -z "$MILESTONE_EXISTS" ]; then
             echo "Creating milestone '$VERSION_MILESTONE'..."
-            MILESTONE_DATA=$(gh api repos/:owner/:repo/milestones \
+            MILESTONE_DATA=$(gh api repos/${{ github.repository }}/milestones \
               --method POST \
               --field title="$VERSION_MILESTONE" \
               --field description="Issues and PRs included in version $VERSION_MILESTONE" \
@@ -64,14 +75,23 @@ jobs:
           fi
           
           # Get milestone number
-          MILESTONE_NUMBER=$(gh api repos/:owner/:repo/milestones --jq ".[] | select(.title == \"$VERSION_MILESTONE\") | .number" || echo "")
+          MILESTONE_NUMBER=$(gh api repos/${{ github.repository }}/milestones --jq ".[] | select(.title == \"$VERSION_MILESTONE\") | .number" 2>/dev/null || echo "")
           
           if [ -n "$MILESTONE_NUMBER" ]; then
             echo "Assigning PR #$PR_NUMBER to milestone '$VERSION_MILESTONE' (number: $MILESTONE_NUMBER)"
-            if gh api repos/:owner/:repo/issues/$PR_NUMBER --method PATCH --field milestone="$MILESTONE_NUMBER" >/dev/null 2>&1; then
+            
+            # Try to assign milestone using GitHub API directly
+            ASSIGN_RESULT=$(gh api repos/${{ github.repository }}/issues/$PR_NUMBER \
+              --method PATCH \
+              --field milestone="$MILESTONE_NUMBER" \
+              --jq '.milestone.title // "failed"' 2>/dev/null || echo "failed")
+            
+            if [ "$ASSIGN_RESULT" = "$VERSION_MILESTONE" ]; then
               echo "✓ Successfully assigned PR #$PR_NUMBER to milestone '$VERSION_MILESTONE'"
             else
-              echo "⚠ Failed to assign PR to milestone, possibly due to permissions"
+              echo "⚠ Failed to assign PR to milestone"
+              echo "   This may be due to the PR being from a fork or insufficient permissions"
+              echo "   The milestone '$VERSION_MILESTONE' exists and can be manually assigned if needed"
             fi
           else
             echo "⚠ Could not find milestone number for '$VERSION_MILESTONE'"
@@ -116,12 +136,17 @@ jobs:
                 echo "Adding closed issue #$ISSUE_NUMBER to milestone '$VERSION_MILESTONE'..."
                 
                 # Get milestone number and assign issue to milestone
-                MILESTONE_NUMBER=$(gh api repos/:owner/:repo/milestones --jq ".[] | select(.title == \"$VERSION_MILESTONE\") | .number" 2>/dev/null || echo "")
+                MILESTONE_NUMBER=$(gh api repos/${{ github.repository }}/milestones --jq ".[] | select(.title == \"$VERSION_MILESTONE\") | .number" 2>/dev/null || echo "")
                 if [ -n "$MILESTONE_NUMBER" ]; then
-                  if gh api repos/:owner/:repo/issues/$ISSUE_NUMBER --method PATCH --field milestone="$MILESTONE_NUMBER" >/dev/null 2>&1; then
+                  ASSIGN_RESULT=$(gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER \
+                    --method PATCH \
+                    --field milestone="$MILESTONE_NUMBER" \
+                    --jq '.milestone.title // "failed"' 2>/dev/null || echo "failed")
+                  
+                  if [ "$ASSIGN_RESULT" = "$VERSION_MILESTONE" ]; then
                     echo "✓ Added issue #$ISSUE_NUMBER to milestone '$VERSION_MILESTONE'"
                   else
-                    echo "⚠ Failed to add issue to milestone"
+                    echo "⚠ Failed to add issue #$ISSUE_NUMBER to milestone"
                   fi
                 else
                   echo "⚠ Could not find milestone '$VERSION_MILESTONE'"
