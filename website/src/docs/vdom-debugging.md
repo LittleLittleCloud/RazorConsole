@@ -53,16 +53,6 @@ Frame 1
 └─────────────────────────────────────────┘
 ```
 
-#### Use Cases
-
-This debugging tool is particularly useful for:
-
-- **Focus issues** - Verify that elements have the correct `data-focusable` and `data-focus-key` attributes
-- **Event handling** - Confirm that event handlers are properly registered
-- **Component composition** - Understand how nested components are rendered in the VDOM
-- **Performance debugging** - Track which nodes are being created or updated across frames
-- **Conditional rendering** - See how `@if` blocks affect the VDOM tree structure
-
 #### Frame History
 
 The tree printer accumulates frames as your application runs, allowing you to see how the VDOM evolves over time. Each panel represents a snapshot of the VDOM at a specific render cycle.
