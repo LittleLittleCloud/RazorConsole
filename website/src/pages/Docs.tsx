@@ -223,33 +223,32 @@ export default function Docs() {
                                 <MarkdownRenderer
                                     content={activeTopic.content}
                                 />
-                                {getFilePathForTopic(
-                                    activeTopic.id,
-                                    topics,
-                                    releaseNotes
-                                ) && (
-                                    <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 not-prose">
-                                        <a
-                                            href={`https://github.com/LittleLittleCloud/RazorConsole/edit/main/${getFilePathForTopic(
-                                                activeTopic.id,
-                                                topics,
-                                                releaseNotes
-                                            )}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 transition-colors"
-                                        >
-                                            <svg
-                                                className="w-4 h-4"
-                                                fill="currentColor"
-                                                viewBox="0 0 20 20"
+                                {(() => {
+                                    const filePath = getFilePathForTopic(
+                                        activeTopic.id,
+                                        topics,
+                                        releaseNotes
+                                    );
+                                    return filePath != null && (
+                                        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 not-prose">
+                                            <a
+                                                href={`https://github.com/LittleLittleCloud/RazorConsole/edit/main/${filePath}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 transition-colors"
                                             >
-                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                            </svg>
-                                            Edit on GitHub
-                                        </a>
-                                    </div>
-                                )}
+                                                <svg
+                                                    className="w-4 h-4"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                >
+                                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                </svg>
+                                                Edit on GitHub
+                                            </a>
+                                        </div>
+                                    );
+                                })()}
                             </article>
                         )}
                     </main>
