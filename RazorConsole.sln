@@ -16,6 +16,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLMAgentTUI", "examples\LLMAgentTUI\LLMAgentTUI.csproj", "{CCD1AFD2-9DE7-475E-9F53-DDCBEA61B2F5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoginForm", "examples\LoginForm\LoginForm.csproj", "{2C8ED6BA-EE67-AEFD-21E1-19B2E8A92BEA}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileExplorer", "examples\FileExplorer\FileExplorer.csproj", "{669F8DF9-9844-4CAE-BC84-7F1F95C10ED8}"
 EndProject
 Global

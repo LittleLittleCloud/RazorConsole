@@ -110,12 +110,12 @@ internal sealed class KeyboardEventManager
 
     internal async Task HandleKeyAsync(ConsoleKeyInfo keyInfo, CancellationToken token)
     {
-        var hasInitialTarget = _focusManager.TryGetFocusedTarget(out var initialTarget);
-
-        if (hasInitialTarget)
+        if (!_focusManager.TryGetFocusedTarget(out var initialTarget) || initialTarget is null)
         {
-            await DispatchKeyboardEventAsync(initialTarget, "onkeydown", keyInfo, token).ConfigureAwait(false);
+            return;
         }
+
+        await DispatchKeyboardEventAsync(initialTarget, "onkeydown", keyInfo, token).ConfigureAwait(false);
 
         switch (keyInfo.Key)
         {
@@ -128,26 +128,14 @@ internal sealed class KeyboardEventManager
             default:
                 if (ShouldRaiseKeyPress(keyInfo))
                 {
-                    var dispatched = hasInitialTarget
-                        ? await DispatchKeyboardEventAsync(initialTarget, "onkeypress", keyInfo, token).ConfigureAwait(false)
-                        : false;
-
-                    if (!dispatched)
-                    {
-                        await DispatchKeyboardEventAsync("onkeypress", keyInfo, token).ConfigureAwait(false);
-                    }
+                    await DispatchKeyboardEventAsync(initialTarget, "onkeypress", keyInfo, token).ConfigureAwait(false);
                 }
 
                 await HandleTextInputAsync(keyInfo, token).ConfigureAwait(false);
                 break;
         }
 
-        var keyUpDispatched = await DispatchKeyboardEventAsync("onkeyup", keyInfo, token).ConfigureAwait(false);
-
-        if (!keyUpDispatched && hasInitialTarget)
-        {
-            await DispatchKeyboardEventAsync(initialTarget, "onkeyup", keyInfo, token).ConfigureAwait(false);
-        }
+        await DispatchKeyboardEventAsync(initialTarget, "onkeyup", keyInfo, token).ConfigureAwait(false);
     }
 
     private async Task HandleTabAsync(ConsoleKeyInfo keyInfo, CancellationToken token)
@@ -175,7 +163,7 @@ internal sealed class KeyboardEventManager
 
     private async Task HandleTextInputAsync(ConsoleKeyInfo keyInfo, CancellationToken token)
     {
-        if (!_focusManager.TryGetFocusedTarget(out var target))
+        if (!_focusManager.TryGetFocusedTarget(out var target) || target is null)
         {
             return;
         }
@@ -194,7 +182,7 @@ internal sealed class KeyboardEventManager
 
     private async Task TriggerActivationAsync(CancellationToken token)
     {
-        if (!_focusManager.TryGetFocusedTarget(out var target))
+        if (!_focusManager.TryGetFocusedTarget(out var target) || target is null)
         {
             return;
         }
@@ -236,17 +224,7 @@ internal sealed class KeyboardEventManager
         }
     }
 
-    private Task<bool> DispatchKeyboardEventAsync(string eventName, ConsoleKeyInfo keyInfo, CancellationToken token)
-    {
-        if (!_focusManager.TryGetFocusedTarget(out var target))
-        {
-            return Task.FromResult(false);
-        }
-
-        return DispatchKeyboardEventAsync(target, eventName, keyInfo, token);
-    }
-
-    private async Task<bool> DispatchKeyboardEventAsync(FocusManager.FocusTargetSnapshot target, string eventName, ConsoleKeyInfo keyInfo, CancellationToken token)
+    private async Task<bool> DispatchKeyboardEventAsync(FocusManager.FocusTarget target, string eventName, ConsoleKeyInfo keyInfo, CancellationToken token)
     {
         if (!TryGetEvent(target, eventName, out var nodeEvent))
         {
@@ -258,7 +236,7 @@ internal sealed class KeyboardEventManager
         return true;
     }
 
-    private bool TryApplyKeyToBuffer(FocusManager.FocusTargetSnapshot target, ConsoleKeyInfo keyInfo, out string value)
+    private bool TryApplyKeyToBuffer(FocusManager.FocusTarget target, ConsoleKeyInfo keyInfo, out string value)
     {
         lock (_bufferSync)
         {
@@ -284,7 +262,7 @@ internal sealed class KeyboardEventManager
         }
     }
 
-    private string GetCurrentValue(FocusManager.FocusTargetSnapshot target)
+    private string GetCurrentValue(FocusManager.FocusTarget target)
     {
         lock (_bufferSync)
         {
@@ -292,7 +270,7 @@ internal sealed class KeyboardEventManager
         }
     }
 
-    private StringBuilder GetOrCreateBuffer_NoLock(FocusManager.FocusTargetSnapshot target)
+    private StringBuilder GetOrCreateBuffer_NoLock(FocusManager.FocusTarget target)
     {
         if (!_buffers.TryGetValue(target.Key, out var buffer))
         {
@@ -303,7 +281,7 @@ internal sealed class KeyboardEventManager
         return buffer;
     }
 
-    private static bool TryGetEvent(FocusManager.FocusTargetSnapshot target, string name, out VNodeEvent nodeEvent)
+    private static bool TryGetEvent(FocusManager.FocusTarget target, string name, out VNodeEvent nodeEvent)
     {
         foreach (var candidate in target.Events)
         {
@@ -318,7 +296,7 @@ internal sealed class KeyboardEventManager
         return false;
     }
 
-    private static string ResolveInitialValue(FocusManager.FocusTargetSnapshot target)
+    private static string ResolveInitialValue(FocusManager.FocusTarget target)
     {
         if (target.Attributes.TryGetValue("value", out var value) && value is not null)
         {
@@ -404,7 +382,7 @@ internal sealed class KeyboardEventManager
             }
         }
 
-        if (!_focusManager.TryGetFocusedTarget(out var target))
+        if (!_focusManager.TryGetFocusedTarget(out var target) || target is null)
         {
             lock (_bufferSync)
             {

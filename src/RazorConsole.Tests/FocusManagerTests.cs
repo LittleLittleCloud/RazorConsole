@@ -67,7 +67,7 @@ public sealed class FocusManagerTests
         var manager = new FocusManager();
 
         var interactive = VNode.CreateElement("button");
-        interactive.SetAttribute("data-focus-key", "interactive");
+        interactive.SetKey("interactive");
         interactive.SetEvent("onclick", 1UL);
         interactive.AddChild(VNode.CreateText("Click"));
 
@@ -101,13 +101,13 @@ public sealed class FocusManagerTests
         var manager = new FocusManager(dispatcher);
 
         var first = VNode.CreateElement("input");
-        first.SetAttribute("data-focus-key", "first");
+        first.SetKey("first");
         first.SetEvent("onfocus", 1UL);
         first.SetEvent("onfocusin", 2UL);
         first.SetEvent("onfocusout", 3UL);
 
         var second = VNode.CreateElement("input");
-        second.SetAttribute("data-focus-key", "second");
+        second.SetKey("second");
         second.SetEvent("onfocus", 4UL);
         second.SetEvent("onfocusin", 5UL);
         second.SetEvent("onfocusout", 6UL);
@@ -173,6 +173,127 @@ public sealed class FocusManagerTests
         Assert.Equal("second", manager.CurrentFocusKey);
     }
 
+    [Fact]
+    public async Task OnNext_AutomaticallyRefocusesWhenCurrentElementRemoved()
+    {
+        var dispatcher = new TestFocusEventDispatcher();
+        var manager = new FocusManager(dispatcher);
+
+        var first = VNode.CreateElement("input");
+        first.SetKey("first");
+        first.SetEvent("onfocus", 1UL);
+        first.SetEvent("onfocusin", 2UL);
+        first.SetEvent("onfocusout", 3UL);
+
+        var second = VNode.CreateElement("input");
+        second.SetKey("second");
+        second.SetEvent("onfocus", 4UL);
+        second.SetEvent("onfocusin", 5UL);
+        second.SetEvent("onfocusout", 6UL);
+
+        var third = VNode.CreateElement("input");
+        third.SetKey("third");
+        third.SetEvent("onfocus", 7UL);
+        third.SetEvent("onfocusin", 8UL);
+        third.SetEvent("onfocusout", 9UL);
+
+        var root = VNode.CreateElement("div");
+        root.AddChild(first);
+        root.AddChild(second);
+        root.AddChild(third);
+
+        var view = ConsoleViewResult.Create(
+            "focus",
+            root,
+            new FakeRenderable("focus"),
+            Array.Empty<IAnimatedConsoleRenderable>());
+
+        using var context = ConsoleLiveDisplayContext.CreateForTesting(
+            new TestCanvas(),
+            view,
+            new VdomDiffService());
+        using var session = manager.BeginSession(context, view, CancellationToken.None);
+        await session.InitializationTask;
+
+        PushInitialSnapshot(manager, view);
+
+        Assert.Equal("first", manager.CurrentFocusKey);
+
+        // Move focus to the second element
+        await manager.FocusNextAsync(session.Token);
+        Assert.Equal("second", manager.CurrentFocusKey);
+
+        dispatcher.Events.Clear();
+
+        // Remove the currently focused element (second) from the render list
+        var updatedRoot = VNode.CreateElement("div");
+        updatedRoot.AddChild(first);
+        updatedRoot.AddChild(third);
+
+        var updatedView = ConsoleViewResult.Create(
+            "focus",
+            updatedRoot,
+            new FakeRenderable("focus"),
+            Array.Empty<IAnimatedConsoleRenderable>());
+
+        var snapshot = new ConsoleRenderer.RenderSnapshot(
+            updatedView.VdomRoot!,
+            updatedView.Renderable,
+            updatedView.AnimatedRenderables);
+
+        ((IObserver<ConsoleRenderer.RenderSnapshot>)manager).OnNext(snapshot);
+        await manager.FocusAsync("third", CancellationToken.None);
+
+        // Wait a bit for the async dispatch to complete
+        await Task.Delay(100);
+
+        // Focus should be on third after explicit focus call
+        Assert.Equal("third", manager.CurrentFocusKey);
+
+        // Focus events should have been dispatched from both auto-refocus and explicit focus
+        Assert.Collection(
+            dispatcher.Events,
+            e => Assert.Equal(("focusout", 6UL), e),  // second loses focus
+            e => Assert.Equal(("focusin", 2UL), e),   // first gains focus (auto-refocus)
+            e => Assert.Equal(("focus", 1UL), e),     // first focus event (auto-refocus)
+            e => Assert.Equal(("focusout", 3UL), e),  // first loses focus
+            e => Assert.Equal(("focusin", 8UL), e),   // third gains focus
+            e => Assert.Equal(("focus", 7UL), e));    // third focus event
+    }
+
+    [Fact]
+    public async Task OnNext_ClearsFocusWhenAllElementsRemoved()
+    {
+        var manager = new FocusManager();
+        var keys = new[] { "first", "second" };
+        var initial = CreateView(keys, focusedKey: null);
+
+        using var context = ConsoleLiveDisplayContext.CreateForTesting(
+            new TestCanvas(),
+            initial,
+            new VdomDiffService());
+        using var session = manager.BeginSession(context, initial, CancellationToken.None);
+        await session.InitializationTask;
+
+        PushInitialSnapshot(manager, initial);
+
+        Assert.True(manager.HasFocusables);
+        Assert.Equal("first", manager.CurrentFocusKey);
+
+        // Remove all focusable elements
+        var emptyView = CreateView(Array.Empty<string>(), focusedKey: null);
+        var snapshot = new ConsoleRenderer.RenderSnapshot(
+            emptyView.VdomRoot!,
+            emptyView.Renderable,
+            emptyView.AnimatedRenderables);
+
+        ((IObserver<ConsoleRenderer.RenderSnapshot>)manager).OnNext(snapshot);
+
+        // Focus should be cleared
+        Assert.False(manager.HasFocusables);
+        Assert.Null(manager.CurrentFocusKey);
+    }
+
     private static void PushInitialSnapshot(FocusManager manager, ConsoleViewResult view)
     {
         if (view.VdomRoot is null)
@@ -191,7 +312,7 @@ public sealed class FocusManagerTests
         {
             var element = VNode.CreateElement("span");
             element.SetAttribute("data-focusable", "true");
-            element.SetAttribute("data-focus-key", key);
+            element.SetKey(key);
             element.SetAttribute("data-text", "true");
 
             if (string.Equals(key, focusedKey, StringComparison.Ordinal))

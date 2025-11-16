@@ -1,11 +1,11 @@
 @namespace RazorConsole.Components
 
 <div @onfocus="OnFocus" @onfocusout="OnFocusOut" @onclick="OnClick">
-    <Markup Content="@Content" Background="@backgroundColor" />
+	<Markup Content="@Content" Background="@(isFocused ? FocusedColor : BackgroundColor)" />
 </div>
 
 @code {
-    private Spectre.Console.Color backgroundColor = Spectre.Console.Color.Default;
+	private bool isFocused = false;
     [Parameter]
     public Spectre.Console.Color FocusedColor { get; set; } = Spectre.Console.Color.Yellow;
 
@@ -20,13 +20,13 @@
 
     private void OnFocus(FocusEventArgs e)
     {
-        backgroundColor = FocusedColor;
+		isFocused = true;
         StateHasChanged();
     }
 
     private void OnFocusOut(FocusEventArgs e)
     {
-        backgroundColor = BackgroundColor;
+		isFocused = false;
         StateHasChanged();
     }
 }

@@ -54,6 +54,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
     private readonly Stack<VNode> _cursor = new();
     private readonly VdomSpectreTranslator _translator;
     private readonly object _observersSync = new();
+    private readonly object _renderSync = new();
     private readonly List<IObserver<RenderSnapshot>> _observers = new();
 
     private TaskCompletionSource<RenderSnapshot>? _pendingRender;
@@ -135,27 +136,19 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
         var snapshot = CreateSnapshot();
         _lastSnapshot = snapshot;
-
         _pendingRender?.TrySetResult(snapshot);
         _pendingRender = null;
 
-        NotifyObservers(snapshot);
+        _ = Task.Run(() => NotifyObservers(snapshot));
 
         return Task.CompletedTask;
     }
 
     protected override void HandleException(Exception exception)
     {
-        if (exception is null)
-        {
-            throw new ArgumentNullException(nameof(exception));
-        }
-
         NotifyError(exception);
         System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception).Throw();
     }
-
-    internal RenderSnapshot GetCurrentSnapshot() => _lastSnapshot;
 
     private void ApplyComponentEdits(in RenderBatch batch, RenderTreeDiff diff)
     {
@@ -294,6 +287,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
             case RenderTreeFrameType.Element:
             {
                 var element = VNode.CreateElement(frame.ElementName!);
+                element.SetKey(frame.ElementKey?.ToString());
                 var end = index + frame.ElementSubtreeLength;
                 index++;
 
@@ -308,10 +302,6 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                     {
                         var value = FormatAttributeValue(attribute.AttributeValue);
                         element.SetAttribute(attribute.AttributeName!, value);
-                        if (IsKeyAttribute(attribute.AttributeName!))
-                        {
-                            element.SetKey(string.IsNullOrWhiteSpace(value) ? null : value);
-                        }
                     }
 
                     index++;
@@ -405,8 +395,6 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
     private RenderSnapshot CreateSnapshot()
     {
-        //LogComponentRoots();
-
         if (_rootComponentId == -1 || !_componentRoots.TryGetValue(_rootComponentId, out var componentNode))
         {
             return RenderSnapshot.Empty;
@@ -442,161 +430,6 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
             1 => collected[0],
             _ => CreateDivWrapper(collected),
         };
-    }
-    private void LogComponentRoots()
-    {
-        if (_componentRoots.Count == 0)
-        {
-            return;
-        }
-
-        var builder = new StringBuilder();
-        foreach (var entry in _componentRoots.OrderBy(static pair => pair.Key))
-        {
-            builder.Append("Component ");
-            builder.Append(entry.Key);
-            builder.AppendLine(":");
-            AppendNode(entry.Value, builder, string.Empty, true);
-            builder.AppendLine();
-        }
-
-        var dump = builder.ToString();
-        if (!string.IsNullOrWhiteSpace(dump))
-        {
-            Console.WriteLine(dump.TrimEnd());
-        }
-    }
-
-    private static void AppendNode(VNode node, StringBuilder builder, string indent, bool isLast)
-    {
-        if (node is null)
-        {
-            throw new ArgumentNullException(nameof(node));
-        }
-
-        if (indent.Length > 0)
-        {
-            builder.Append(indent);
-            builder.Append(isLast ? "└── " : "├── ");
-        }
-        else
-        {
-            builder.Append("• ");
-        }
-
-        builder.Append(DescribeNode(node));
-        builder.AppendLine();
-
-        if (node.Children.Count == 0)
-        {
-            return;
-        }
-
-        var nextIndent = indent + (indent.Length > 0 ? (isLast ? "    " : "│   ") : "   ");
-        for (var i = 0; i < node.Children.Count; i++)
-        {
-            AppendNode(node.Children[i], builder, nextIndent, i == node.Children.Count - 1);
-        }
-    }
-
-    private static string DescribeNode(VNode node)
-    {
-        var summary = new StringBuilder();
-        summary.Append(node.Kind);
-
-        switch (node.Kind)
-        {
-            case VNodeKind.Element:
-                summary.Append(' ');
-                summary.Append(node.TagName ?? "<unknown>");
-                if (!string.IsNullOrWhiteSpace(node.Key))
-                {
-                    summary.Append(" key=");
-                    summary.Append(node.Key);
-                }
-
-                AppendAttributes(summary, node.Attributes);
-                AppendEvents(summary, node.Events);
-                break;
-            case VNodeKind.Text:
-                var text = node.Text ?? string.Empty;
-                text = text.Replace("\r", "\\r", StringComparison.Ordinal)
-                           .Replace("\n", "\\n", StringComparison.Ordinal);
-                const int maxLength = 60;
-                if (text.Length > maxLength)
-                {
-                    text = text[..maxLength] + "…";
-                }
-
-                summary.Append(" \"");
-                summary.Append(text);
-                summary.Append('\"');
-                break;
-            case VNodeKind.Component:
-                if (!string.IsNullOrWhiteSpace(node.Key))
-                {
-                    summary.Append(" key=");
-                    summary.Append(node.Key);
-                }
-
-                AppendAttributes(summary, node.Attributes);
-                AppendEvents(summary, node.Events);
-                // TODO
-                // include children
-                break;
-            case VNodeKind.Region:
-                break;
-        }
-
-        return summary.ToString();
-    }
-
-    private static void AppendAttributes(StringBuilder builder, IReadOnlyDictionary<string, string?> attributes)
-    {
-        if (attributes.Count == 0)
-        {
-            return;
-        }
-
-        builder.Append(" attrs[");
-        var first = true;
-        foreach (var attribute in attributes.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-        {
-            if (!first)
-            {
-                builder.Append(", ");
-            }
-
-            first = false;
-            builder.Append(attribute.Key);
-            builder.Append('=');
-            builder.Append(attribute.Value ?? "<null>");
-        }
-
-        builder.Append(']');
-    }
-
-    private static void AppendEvents(StringBuilder builder, IReadOnlyCollection<VNodeEvent> events)
-    {
-        if (events.Count == 0)
-        {
-            return;
-        }
-
-        builder.Append(" events[");
-        var first = true;
-        foreach (var @event in events.OrderBy(static evt => evt.Name, StringComparer.OrdinalIgnoreCase))
-        {
-            if (!first)
-            {
-                builder.Append(", ");
-            }
-
-            first = false;
-            builder.Append(@event.Name);
-        }
-
-        builder.Append(']');
     }
 
     private List<VNode> CollectRenderableChildren(VNode node, HashSet<int> visitedComponents)

@@ -11,7 +11,7 @@ public enum VNodeKind
     Text,
 }
 
-public sealed class VNode
+public sealed class VNode : IEquatable<VNode>
 {
     private readonly List<VNode> _children;
     private readonly Dictionary<string, string?> _attributes;
@@ -26,6 +26,7 @@ public sealed class VNode
         _children = new List<VNode>();
         _attributes = new Dictionary<string, string?>(StringComparer.Ordinal);
         _events = new Dictionary<string, VNodeEvent>(StringComparer.OrdinalIgnoreCase);
+        ID = Guid.NewGuid().ToString("N");
     }
 
     public VNodeKind Kind { get; }
@@ -35,6 +36,8 @@ public sealed class VNode
     public string Text { get; private set; }
 
     public string? Key { get; private set; }
+
+    public string ID { get; private set; }
 
     public IReadOnlyList<VNode> Children => _children;
 
@@ -159,26 +162,118 @@ public sealed class VNode
         }
     }
 
-    public VNode Clone()
+    public bool Equals(VNode? other)
     {
-        var clone = new VNode(Kind, TagName, Text, Key);
-        foreach (var attribute in _attributes)
+        if (ReferenceEquals(this, other))
         {
-            clone._attributes[attribute.Key] = attribute.Value;
+            return true;
         }
 
-        foreach (var @event in _events)
+        if (other is null)
         {
-            clone._events[@event.Key] = @event.Value;
+            return false;
+        }
+
+        if (Kind != other.Kind ||
+            !string.Equals(TagName, other.TagName, StringComparison.Ordinal) ||
+            !string.Equals(Text, other.Text, StringComparison.Ordinal) ||
+            !string.Equals(Key, other.Key, StringComparison.Ordinal) ||
+            _children.Count != other._children.Count ||
+            _attributes.Count != other._attributes.Count ||
+            _events.Count != other._events.Count)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < _children.Count; i++)
+        {
+            if (!_children[i].Equals(other._children[i]))
+            {
+                return false;
+            }
+        }
+
+        foreach (var pair in _attributes)
+        {
+            if (!other._attributes.TryGetValue(pair.Key, out var otherValue))
+            {
+                return false;
+            }
+
+            if (!StringComparer.Ordinal.Equals(pair.Value, otherValue))
+            {
+                return false;
+            }
+        }
+
+        foreach (var pair in _events)
+        {
+            if (!other._events.TryGetValue(pair.Key, out var otherEvent))
+            {
+                return false;
+            }
+
+            if (!pair.Value.Equals(otherEvent))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public override bool Equals(object? obj)
+        => Equals(obj as VNode);
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(Kind);
+        hash.Add(TagName, StringComparer.Ordinal);
+        hash.Add(Text, StringComparer.Ordinal);
+        hash.Add(Key, StringComparer.Ordinal);
+
+        if (_attributes.Count > 0)
+        {
+            var attributeKeys = new List<string>(_attributes.Keys);
+            attributeKeys.Sort(StringComparer.Ordinal);
+
+            foreach (var key in attributeKeys)
+            {
+                hash.Add(key, StringComparer.Ordinal);
+                _attributes.TryGetValue(key, out var value);
+                hash.Add(value, StringComparer.Ordinal);
+            }
+        }
+
+        if (_events.Count > 0)
+        {
+            var eventKeys = new List<string>(_events.Keys);
+            eventKeys.Sort(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var key in eventKeys)
+            {
+                hash.Add(key, StringComparer.OrdinalIgnoreCase);
+                if (_events.TryGetValue(key, out var evt))
+                {
+                    hash.Add(evt);
+                }
+            }
         }
 
         foreach (var child in _children)
         {
-            clone._children.Add(child.Clone());
+            hash.Add(child);
         }
 
-        return clone;
+        return hash.ToHashCode();
     }
+
+    public static bool operator ==(VNode? left, VNode? right)
+        => left is null ? right is null : left.Equals(right);
+
+    public static bool operator !=(VNode? left, VNode? right)
+        => !(left == right);
 
     public override string ToString()
         => Kind switch
