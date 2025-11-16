@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Focus;
 using RazorConsole.Core.Input;
@@ -13,6 +15,7 @@ using RazorConsole.Core.Rendering.Markdown;
 using RazorConsole.Core.Rendering.Syntax;
 using RazorConsole.Core.Utilities;
 using RazorConsole.Core.Vdom;
+
 using Spectre.Console;
 
 namespace RazorConsole.Core;
@@ -64,6 +67,8 @@ public static class HostBuilderExtension
         services.TryAddSingleton<IComponentActivator, ComponentActivator>();
         services.TryAddSingleton<ConsoleNavigationManager>();
         services.TryAddSingleton<NavigationManager>(sp => sp.GetRequiredService<ConsoleNavigationManager>());
+        services.AddSingleton<INavigationInterception, NoopNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, NoopScrollToLocationHash>();
         services.TryAddSingleton<ILoggerFactory>(_ => NullLoggerFactory.Instance);
         services.TryAddSingleton<ConsoleRenderer>();
         services.TryAddSingleton<VdomDiffService>();

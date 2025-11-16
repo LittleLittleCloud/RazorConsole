@@ -2,10 +2,11 @@
 
 @using System
 @using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Routing
 @using RazorConsole.Components
 @using Spectre.Console
 @using RazorConsole.Gallery.Services
-
+@inject NavigationManager Nav
 @inject INuGetUpgradeChecker UpgradeChecker
 <Figlet Content="Component Gallery" />
 <Align Horizontal="@HorizontalAlignment.Center">
@@ -40,81 +41,20 @@
                 {
                     <Padder Padding="@_navigationItemPadding">
                         <TextButton Content="@tab.Label"
-                                    BackgroundColor="@(IsActive(tab.Key) ? Color.Grey37 : Color.Default)"
-                                    FocusedColor="@Color.DeepSkyBlue1"
-                                    OnClick="@(() => SelectTab(tab.Key))" />
+                            BackgroundColor="@(Nav.Uri.EndsWith(tab.Key) ? Color.Grey37 : Color.Default)"
+                            FocusedColor="@Color.DeepSkyBlue1"
+                            OnClick="@(() => SelectTab(tab.Key))" />
                     </Padder>
                 }
             </Rows>
         </Padder>
-			<Padder Padding="@(new(0,1,0,0))">
-        @switch (_activeTab)
-        {
-            case "align":
-                <AlignGallery />
-                break;
-            case "border":
-                <BorderGallery />
-                break;
-            case "columns":
-                <ColumnsGallery />
-                break;
-            case "figlet":
-                <FigletGallery/>
-                break;
-            case "grid":
-                <GridGallery />
-                break;
-            case "table":
-                <TableGallery />
-                break;
-            case "html-inline":
-                <HtmlInlineTextGallery />
-                break;
-            case "html-list":
-                <HtmlListGallery />
-                break;
-            case "markup":
-                <MarkupGallery />
-                break;
-            case "newline":
-                <NewlineGallery />
-                break;
-            case "canvas":
-                <SpectreCanvasGallery/>
-                break;
-            case "padder":
-                <PadderGallery />
-                break;
-            case "panel":
-                <PanelGallery />
-                break;
-            case "rows":
-                <RowsGallery />
-                break;
-            case "select":
-                <SelectGallery />
-                break;
-            case "spinner":
-                <SpinnerGallery />
-                break;
-            case "scrollable":
-                <ScrollableGallery/>
-                break;
-            case "textbutton":
-                <TextButtonGallery />
-                break;
-            case "textinput":
-                <TextInputGallery />
-                break;
-            case "syntax":
-                <SyntaxHighlighterGallery />
-                break;
-            case "markdown":
-                <MarkdownGallery />
-                break;
-        }
-			</Padder>
+		<Padder Padding="@(new(0,1,0,0))">
+            <Router AppAssembly="@typeof(App).Assembly">
+                <Found Context="RouteContext">
+                    <RouteView RouteData="RouteContext"/>
+                </Found>
+            </Router>
+		</Padder>
     </Grid>
 </Panel>
 
@@ -128,11 +68,11 @@
         ("figlet", "Figlet"),
         ("grid", "Grid"),
         ("table", "Table"),
-    ("html-inline", "HTML Inline"),
-    ("html-list", "HTML List"),
+        ("html-inline", "HTML Inline"),
+        ("html-list", "HTML List"),
         ("markup", "Markup"),
-    ("markdown", "Markdown"),
-    ("syntax", "Syntax Highlight"),
+        ("markdown", "Markdown"),
+        ("syntax", "Syntax Highlight"),
         ("newline", "Newline"),
         ("canvas", "Spectre Canvas"),
         ("padder", "Padder"),
@@ -145,8 +85,6 @@
         ("textinput", "Text Input"),
     };
 
-    private string _activeTab = "align";
-
     private readonly Padding _navigationPadding = new Padding(1, 1, 1, 1);
     private readonly Padding _navigationItemPadding = new Padding(0, 0, 0, 1);
     private UpgradeCheckResult? _upgradeResult;
@@ -156,11 +94,7 @@
 
     private void SelectTab(string key)
     {
-        if (!IsActive(key))
-        {
-            _activeTab = key;
-            StateHasChanged();
-        }
+        Nav.NavigateTo(key);
     }
 
     protected override async Task OnInitializedAsync()
@@ -186,5 +120,4 @@
         }
     }
 
-    private bool IsActive(string key) => string.Equals(_activeTab, key, StringComparison.Ordinal);
 }

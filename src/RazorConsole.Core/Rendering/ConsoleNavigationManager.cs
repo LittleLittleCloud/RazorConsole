@@ -2,15 +2,18 @@ using Microsoft.AspNetCore.Components;
 
 namespace RazorConsole.Core.Rendering;
 
-public sealed class ConsoleNavigationManager : NavigationManager
+public class ConsoleNavigationManager : NavigationManager
 {
     public ConsoleNavigationManager()
     {
-        Initialize("app://local/", "app://local/");
+        Initialize("app:///", "app:///");
     }
 
     protected override void NavigateToCore(string uri, bool forceLoad)
     {
-        // Navigation is not supported in the console environment.
+        var absolute = ToAbsoluteUri(uri);
+        Uri = absolute.ToString();
+
+        NotifyLocationChanged(isInterceptedLink: false);
     }
 }

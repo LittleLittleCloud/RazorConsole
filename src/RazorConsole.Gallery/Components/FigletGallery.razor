@@ -1,7 +1,9 @@
-﻿@using Spectre.Console
+@using Spectre.Console
 @using Markup = RazorConsole.Components.Markup
 @using Panel = RazorConsole.Components.Panel
 @using Rows = RazorConsole.Components.Rows
+@page "/figlet"
+
 <Rows>
     <Markup Content="Figlet renders large ASCII art text using Figlet fonts. " Foreground="@Color.Grey70" />
 	<Markup Content="Source Code: Figlet.razor" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@DocumentationUrl" />
