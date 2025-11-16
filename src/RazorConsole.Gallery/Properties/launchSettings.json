@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "RazorConsole.Gallery": {
-      "commandName": "Project",
-      "commandLineArgs": ""
-    }
-  }
-}

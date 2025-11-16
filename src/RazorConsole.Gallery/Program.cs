@@ -1,15 +1,13 @@
-using System.CommandLine;
-
+using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
+using RazorConsole.Components;
 using RazorConsole.Core;
+using RazorConsole.Core.Utilities;
 using RazorConsole.Gallery.Components;
-using RazorConsole.Gallery.Extensions;
 using RazorConsole.Gallery.Services;
-
-var rootCommand = new RootCommand();
-rootCommand.AddDebugCliCommand();
+using Spectre.Console;
 
 var builder = Host.CreateDefaultBuilder(args)
     .UseRazorConsole<App>();
@@ -25,10 +23,4 @@ builder.ConfigureServices(services =>
 
 var host = builder.Build();
 
-rootCommand.SetAction(async (parseResult, ct) =>
-{
-    await host.RunAsync(ct);
-});
-
-var parseResult = rootCommand.Parse(args);
-return await parseResult.InvokeAsync();
+await host.RunAsync();

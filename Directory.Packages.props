@@ -17,7 +17,6 @@
     <PackageVersion Include="Microsoft.Extensions.AI" Version="9.1.0-preview.1.25064.3" />
     <PackageVersion Include="Microsoft.Extensions.AI.Ollama" Version="9.1.0-preview.1.25064.3" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="9.1.0-preview.1.25064.3" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.0" />
     <PackageVersion Include="System.Composition" Version="8.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.9.2" />
