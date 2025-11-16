@@ -227,7 +227,7 @@ export default function Docs() {
                                     activeTopic.id,
                                     topics,
                                     releaseNotes
-                                ) != null && (
+                                ) && (
                                     <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 not-prose">
                                         <a
                                             href={`https://github.com/LittleLittleCloud/RazorConsole/edit/main/${getFilePathForTopic(
