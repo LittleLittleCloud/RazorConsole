@@ -114,7 +114,7 @@ internal sealed class KeyboardEventManager
         {
             return;
         }
-        
+
         await DispatchKeyboardEventAsync(initialTarget, "onkeydown", keyInfo, token).ConfigureAwait(false);
 
         switch (keyInfo.Key)
