@@ -5,6 +5,12 @@ on:
     types: [closed]
     branches: [main]
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  repository-projects: write
+
 jobs:
   auto-label-version:
     name: Add version labels
@@ -29,25 +35,53 @@ jobs:
           echo "version_prefix=$VERSION_PREFIX" >> "$GITHUB_OUTPUT"
           echo "Version found: v$VERSION_PREFIX"
 
-      - name: Add version label to PR
+      - name: Add PR to version milestone
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          VERSION_LABEL: v${{ steps.get-version.outputs.version_prefix }}
+          VERSION_MILESTONE: v${{ steps.get-version.outputs.version_prefix }}
         run: |
-          echo "Adding label '$VERSION_LABEL' to PR #$PR_NUMBER"
+          echo "Adding PR #$PR_NUMBER to milestone '$VERSION_MILESTONE'"
           
-          # Create label if it doesn't exist
-          gh label create "$VERSION_LABEL" --description "Issues and PRs included in version $VERSION_LABEL" --color "0052cc" --force || true
+          # Check if milestone exists
+          MILESTONE_EXISTS=$(gh api repos/:owner/:repo/milestones --jq ".[].title" | grep -x "$VERSION_MILESTONE" || echo "")
           
-          # Add label to the merged PR
-          gh pr edit "$PR_NUMBER" --add-label "$VERSION_LABEL"
+          if [ -z "$MILESTONE_EXISTS" ]; then
+            echo "Creating milestone '$VERSION_MILESTONE'..."
+            MILESTONE_DATA=$(gh api repos/:owner/:repo/milestones \
+              --method POST \
+              --field title="$VERSION_MILESTONE" \
+              --field description="Issues and PRs included in version $VERSION_MILESTONE" \
+              --field state="open" 2>/dev/null || echo "{}")
+            
+            if echo "$MILESTONE_DATA" | jq -e '.number' >/dev/null 2>&1; then
+              echo "✓ Created milestone '$VERSION_MILESTONE'"
+            else
+              echo "⚠ Failed to create milestone, will try to find existing one"
+            fi
+          else
+            echo "✓ Milestone '$VERSION_MILESTONE' already exists"
+          fi
+          
+          # Get milestone number
+          MILESTONE_NUMBER=$(gh api repos/:owner/:repo/milestones --jq ".[] | select(.title == \"$VERSION_MILESTONE\") | .number" || echo "")
+          
+          if [ -n "$MILESTONE_NUMBER" ]; then
+            echo "Assigning PR #$PR_NUMBER to milestone '$VERSION_MILESTONE' (number: $MILESTONE_NUMBER)"
+            if gh api repos/:owner/:repo/issues/$PR_NUMBER --method PATCH --field milestone="$MILESTONE_NUMBER" >/dev/null 2>&1; then
+              echo "✓ Successfully assigned PR #$PR_NUMBER to milestone '$VERSION_MILESTONE'"
+            else
+              echo "⚠ Failed to assign PR to milestone, possibly due to permissions"
+            fi
+          else
+            echo "⚠ Could not find milestone number for '$VERSION_MILESTONE'"
+          fi
 
-      - name: Find and label linked issues
+      - name: Find and assign linked issues to milestone
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          VERSION_LABEL: v${{ steps.get-version.outputs.version_prefix }}
+          VERSION_MILESTONE: v${{ steps.get-version.outputs.version_prefix }}
         run: |
           echo "Looking for issues closed by PR #$PR_NUMBER"
           
@@ -73,14 +107,25 @@ jobs:
             
             # Label each found issue
             for ISSUE_NUMBER in $ISSUE_NUMBERS; do
-              echo "Adding label '$VERSION_LABEL' to issue #$ISSUE_NUMBER"
+              echo "Processing issue #$ISSUE_NUMBER..."
               
               # Check if issue exists and is closed
               ISSUE_STATE=$(gh issue view "$ISSUE_NUMBER" --json state --jq '.state' 2>/dev/null || echo "not_found")
               
               if [ "$ISSUE_STATE" = "CLOSED" ]; then
-                gh issue edit "$ISSUE_NUMBER" --add-label "$VERSION_LABEL"
-                echo "✓ Successfully labeled closed issue #$ISSUE_NUMBER"
+                echo "Adding closed issue #$ISSUE_NUMBER to milestone '$VERSION_MILESTONE'..."
+                
+                # Get milestone number and assign issue to milestone
+                MILESTONE_NUMBER=$(gh api repos/:owner/:repo/milestones --jq ".[] | select(.title == \"$VERSION_MILESTONE\") | .number" 2>/dev/null || echo "")
+                if [ -n "$MILESTONE_NUMBER" ]; then
+                  if gh api repos/:owner/:repo/issues/$ISSUE_NUMBER --method PATCH --field milestone="$MILESTONE_NUMBER" >/dev/null 2>&1; then
+                    echo "✓ Added issue #$ISSUE_NUMBER to milestone '$VERSION_MILESTONE'"
+                  else
+                    echo "⚠ Failed to add issue to milestone"
+                  fi
+                else
+                  echo "⚠ Could not find milestone '$VERSION_MILESTONE'"
+                fi
               elif [ "$ISSUE_STATE" = "OPEN" ]; then
                 echo "⚠ Issue #$ISSUE_NUMBER is still open, skipping"
               else
@@ -91,10 +136,10 @@ jobs:
 
       - name: Summary
         env:
-          VERSION_LABEL: v${{ steps.get-version.outputs.version_prefix }}
+          VERSION_MILESTONE: v${{ steps.get-version.outputs.version_prefix }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          echo "✅ Auto-labeling completed!"
-          echo "- Added label '$VERSION_LABEL' to PR #$PR_NUMBER"
-          echo "- Processed any linked closed issues"
-          echo "- Label '$VERSION_LABEL' can now be used to track all changes for this version"
+          echo "✅ Auto-versioning completed!"
+          echo "- Added PR #$PR_NUMBER to milestone '$VERSION_MILESTONE'"
+          echo "- Added any linked closed issues to milestone '$VERSION_MILESTONE'"
+          echo "- Milestone '$VERSION_MILESTONE' now tracks all PRs and issues for this version"
