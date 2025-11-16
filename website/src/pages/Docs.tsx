@@ -13,10 +13,17 @@ import componentGalleryDoc from "@/docs/component-gallery.md?raw";
 import v0_1_1ReleaseNotes from "../../../release-notes/v0.1.1.md?raw";
 import { MarkdownRenderer } from "@/components/Markdown";
 
+interface TopicItem {
+    id: string;
+    title: string;
+    content: string;
+    filePath: string;
+}
+
 function getFilePathForTopic(
     topicId: string,
-    topics: any[],
-    releaseNotes: any[]
+    topics: TopicItem[],
+    releaseNotes: TopicItem[]
 ): string {
     // Find the topic or release note and return its filePath
     const topic =
