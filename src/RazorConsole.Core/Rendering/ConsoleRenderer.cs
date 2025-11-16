@@ -136,27 +136,19 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
         var snapshot = CreateSnapshot();
         _lastSnapshot = snapshot;
-
         _pendingRender?.TrySetResult(snapshot);
         _pendingRender = null;
 
-        NotifyObservers(snapshot);
+        _ = Task.Run(() => NotifyObservers(snapshot));
 
         return Task.CompletedTask;
     }
 
     protected override void HandleException(Exception exception)
     {
-        if (exception is null)
-        {
-            throw new ArgumentNullException(nameof(exception));
-        }
-
         NotifyError(exception);
         System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception).Throw();
     }
-
-    internal RenderSnapshot GetCurrentSnapshot() => _lastSnapshot;
 
     private void ApplyComponentEdits(in RenderBatch batch, RenderTreeDiff diff)
     {

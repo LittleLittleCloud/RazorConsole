@@ -10,63 +10,64 @@
 
 <Panel Title="User Login" Border="BoxBorder.Rounded" Expand="true">
     <Rows>
-        @if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <Markup Content="@_errorMessage" Foreground="@Color.Red" Decoration="@Decoration.Bold" />
-        }
+		@if (!string.IsNullOrEmpty(_errorMessage))
+		{
+			<Markup Content="@_errorMessage" Foreground="@Color.Red" Decoration="@Decoration.Bold" />
+		}
 
-        @if (_isLoggedIn)
-        {
-            <Panel BorderColor="@Color.Green" Border="BoxBorder.Rounded">
-                <Rows>
-                    <Markup Content="✓ Login Successful!" Foreground="@Color.Green" Decoration="@Decoration.Bold" />
-                    <Markup Content="@($"Welcome, {_username}!")" Foreground="@Color.Cyan1" />
-                </Rows>
-            </Panel>
-            <Newline />
-            <TextButton Content="Logout"
-                        OnClick="HandleLogout"
-                        BackgroundColor="@Color.Grey"
-                        FocusedColor="@Color.Yellow" />
-        }
-        else
-        {
-            <TextInput Label="Username"
-                       Value="@_username"
-                       ValueChanged="OnUsernameChanged"
-                       Placeholder="Enter your username"
-                       FocusedBorderColor="@(_usernameError ? Color.Red : Color.DeepSkyBlue1)"
-                       BorderColor="@(_usernameError ? Color.Red3 : Color.Grey37)"
-                       BorderPadding="@_inputPadding"
-                       Expand="true" />
+		@if (_isLoggedIn)
+		{
+			<Panel BorderColor="@Color.Green" Border="BoxBorder.Rounded">
+				<Rows>
+					<Markup Content="✓ Login Successful!" Foreground="@Color.Green" Decoration="@Decoration.Bold" />
+					<Markup Content="@($"Welcome, {_username}!")" Foreground="@Color.Cyan1" />
+				</Rows>
+			</Panel>
+			<Newline />
+			<TextButton Content="Logout"
+			OnClick="HandleLogout"
+			BackgroundColor="@Color.Grey"
+			FocusedColor="@Color.Yellow" />
+		}
+		else
+		{
+			<TextInput Label="Username"
+			Value="@_username"
+			ValueChanged="OnUsernameChanged"
+			Placeholder="Enter your username"
+			FocusedBorderColor="@(_usernameError ? Color.Red : Color.DeepSkyBlue1)"
+			BorderColor="@(_usernameError ? Color.Red3 : Color.Grey37)"
+			BorderPadding="@_inputPadding"
+			Expand="true" />
 
-            <TextInput Label="Password"
-                       Value="@_password"
-                       ValueChanged="OnPasswordChanged"
-                       Placeholder="Enter your password"
-                       MaskInput="true"
-                       FocusedBorderColor="@(_passwordError ? Color.Red : Color.MediumOrchid)"
-                       BorderColor="@(_passwordError ? Color.Red3 : Color.Grey37)"
-                       BorderPadding="@_inputPadding"
-                       Expand="true"
-                       OnFocused="OnPasswordFocused"
-                       OnBlurred="OnPasswordBlurred" />
+			<TextInput Label="Password"
+			Value="@_password"
+			ValueChanged="OnPasswordChanged"
+			Placeholder="Enter your password"
+			MaskInput="true"
+			FocusedBorderColor="@(_passwordError ? Color.Red : Color.MediumOrchid)"
+			BorderColor="@(_passwordError ? Color.Red3 : Color.Grey37)"
+			BorderPadding="@_inputPadding"
+			Expand="true"
+			OnFocused="OnPasswordFocused"
+			OnBlurred="OnPasswordBlurred" />
 
-            <Columns>
-                <TextButton Content="Login"
-                            OnClick="HandleLogin"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.Lime" />
-                <TextButton Content="Clear"
-                            OnClick="HandleClear"
-                            BackgroundColor="@Color.Grey"
-                            FocusedColor="@Color.Yellow" />
-            </Columns>
-        }
-    </Rows>
+			<Columns>
+				<TextButton Content="Login"
+				OnClick="HandleLogin"
+				BackgroundColor="@Color.Green"
+				FocusedColor="@Color.Lime" />
+				<TextButton Content="Clear"
+				OnClick="HandleClear"
+				BackgroundColor="@Color.Grey"
+				FocusedColor="@Color.Yellow" />
+			</Columns>
+		}
+	</Rows>
 </Panel>
 
 <Newline />
+<p>@(FocusKey)</p>
 <Markup Content="Press Tab to change focus • Press Enter to submit • Press Ctrl+C to exit" Foreground="@Color.Grey58" />
 
 @code {
@@ -84,8 +85,16 @@
     private const int MinUsernameLength = 3;
     private const int MinPasswordLength = 6;
 
-    [Inject]
-    private FocusManager FocusManager { get; set; } = null!;
+	private string FocusKey => FocusManager?.CurrentFocusKey ?? string.Empty;
+
+	[Inject]
+    private FocusManager? FocusManager { get; set; }
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		FocusManager!.FocusChanged += (s, e) => StateHasChanged();
+	}
 
     private Task OnUsernameChanged(string? value)
     {

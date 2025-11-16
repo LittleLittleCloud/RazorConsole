@@ -100,7 +100,9 @@ internal class VDomTreePrinterTranslator : IVdomElementTranslator
                 summary.Append(" key=");
                 summary.Append(node.Key ?? "<null>");
                 summary.Append(" text=");
-                summary.Append(node.Text ?? "<null>");
+                summary.Append(node.Text == null ? "<null?" : $"'{node.Text}'");
+                summary.Append(" v-id=");
+                summary.Append(node.ID[..4]);
                 AppendAttributes(summary, node.Attributes);
                 AppendEvents(summary, node.Events);
                 break;
