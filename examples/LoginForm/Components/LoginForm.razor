@@ -4,7 +4,6 @@
 @using Microsoft.AspNetCore.Components.Web
 @using RazorConsole.Components
 @using Spectre.Console
-@using RazorConsole.Core.Focus
 <Figlet Content="Login Portal" />
 <Newline />
 
@@ -67,7 +66,6 @@
 </Panel>
 
 <Newline />
-<p>@(FocusKey)</p>
 <Markup Content="Press Tab to change focus • Press Enter to submit • Press Ctrl+C to exit" Foreground="@Color.Grey58" />
 
 @code {
@@ -84,17 +82,6 @@
     // Simple validation: username must be at least 3 characters, password at least 6
     private const int MinUsernameLength = 3;
     private const int MinPasswordLength = 6;
-
-	private string FocusKey => FocusManager?.CurrentFocusKey ?? string.Empty;
-
-	[Inject]
-    private FocusManager? FocusManager { get; set; }
-
-	protected override void OnInitialized()
-	{
-		base.OnInitialized();
-		FocusManager!.FocusChanged += (s, e) => StateHasChanged();
-	}
 
     private Task OnUsernameChanged(string? value)
     {
