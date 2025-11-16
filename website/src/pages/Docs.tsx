@@ -93,7 +93,7 @@ export default function Docs() {
                 id: "v0.1.1",
                 title: "v0.1.1",
                 content: v0_1_1ReleaseNotes,
-                filePath: "releases/v0.1.1.md",
+                filePath: "release-notes/v0.1.1.md",
             },
         ],
         []
