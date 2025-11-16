@@ -24,10 +24,16 @@ These instructions are automatically appended to Copilot Chat sessions when work
 - When touching focus or keyboard handling, add or update tests in `FocusManagerTests` or `KeyboardEventManagerTests`.
 - Update the README when introducing user-facing features or significant architectural changes.
 
-## Release guidance
-
-- Creating a GitHub release triggers `.github/workflows/release.yml` to build, test, pack, and publish platform bundles. Version numbers should follow semantic versioning.
-- Generated NuGet packages and gallery archives are uploaded to the release as downloadable assets.
+## Release Note guidance
+- Check out the version to be released from `VersionPrefix` in `nuget-package.props`, saying it's `0.1.1` for example.
+- Query all completed github Issues with label `v{VersionPrefix}` from `https://github.com/LittleLittleCloud/RazorConsole`. The label would be added when its associated PR is merged, so you can use this approach to collect all changes included in the current release.
+- Draft the release notes based on the collected issues and PRs and save it under `release-notes/` folder with the filename format `v{VersionPrefix}.md`. If the folder doesn't exist, create it.
+- The release notes should include:
+  - A summary of highlights, including new components, major bug fixes, notable improvements, release date, etc.
+  - A detailed list of changes grouped by categories like "Components & Rendering", "Focus & Input Reliability", "Samples & Gallery", "Tooling, Docs & Website", and "Build & CI".
+  - References to issue numbers, link to issue and commit hashes where applicable.
+  - Acknowledgment of contributors for significant changes.
+- Review README.md/design-docs/website/src/docs for any updates needed to reflect the new release.
 
 ## Prompting tips
 
