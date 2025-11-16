@@ -40,7 +40,7 @@
                 {
                     <Padder Padding="@_navigationItemPadding">
                         <TextButton Content="@tab.Label"
-                                    BackgroundColor="@(IsActive(tab.Key) ? Color.Grey37 : Color.Black)"
+                                    BackgroundColor="@(IsActive(tab.Key) ? Color.Grey37 : Color.Default)"
                                     FocusedColor="@Color.DeepSkyBlue1"
                                     OnClick="@(() => SelectTab(tab.Key))" />
                     </Padder>
