@@ -99,6 +99,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Nav.NavigateTo(_tabs.First().Key);
+
         _upgradeResult = await UpgradeChecker.CheckForUpgradeAsync().ConfigureAwait(false);
 
         if (_upgradeResult is null)
