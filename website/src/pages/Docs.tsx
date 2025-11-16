@@ -9,6 +9,7 @@ import customTranslatorsDoc from "@/docs/custom-translators.md?raw";
 import keyboardEventsDoc from "@/docs/keyboard-events.md?raw";
 import focusManagementDoc from "@/docs/focus-management.md?raw";
 import vdomDebuggingDoc from "@/docs/vdom-debugging.md?raw";
+import routingDoc from "@/docs/routing.md?raw";
 import componentGalleryDoc from "@/docs/component-gallery.md?raw";
 import v0_1_1ReleaseNotes from "../../../release-notes/v0.1.1.md?raw";
 import { MarkdownRenderer } from "@/components/Markdown";
@@ -76,6 +77,12 @@ export default function Docs() {
                 title: "VDom Tree Debugging",
                 content: vdomDebuggingDoc,
                 filePath: "website/src/docs/vdom-debugging.md",
+            },
+            {
+                id: "cli-routing",
+                title: "Routing",
+                content: routingDoc,
+                filePath: "website/src/docs/routing.md",
             },
             {
                 id: "component-gallery",
