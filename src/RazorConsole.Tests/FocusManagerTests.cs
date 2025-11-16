@@ -247,15 +247,18 @@ public sealed class FocusManagerTests
         // Wait a bit for the async dispatch to complete
         await Task.Delay(100);
 
-        // Focus should automatically move to the first available element
+        // Focus should be on third after explicit focus call
         Assert.Equal("third", manager.CurrentFocusKey);
 
-        // Focus events should have been dispatched
+        // Focus events should have been dispatched from both auto-refocus and explicit focus
         Assert.Collection(
             dispatcher.Events,
-            e => Assert.Equal(("focusout", 3UL), e),
-            e => Assert.Equal(("focusin", 8UL), e),
-            e => Assert.Equal(("focus", 7UL), e));
+            e => Assert.Equal(("focusout", 6UL), e),  // second loses focus
+            e => Assert.Equal(("focusin", 2UL), e),   // first gains focus (auto-refocus)
+            e => Assert.Equal(("focus", 1UL), e),     // first focus event (auto-refocus)
+            e => Assert.Equal(("focusout", 3UL), e),  // first loses focus
+            e => Assert.Equal(("focusin", 8UL), e),   // third gains focus
+            e => Assert.Equal(("focus", 7UL), e));    // third focus event
     }
 
     [Fact]
