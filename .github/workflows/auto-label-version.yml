@@ -1,0 +1,100 @@
+name: Auto-label with version
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  auto-label-version:
+    name: Add version labels
+    runs-on: ubuntu-latest
+    # Only run when PR is actually merged (not just closed)
+    if: github.event.pull_request.merged == true
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Need full history to access the merged PR files
+          fetch-depth: 0
+          # Checkout the main branch to read the current version
+          ref: main
+
+      - name: Read version from nuget-package.props
+        id: get-version
+        run: |
+          # Extract VersionPrefix from nuget-package.props
+          VERSION_PREFIX=$(grep -oP '<VersionPrefix>\K[^<]+' nuget/nuget-package.props)
+          echo "version_prefix=$VERSION_PREFIX" >> "$GITHUB_OUTPUT"
+          echo "Version found: v$VERSION_PREFIX"
+
+      - name: Add version label to PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          VERSION_LABEL: v${{ steps.get-version.outputs.version_prefix }}
+        run: |
+          echo "Adding label '$VERSION_LABEL' to PR #$PR_NUMBER"
+          
+          # Create label if it doesn't exist
+          gh label create "$VERSION_LABEL" --description "Issues and PRs included in version $VERSION_LABEL" --color "0052cc" --force || true
+          
+          # Add label to the merged PR
+          gh pr edit "$PR_NUMBER" --add-label "$VERSION_LABEL"
+
+      - name: Find and label linked issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          VERSION_LABEL: v${{ steps.get-version.outputs.version_prefix }}
+        run: |
+          echo "Looking for issues closed by PR #$PR_NUMBER"
+          
+          # Get PR details including body and title
+          PR_BODY=$(gh pr view "$PR_NUMBER" --json body --jq '.body // ""')
+          PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title // ""')
+          
+          # Combine PR title and body for searching
+          PR_CONTENT="$PR_TITLE $PR_BODY"
+          
+          echo "PR Content to analyze:"
+          echo "Title: $PR_TITLE"
+          echo "Body: $PR_BODY"
+          
+          # Find issue numbers using common closing keywords
+          # Matches patterns like: "fixes #123", "closes #456", "resolves #789", "implements #123", etc.
+          ISSUE_NUMBERS=$(echo "$PR_CONTENT" | grep -ioP '(?:fix(?:es|ed)?|close(?:s|d)?|resolve(?:s|d)?|implement(?:s|ed)?)\s+#(\d+)' | grep -oP '#\K\d+' | sort -u || true)
+          
+          if [ -z "$ISSUE_NUMBERS" ]; then
+            echo "No linked issues found in PR content"
+          else
+            echo "Found linked issues: $ISSUE_NUMBERS"
+            
+            # Label each found issue
+            for ISSUE_NUMBER in $ISSUE_NUMBERS; do
+              echo "Adding label '$VERSION_LABEL' to issue #$ISSUE_NUMBER"
+              
+              # Check if issue exists and is closed
+              ISSUE_STATE=$(gh issue view "$ISSUE_NUMBER" --json state --jq '.state' 2>/dev/null || echo "not_found")
+              
+              if [ "$ISSUE_STATE" = "CLOSED" ]; then
+                gh issue edit "$ISSUE_NUMBER" --add-label "$VERSION_LABEL"
+                echo "✓ Successfully labeled closed issue #$ISSUE_NUMBER"
+              elif [ "$ISSUE_STATE" = "OPEN" ]; then
+                echo "⚠ Issue #$ISSUE_NUMBER is still open, skipping"
+              else
+                echo "⚠ Issue #$ISSUE_NUMBER not found or inaccessible, skipping"
+              fi
+            done
+          fi
+
+      - name: Summary
+        env:
+          VERSION_LABEL: v${{ steps.get-version.outputs.version_prefix }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          echo "✅ Auto-labeling completed!"
+          echo "- Added label '$VERSION_LABEL' to PR #$PR_NUMBER"
+          echo "- Processed any linked closed issues"
+          echo "- Label '$VERSION_LABEL' can now be used to track all changes for this version"
