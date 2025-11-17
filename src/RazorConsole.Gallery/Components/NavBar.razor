@@ -1,0 +1,46 @@
+@using Spectre.Console
+@inject NavigationManager Nav
+
+@foreach (var tab in _tabs)
+{
+    <Padder Padding="@(new (0,0,0,1))">
+        <TextButton Content="@tab.Label"
+                    BackgroundColor="@(Nav.Uri.EndsWith(tab.Key) ? Color.Grey37 : Color.Default)"
+                    FocusedColor="@Color.DeepSkyBlue1"
+                    OnClick="@(() => SelectTab(tab.Key))" />
+    </Padder>
+}
+
+@code {
+    private readonly (string Key, string Label)[] _tabs = new[]
+    {
+        ("align", "Align"),
+        ("border", "Border"),
+        ("columns", "Columns"),
+        ("figlet", "Figlet"),
+        ("grid", "Grid"),
+        ("table", "Table"),
+        ("html-inline", "HTML Inline"),
+        ("html-list", "HTML List"),
+        ("markup", "Markup"),
+        ("markdown", "Markdown"),
+        ("syntax", "Syntax Highlight"),
+        ("newline", "Newline"),
+        ("canvas", "Spectre Canvas"),
+        ("padder", "Padder"),
+        ("panel", "Panel"),
+        ("rows", "Rows"),
+        ("select", "Select"),
+        ("spinner", "Spinner"),
+        ("scrollable", "Scrollable"),
+        ("textbutton", "Text Button"),
+        ("textinput", "Text Input"),
+        ("cli-info", "CLI Info"),
+    };
+
+    private void SelectTab(string key)
+    {
+        Nav.NavigateTo(key);
+    }
+
+}

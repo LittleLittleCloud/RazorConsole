@@ -1,0 +1,13 @@
+@namespace RazorConsole.Gallery.Components
+@inject NavigationManager Nav
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="RouteContext">
+        <RouteView RouteData="RouteContext" DefaultLayout="typeof(MainLayout)"/>
+    </Found>
+    <NotFound>
+        <Markup Content="How did you even get there?"/>
+        <TextButton OnClick="@(()=>Nav.NavigateTo("/"))" Content="Back to main"/>
+    </NotFound>
+</Router>
+

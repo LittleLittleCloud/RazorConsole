@@ -1,0 +1,15 @@
+@inherits LayoutComponentBase
+
+<Header/>
+<Panel Expand="true">
+    <Grid Columns="2" Expand="true">
+        <Padder Padding="@(new (1, 1, 1, 1))">
+            <Rows>
+                <NavBar/>
+            </Rows>
+        </Padder>
+		<Padder Padding="@(new(0,1,0,0))">
+            @Body
+		</Padder>
+    </Grid>
+</Panel>

@@ -1,9 +1,9 @@
-@page "/cli-info"
 @using System.Runtime.InteropServices
-@using Spectre.Console
 @using System.Globalization
-<Rows>
 
+@page "/cli-info"
+
+<Rows>
     <Markup Content="Information about current CLI (and some system info)" Foreground="@Color.Grey70" />
     <SpectreTable Title="General" ShowHeaders="false" Expand="true">
         @foreach (var item in _generalInfo)
@@ -53,34 +53,38 @@
         </SpectreTR>
     </SpectreTable>
     <Panel>
-
         <Rows>
             <Columns>
-                <Columns>
-                    <Markup Content="Input redirected:" />
-                    @{
-                        var isEnabled = Console.IsInputRedirected;
-                    }
-                    <Markup Content="@(isEnabled ? "✔️" : "✖")" Foreground="@(isEnabled? Color.Red: Color.Green)" />
-                </Columns>
-                <Columns>
-                    <Markup Content="Output redirected:" />
-                    @{
-                        var isEnabled = Console.IsOutputRedirected;
-                    }
-                    <Markup Content="@(isEnabled ? "✔️" : "✖")" Foreground="@(isEnabled? Color.Red: Color.Green)" />
-                </Columns>
-                <Columns>
-                    <Markup Content="Error redirected:" />
-                    @{
-                        var isEnabled = Console.IsErrorRedirected;
-                    }
-                    <Markup Content="@(isEnabled ? "✔️" : "✖")" Foreground="@(isEnabled? Color.Red: Color.Green)" />
-                </Columns>
+                <Padder Padding="@(new (0,0,1,0))">
+                    <Columns>
+                        <Markup Content="Input redirected:" />
+                        @{
+                            var isEnabled = Console.IsInputRedirected;
+                        }
+                        <Markup Content="@(isEnabled ? "✔️" : "✖")" Foreground="@(isEnabled? Color.Red: Color.Green)" />
+                    </Columns>
+                </Padder>
+                <Padder Padding="@(new (0,0,1,0))">
+                    <Columns>
+                        <Markup Content="Output redirected:" />
+                        @{
+                            var isEnabled = Console.IsOutputRedirected;
+                        }
+                        <Markup Content="@(isEnabled ? "✔️" : "✖")" Foreground="@(isEnabled? Color.Red: Color.Green)" />
+                    </Columns>
+                </Padder>
+                <Padder Padding="@(new (0,0,1,0))">
+                    <Columns>
+                        <Markup Content="Error redirected:" />
+                        @{
+                            var isEnabled = Console.IsErrorRedirected;
+                        }
+                        <Markup Content="@(isEnabled ? "✔️" : "✖")" Foreground="@(isEnabled? Color.Red: Color.Green)" />
+                    </Columns>
+                </Padder>
             </Columns>
         </Rows>
     </Panel>
-
     <SpectreTable Title="CLI Features" ShowHeaders="false" Expand="true">
         @foreach (var item in _cliFeatures)
         {

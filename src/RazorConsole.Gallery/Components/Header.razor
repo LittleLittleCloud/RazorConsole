@@ -1,17 +1,8 @@
-@namespace RazorConsole.Gallery.Components
-
-@using System
-@using Microsoft.AspNetCore.Components
-@using Microsoft.AspNetCore.Components.Routing
-@using RazorConsole.Components
-@using Spectre.Console
-@using RazorConsole.Gallery.Services
-@inject NavigationManager Nav
 @inject INuGetUpgradeChecker UpgradeChecker
+@using RazorConsole.Gallery.Services
+@using Spectre.Console
 <Figlet Content="Component Gallery" />
 <Align Horizontal="@HorizontalAlignment.Center">
-@* app bar *@
-
     <Rows>
         <Markup Content="Tab / Ctrl+Tab to change focus • Enter to select • Type to input • Control+C to exit" Foreground="@Color.Grey58" />
         @if (!string.IsNullOrEmpty(_versionSummary))
@@ -33,75 +24,17 @@
         </Columns>
     </Rows>
 </Align>
-<Panel Expand="true">
-    <Grid Columns="2" Expand="true">
-        <Padder Padding="@_navigationPadding">
-            <Rows>
-                @foreach (var tab in _tabs)
-                {
-                    <Padder Padding="@_navigationItemPadding">
-                        <TextButton Content="@tab.Label"
-                            BackgroundColor="@(Nav.Uri.EndsWith(tab.Key) ? Color.Grey37 : Color.Default)"
-                            FocusedColor="@Color.DeepSkyBlue1"
-                            OnClick="@(() => SelectTab(tab.Key))" />
-                    </Padder>
-                }
-            </Rows>
-        </Padder>
-		<Padder Padding="@(new(0,1,0,0))">
-            <Router AppAssembly="@typeof(App).Assembly">
-                <Found Context="RouteContext">
-                    <RouteView RouteData="RouteContext"/>
-                </Found>
-            </Router>
-		</Padder>
-    </Grid>
-</Panel>
-
 
 @code {
-    private readonly (string Key, string Label)[] _tabs = new[]
-    {
-        ("align", "Align"),
-        ("border", "Border"),
-        ("columns", "Columns"),
-        ("figlet", "Figlet"),
-        ("grid", "Grid"),
-        ("table", "Table"),
-        ("html-inline", "HTML Inline"),
-        ("html-list", "HTML List"),
-        ("markup", "Markup"),
-        ("markdown", "Markdown"),
-        ("syntax", "Syntax Highlight"),
-        ("newline", "Newline"),
-        ("canvas", "Spectre Canvas"),
-        ("padder", "Padder"),
-        ("panel", "Panel"),
-        ("rows", "Rows"),
-        ("select", "Select"),
-        ("spinner", "Spinner"),
-        ("scrollable", "Scrollable"),
-        ("textbutton", "Text Button"),
-        ("textinput", "Text Input"),
-        ("cli-info", "CLI Info"),
-    };
 
-    private readonly Padding _navigationPadding = new Padding(1, 1, 1, 1);
-    private readonly Padding _navigationItemPadding = new Padding(0, 0, 0, 1);
     private UpgradeCheckResult? _upgradeResult;
     private string? _upgradeBanner;
     private string? _upgradeLink;
     private string? _versionSummary;
 
-    private void SelectTab(string key)
-    {
-        Nav.NavigateTo(key);
-    }
 
     protected override async Task OnInitializedAsync()
     {
-        Nav.NavigateTo(_tabs.First().Key);
-
         _upgradeResult = await UpgradeChecker.CheckForUpgradeAsync().ConfigureAwait(false);
 
         if (_upgradeResult is null)
