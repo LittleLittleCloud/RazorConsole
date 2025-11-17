@@ -51,8 +51,11 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Information about your environment.
+      description: |
+        Information about your environment. 
+        You can get detailed CLI info by running the RazorConsole Gallery app and navigating to the "CLI Info" page, which shows OS, .NET version, terminal capabilities, and more.
       placeholder: |
+        Run `dotnet run --project src/RazorConsole.Gallery` and navigate to "CLI Info" page to get detailed environment info, or manually provide:
         - RazorConsole version:
         - .NET version:
         - OS:
