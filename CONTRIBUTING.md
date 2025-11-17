@@ -11,12 +11,18 @@ Thank you for your interest in contributing to RazorConsole! We welcome contribu
 
 ## 🐛 Reporting Issues
 
-When reporting bugs or requesting features:
+When reporting bugs or requesting features, please use our issue templates:
+
+- **Bug Report**: For reporting bugs or unexpected behavior ([use template](../../issues/new?template=bug-report.yml))
+- **Feature Request**: For suggesting new features or enhancements ([use template](../../issues/new?template=feature-request.yml))
+
+The templates will guide you through providing the necessary information:
 
 1. **Search existing issues** to avoid duplicates
 2. **Provide a clear description** of the problem or feature request
 3. **Include reproduction steps** for bugs
 4. **Share your environment details** (.NET version, OS, etc.)
+5. **Use appropriate labels**: bug, feature-request, contribution-requested, docs
 
 ## 🔧 Development Setup
 
