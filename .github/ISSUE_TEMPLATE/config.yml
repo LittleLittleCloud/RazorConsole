@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/LittleLittleCloud/RazorConsole/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📖 Documentation
+    url: https://littlelittlecloud.github.io/RazorConsole/
+    about: Check out the documentation for guides and examples

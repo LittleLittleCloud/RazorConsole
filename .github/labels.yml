@@ -1,0 +1,21 @@
+# GitHub Labels Configuration
+# This file defines labels that can be used in the repository.
+# Labels can be created using GitHub CLI: gh label create <name> --description "<description>" --color "<color>"
+# Or through GitHub's web interface: Settings -> Labels
+
+labels:
+  - name: bug
+    description: Something isn't working
+    color: d73a4a
+  
+  - name: feature-request
+    description: New feature or request
+    color: a2eeef
+  
+  - name: contribution-requested
+    description: Looking for community contributions
+    color: 7057ff
+  
+  - name: docs
+    description: Documentation improvements or additions
+    color: 0075ca
