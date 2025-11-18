@@ -4,12 +4,24 @@
 <Panel Expand="true">
     <Grid Columns="2" Expand="true">
         <Padder Padding="@(new (1, 1, 1, 1))">
-            <Rows>
-                <NavBar/>
-            </Rows>
+            <NavBar @bind-IsFocused="NavBarIsFocused" />
         </Padder>
 		<Padder Padding="@(new(0,1,0,0))">
             @Body
 		</Padder>
     </Grid>
 </Panel>
+@* footer *@
+<Align Horizontal="@HorizontalAlignment.Center">
+    @if(NavBarIsFocused)
+    {
+        <Markup Content="Use ↑/↓ to navigate Tabs • " Foreground="@Color.Grey58" />
+    }
+    <Markup Content="Tab / Ctrl+Tab to change focus • Enter to select • Type to input • Control+C to exit" Foreground="@Color.Grey58" />
+</Align>
+
+@code {
+    private bool NavBarIsFocused;
+
+
+}

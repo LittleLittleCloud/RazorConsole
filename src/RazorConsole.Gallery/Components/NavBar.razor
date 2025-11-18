@@ -1,17 +1,15 @@
 @using Spectre.Console
 @inject NavigationManager Nav
 
-@foreach (var tab in _tabs)
-{
-    <Padder Padding="@(new (0,0,0,1))">
-        <TextButton Content="@tab.Label"
-                    BackgroundColor="@(Nav.Uri.EndsWith(tab.Key) ? Color.Grey37 : Color.Default)"
-                    FocusedColor="@Color.DeepSkyBlue1"
-                    OnClick="@(() => SelectTab(tab.Key))" />
-    </Padder>
-}
+<Select Options="@(_tabs.Select(t => t.Label).ToArray())"
+    Value="@SelectedTab"
+    ValueChanged="@SelectTab"
+    IsFocused="@IsFocused"
+    IsFocusedChanged="@OnSelectFocusChanged"
+    Expand="false"/>
 
 @code {
+    private string SelectedTab = "Align";
     private readonly (string Key, string Label)[] _tabs = new[]
     {
         ("align", "Align"),
@@ -38,9 +36,38 @@
         ("cli-info", "CLI Info"),
     };
 
-    private void SelectTab(string key)
+    private void SelectTab(string tabName)
     {
+        var key = _tabs.FirstOrDefault(t => t.Label == tabName).Key;
+        if (key == null)
+        {
+            throw new InvalidOperationException($"Tab '{tabName}' not found.");
+        }
+        SelectedTab = tabName;
         Nav.NavigateTo(key);
+    }
+
+    [Parameter]
+    public bool IsFocused { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsFocusedChanged { get; set; }
+
+    private async Task OnSelectFocusChanged(bool isFocused)
+    {
+        if (IsFocused == isFocused)
+        {
+            return;
+        }
+
+        IsFocused = isFocused;
+
+        if (IsFocusedChanged.HasDelegate)
+        {
+            await IsFocusedChanged.InvokeAsync(isFocused).ConfigureAwait(false);
+        }
+
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
 
 }

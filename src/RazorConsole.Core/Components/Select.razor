@@ -174,7 +174,6 @@
     private async Task OnFocusOut()
     {
         IsFocused = false;
-        FocusedValue = null;
 
         if (IsFocusedChanged.HasDelegate)
         {
@@ -242,7 +241,7 @@
 
     private bool TryMoveSelection(int offset)
     {
-        EnsureHighlightedValue();
+        EnsureFocusedValue();
 
         if (_options.Length == 0)
         {
@@ -282,7 +281,7 @@
 
     private bool TryTypeAhead(char key)
     {
-        EnsureHighlightedValue();
+        EnsureFocusedValue();
 
         if (char.IsControl(key))
         {
@@ -339,7 +338,7 @@
         => string.Equals(key, "Escape", StringComparison.OrdinalIgnoreCase)
             || string.Equals(key, "Esc", StringComparison.OrdinalIgnoreCase);
 
-    private void EnsureHighlightedValue()
+    private void EnsureFocusedValue()
     {
         if (_options.Length == 0)
         {
