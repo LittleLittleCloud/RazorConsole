@@ -90,7 +90,7 @@
     public EventCallback<string?> ValueChanged { get; set; }
 
     /// <summary>
-    /// Option currently highlighted by focus.
+    /// Currently highlighted option during keyboard navigation (may differ from committed Value).
     /// </summary>
     [Parameter]
     public string? FocusedValue { get; set; }
@@ -211,6 +211,7 @@
         if (IsCancelKey(key))
         {
             FocusedValue = Value;
+            await NotifyFocusedValueChangedAsync().ConfigureAwait(false);
             await InvokeAsync(StateHasChanged).ConfigureAwait(false);
             return;
         }
