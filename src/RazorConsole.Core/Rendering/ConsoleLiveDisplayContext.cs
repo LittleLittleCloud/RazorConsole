@@ -20,7 +20,7 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
     private readonly VdomDiffService _diffService;
     private bool _disposed;
     private ConsoleViewResult? _currentView;
-    private IDisposable? _snapshotSubscription;
+    private readonly IDisposable? _snapshotSubscription;
     private List<AnimationSubscription>? _animationSubscriptions;
 
     internal ConsoleLiveDisplayContext(
