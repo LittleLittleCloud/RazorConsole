@@ -1,13 +1,8 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import {
-    docco,
-    atomOneDark
-} from "react-syntax-highlighter/dist/esm/styles/hljs";
 import remarkGfm from "remark-gfm";
-import { CopyButton } from "./CopyButton";
-import { useTheme } from "./ThemeProvider";
+import CodeBlock from "./CodeBlock";
+import type {BundledLanguage} from "shiki";
 
 interface MarkdownRendererProps {
   content: string;
@@ -19,11 +14,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   className = "",
 }) => {
   const remarkPlugins: any[] = [remarkGfm];
-  const theme = useTheme((state) => state.theme)
-  
-  // Determine if we should use dark theme for syntax highlighting
-  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
-  const syntaxTheme = isDark ? atomOneDark : docco
+
 
   return (
     <div className={`markdown-renderer ${className}`}>
@@ -34,49 +25,30 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           // Customize code blocks
           code: ({ className, children, ...props }: any) => {
             const match = /language-(\w+)/.exec(className || "");
-            const language = match ? match[1] : "";
+            const language =   match ? match[1] as BundledLanguage  : undefined;
             const inline = !className?.includes("language-");
             const codeContent = String(children).replace(/\n$/, "");
 
-            if (!inline) {
+            if (inline || !match) {
               return (
-                <div className="relative">
-                  <div className="absolute top-2 right-2 z-10">
-                    <CopyButton content={codeContent} />
-                  </div>
-                  <SyntaxHighlighter
-                    language={language || "text"}
-                    PreTag="div"
-                    style={syntaxTheme}
-                    customStyle={{
-                      margin: 0,
-                      borderRadius: "0.5rem",
-                      fontSize: "0.875rem",
-                      lineHeight: "1.5",
-                    }}
-                    codeTagProps={{
-                      style: {
-                        fontSize: "0.875rem",
-                        fontFamily:
-                          'ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                      },
-                    }}
-                  >
-                    {codeContent}
-                  </SyntaxHighlighter>
-                </div>
+                <code
+                  className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm font-mono text-gray-800 dark:text-gray-200"
+                  {...props}
+                >
+                  {children}
+                </code>
               );
             }
 
             return (
-              <code
-                className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-1 py-0.5 rounded text-sm font-mono"
-                {...props}
-              >
-                {children}
-              </code>
+              <CodeBlock
+                code={codeContent}
+                language={language }
+                showCopy={true}
+              />
             );
           },
+
 
           // Customize tables
           table: ({ children }) => (

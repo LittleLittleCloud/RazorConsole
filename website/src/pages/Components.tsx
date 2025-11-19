@@ -2,14 +2,14 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { components, type ComponentInfo } from "@/data/components"
-
+import CodeBlock from "@/components/CodeBlock"
 export default function Components() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  
+
   const categories = ["all", "Layout", "Input", "Display", "Utilities"]
-  
-  const filteredComponents = selectedCategory === "all" 
-    ? components 
+
+  const filteredComponents = selectedCategory === "all"
+    ? components
     : components.filter(c => c.category === selectedCategory)
 
   return (
@@ -66,16 +66,14 @@ function ComponentCard({ component }: { component: ComponentInfo }) {
             <TabsTrigger value="example">Example</TabsTrigger>
             {component.parameters && <TabsTrigger value="parameters">Parameters</TabsTrigger>}
           </TabsList>
-          
+
           <TabsContent value="example">
             <div>
               <h4 className="font-semibold mb-2 text-sm">Usage Example</h4>
-              <pre className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-4 rounded-md overflow-x-auto text-sm border border-slate-200 dark:border-slate-700">
-                <code>{component.example}</code>
-              </pre>
+                <CodeBlock language={"razor"} code={component.example}/>
             </div>
           </TabsContent>
-          
+
           {component.parameters && (
             <TabsContent value="parameters">
               <div className="overflow-x-auto">

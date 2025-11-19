@@ -21,6 +21,7 @@
     "react-router-dom": "^7.9.4",
     "react-syntax-highlighter": "^15.6.1",
     "remark-gfm": "^4.0.1",
+    "shiki": "^3.15.0",
     "tailwind-merge": "^3.3.1",
     "zustand": "^5.0.8"
   },
