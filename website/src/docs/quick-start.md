@@ -74,6 +74,6 @@ Build and run your console UI:
 dotnet run
 ```
 
-![img](https://private-user-images.githubusercontent.com/16876986/497579617-24d8cc11-6428-4886-93c1-873e45b47c74.gif?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NjMzMTgwMzUsIm5iZiI6MTc2MzMxNzczNSwicGF0aCI6Ii8xNjg3Njk4Ni80OTc1Nzk2MTctMjRkOGNjMTEtNjQyOC00ODg2LTkzYzEtODczZTQ1YjQ3Yzc0LmdpZj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTExMTYlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUxMTE2VDE4Mjg1NVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTBkMjczNmM2NzIxZWU2ZGMyMjEzMjA2NGM4MzViYTQwYTJkMmVjYjlmODdkNWRhYThkYjY5ZjMyYmYwOWEwYmMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.aRSMvUTb6-7gwSexBibN9jMTRZzWfS74Gy9nft_CsvA)
+![quick-start-counter image](https://github.com/user-attachments/assets/24d8cc11-6428-4886-93c1-873e45b47c74)
 
 You should see an interactive counter in the terminal. Use **Tab** to traverse focusable elements and **Enter** or **Space** to trigger actions.
