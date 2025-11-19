@@ -141,7 +141,6 @@
         }
     }
 
-
     private async Task SelectOptionAsync(string option)
     {
         Value = option;
@@ -162,6 +161,7 @@
     private async Task OnFocus()
     {
         IsFocused = true;
+        EnsureFocusedValue();
 
         if (IsFocusedChanged.HasDelegate)
         {
