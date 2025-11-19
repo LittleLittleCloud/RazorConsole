@@ -1,6 +1,5 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
-using System;
 using System.Text;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;

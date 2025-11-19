@@ -8,9 +8,7 @@ indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 
-# Use file header
-file_header_template = Copyright (c) RazorConsole. All rights reserved.
-dotnet_diagnostic.IDE0073.severity = warning
+
 
 [*.{cs,csx,razor}]
 dotnet_sort_system_directives_first = true
@@ -20,6 +18,13 @@ dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_event = false:suggestion
 dotnet_diagnostic.IDE0055.severity = warning
+
+# Use file header
+file_header_template = Copyright (c) RazorConsole. All rights reserved.
+dotnet_diagnostic.IDE0073.severity = warning
+
+# Remove unnecessary usings
+dotnet_diagnostic.IDE0005.severity = warning
 
 # New line settings (braces and control flow)
 csharp_new_line_before_open_brace = all

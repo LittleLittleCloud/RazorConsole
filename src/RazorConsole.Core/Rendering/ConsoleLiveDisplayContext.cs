@@ -1,8 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
 using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Core.Controllers;

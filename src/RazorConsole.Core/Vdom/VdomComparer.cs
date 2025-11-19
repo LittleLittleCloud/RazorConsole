@@ -1,7 +1,5 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
-using System;
-
 namespace RazorConsole.Core.Vdom;
 
 internal static class VdomComparer

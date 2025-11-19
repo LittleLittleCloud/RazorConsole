@@ -1,9 +1,5 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
 internal static class AnimatedRenderableRegistry

@@ -1,7 +1,5 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using RazorConsole.Components;

@@ -1,7 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
 using RazorConsole.Core.Utilities;
-using Xunit;
 
 namespace RazorConsole.Tests.Utilities;
 

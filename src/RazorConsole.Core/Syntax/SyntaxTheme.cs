@@ -1,9 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using ColorCode.Common;
 using Spectre.Console;
 

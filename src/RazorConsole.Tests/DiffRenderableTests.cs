@@ -1,11 +1,7 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using RazorConsole.Core.Renderables;
 using Spectre.Console.Rendering;
-using Xunit;
 using static RazorConsole.Core.Utilities.AnsiSequences;
 
 namespace RazorConsole.Tests;

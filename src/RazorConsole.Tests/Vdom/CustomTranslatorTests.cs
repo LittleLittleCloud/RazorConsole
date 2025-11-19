@@ -1,14 +1,10 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using RazorConsole.Core.Rendering.Vdom;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
-using Xunit;
 
 namespace RazorConsole.Tests.Vdom;
 

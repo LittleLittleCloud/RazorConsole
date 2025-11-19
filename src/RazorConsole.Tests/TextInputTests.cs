@@ -1,14 +1,9 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Components;
-using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Vdom;
 
 namespace RazorConsole.Tests;
