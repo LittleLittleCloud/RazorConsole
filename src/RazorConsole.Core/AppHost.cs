@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;

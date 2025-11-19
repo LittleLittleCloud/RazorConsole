@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 #nullable enable
 #pragma warning disable BL0006 // RenderTree types are "internal-ish"; acceptable for console renderer.
 using System.Globalization;

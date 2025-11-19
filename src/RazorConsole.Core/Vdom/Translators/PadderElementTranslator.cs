@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System;
 using System.Globalization;
 using System.Linq;

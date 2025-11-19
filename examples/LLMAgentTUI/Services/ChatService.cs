@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.ClientModel;
 using Microsoft.Extensions.AI;
 

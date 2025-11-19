@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Text;
 
 namespace RazorConsole.Core.Utilities;
