@@ -122,6 +122,12 @@ internal class ComponentService<TComponent>(
     /// <returns>A task that completes when background processing has stopped.</returns>
     public override Task StopAsync(CancellationToken cancellationToken)
     {
+        // Switch back from alternate screen
+        if (options.AlternateScreen)
+        {
+            Console.Write("\u001b[?1049l");
+        }
+
         // Bubble exceptions up into Host.StopAsync, invoked when Host self-stops when a BackgroundService throws
         if (ExecuteTask?.Exception is not null)
         {
@@ -148,6 +154,22 @@ internal class ComponentService<TComponent>(
         if (options.AutoClearConsole)
         {
             AnsiConsole.Clear();
+        }
+
+        if (options.AlternateScreen)
+        {
+            if (!AnsiConsole.Profile.Capabilities.Ansi)
+            {
+                throw new NotSupportedException("Alternate buffers are not supported since your terminal does not support ANSI.");
+            }
+
+            if (!AnsiConsole.Profile.Capabilities.AlternateBuffer)
+            {
+                throw new NotSupportedException("Alternate buffers are not supported by your terminal.");
+            }
+
+            // Switch to alternate screen
+            Console.Write("\u001b[?1049h\u001b[H");
         }
 
         using var liveContext = new ConsoleLiveDisplayContext(new LiveDisplayCanvas(), consoleRenderer, null);

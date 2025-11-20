@@ -11,6 +11,14 @@ public sealed class ConsoleAppOptions
     /// </summary>
     public bool AutoClearConsole { get; set; } = false;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the alternate screen buffer is enabled.
+    /// </summary>
+    /// <remarks>When enabled, output is directed to the alternate screen buffer, which allows temporary
+    /// display changes without affecting the main screen. This is commonly used in terminal applications to present
+    /// full-screen interfaces that restore the original content upon exit.</remarks>
+    public bool AlternateScreen { get; set; } = true;
+
     public ConsoleLiveDisplayOptions ConsoleLiveDisplayOptions { get; } = ConsoleLiveDisplayOptions.Default;
 
     /// <summary>

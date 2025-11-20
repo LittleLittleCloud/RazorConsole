@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 using RazorConsole.Core;
 using RazorConsole.Gallery.Components;
 using RazorConsole.Gallery.Services;
-
+Console.Write("\u001b[?1049h\u001b[H");
 var builder = Host
     .CreateApplicationBuilder(args);
 
@@ -19,3 +19,4 @@ builder.Services.AddHttpClient<INuGetUpgradeChecker, NuGetUpgradeChecker>(client
 await builder
     .Build()
     .RunAsync();
+Console.Write("\u001b[?1049l");
