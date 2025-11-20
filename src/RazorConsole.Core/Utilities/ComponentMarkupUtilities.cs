@@ -1,8 +1,6 @@
-using System;
-using System.Globalization;
-using System.Linq;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Reflection;
-using System.Xml.Linq;
 using Spectre.Console;
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;

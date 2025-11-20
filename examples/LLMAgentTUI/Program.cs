@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using LLMAgentTUI.Components;
 using LLMAgentTUI.Services;
 using Microsoft.Extensions.AI;

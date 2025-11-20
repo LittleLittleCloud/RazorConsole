@@ -1,4 +1,5 @@
-using System.ClientModel;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Microsoft.Extensions.AI;
 
 namespace LLMAgentTUI.Services;

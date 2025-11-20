@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using ColorCode;
-using ColorCode.Compilation;
 
 namespace RazorConsole.Core.Rendering.Syntax;
 

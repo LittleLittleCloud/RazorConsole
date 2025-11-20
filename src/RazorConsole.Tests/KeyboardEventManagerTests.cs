@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +11,6 @@ using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
 using Spectre.Console.Rendering;
-using Xunit;
 
 namespace RazorConsole.Tests;
 

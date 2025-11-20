@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RazorConsole.Core.Utilities;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Spectre.Console;
 using Spectre.Console.Rendering;
 using static RazorConsole.Core.Utilities.AnsiSequences;

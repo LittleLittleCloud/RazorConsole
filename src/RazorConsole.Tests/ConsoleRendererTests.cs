@@ -1,12 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
-using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Vdom;
 
 namespace RazorConsole.Tests;

@@ -1,4 +1,4 @@
-using System;
+// Copyright (c) RazorConsole. All rights reserved.
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 

@@ -1,4 +1,4 @@
-using Spectre.Console;
+// Copyright (c) RazorConsole. All rights reserved.
 
 namespace RazorConsole.Core.Rendering;
 

@@ -1,6 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Text.Json;
 using Spectre.Console;
 

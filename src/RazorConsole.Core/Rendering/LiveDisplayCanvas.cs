@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.Components;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Rendering;
 using Spectre.Console;

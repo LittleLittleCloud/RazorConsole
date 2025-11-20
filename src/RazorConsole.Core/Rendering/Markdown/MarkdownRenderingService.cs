@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Markdig;
 
 namespace RazorConsole.Core.Rendering.Markdown;

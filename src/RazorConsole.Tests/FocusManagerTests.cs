@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using RazorConsole.Core.Controllers;

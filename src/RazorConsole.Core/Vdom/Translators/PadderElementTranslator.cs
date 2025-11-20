@@ -1,6 +1,6 @@
-using System;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Globalization;
-using System.Linq;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;

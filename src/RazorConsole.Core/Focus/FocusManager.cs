@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Microsoft.AspNetCore.Components.Web;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;

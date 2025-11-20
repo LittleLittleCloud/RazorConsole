@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Spectre.Console;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Renderables;
