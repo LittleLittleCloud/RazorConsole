@@ -84,6 +84,12 @@ public sealed class TableElementTranslator : IVdomElementTranslator
         var border = ResolveBorder(VdomSpectreTranslator.GetAttribute(node, "data-border"));
         table.Border = border;
 
+        var borderColorAttr = VdomSpectreTranslator.GetAttribute(node, "data-border-color");
+        if (!string.IsNullOrWhiteSpace(borderColorAttr) && Color.TryFromHex(borderColorAttr, out var borderColor))
+        {
+            table.BorderColor(borderColor);
+        }
+
         if (VdomSpectreTranslator.TryGetBoolAttribute(node, "data-show-headers", out var showHeaders))
         {
             table.ShowHeaders = showHeaders;

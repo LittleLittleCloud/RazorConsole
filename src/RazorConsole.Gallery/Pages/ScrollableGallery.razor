@@ -18,14 +18,15 @@
             <Panel Title="Alphabet Table" Border="BoxBorder.Rounded" Expand="true">
                 <Scrollable Items="@AlphabetData" PageSize="3">
                     <Rows>
-                        <SpectreTable Title="Short alphabet" Border="TableBorder.Rounded">
+                        <SpectreTable Title="Short alphabet" Border="TableBorder.Rounded" BorderColor="@_tableColor"
+                                      @onfocus="OnFocusTable" @onfocusout="OnFocusOutTable" @onkeydown="context.KeyDownEventHandler">
                             <SpectreTHead>
                                 <SpectreTR>
                                     <SpectreTH Align="Justify.Left">N</SpectreTH>
                                     <SpectreTH Align="Justify.Center">Letter</SpectreTH>
                                 </SpectreTR>
                             </SpectreTHead>
-                            <SpectreTBody @onkeydown="context.KeyDownEventHandler">
+                            <SpectreTBody >
                                 @foreach (var item in context)
                                 {
                                     <SpectreTR>
@@ -43,9 +44,12 @@
                     </Rows>
                 </Scrollable>
             </Panel>
-            <Panel Title="List (ol)" Border="BoxBorder.Rounded" Expand="true">
+
+            <Panel Title="List (ol)" Border="BoxBorder.Rounded" BorderColor="@(!_isListFocused ? Color.White : Color.Aqua)" Expand="true">
                 <Scrollable Items="@AlphabetData" PageSize="4">
-                    <ol start="@(context.CurrentOffset + 1)" @onkeydown="context.KeyDownEventHandler">
+                    <ol start="@(context.CurrentOffset + 1)"
+                        @onfocus="OnFocusList" @onfocusout="OnFocusOutList" @onkeydown="context.KeyDownEventHandler">
+
                         @foreach (var item in context)
                         {
                             <li>
@@ -62,6 +66,8 @@
 @code {
     private const string DocumentationUrl = "https://github.com/LittleLittleCloud/RazorConsole/blob/main/src/RazorConsole.Core/Components/Scrollable.razor";
     private IReadOnlyList<(int Number, string Letter, Color Color)> AlphabetData => GetAlphabetData();
+    private Color _tableColor = Color.White;
+    private bool _isListFocused;
 
     private IReadOnlyList<(int Number, string Letter, Color Color)> GetAlphabetData()
     {
@@ -85,10 +91,32 @@
         ];
     }
 
+    private void OnFocusTable(FocusEventArgs e)
+    {
+        _tableColor = Color.Aqua;
+    }
+
+    private void OnFocusOutTable(FocusEventArgs e)
+    {
+        _tableColor = Color.White;
+    }
+
+    private void OnFocusList(FocusEventArgs e)
+    {
+        _isListFocused = true;
+    }
+
+    private void OnFocusOutList(FocusEventArgs e)
+    {
+        _isListFocused = false;
+    }
+
+
     private string _scrollableMarkup = @"
 <Scrollable Items=""@AlphabetData"" PageSize=""3"">
     <Rows>
-        <SpectreTable Title=""Short alphabet"" Border=""TableBorder.Rounded"">
+        <SpectreTable Title=""Short alphabet"" Border=""TableBorder.Rounded"" BorderColor=""@_tableColor""
+             @onfocus=""OnFocusTable"" @onfocusout=""OnFocusOutTable"" @onkeydown=""context.KeyDownEventHandler"">
             <SpectreTBody>
                 @foreach (var item in context)
                 {
@@ -103,14 +131,16 @@
     </Rows>
 </Scrollable>
 
-<Scrollable Items=""@AlphabetData"" PageSize=""4"">
-    //Use start attribute in ordered list to sync numeration with scrolling.
-    <ol start=""@(context.CurrentOffset + 1)"" @onkeydown=""context.KeyDownEventHandler"">
-        @foreach (var item in context)
-        {
-            <li><Markup Content=""{item.Letter}"" Foreground=""@item.Color""/></li>
-        }
-    </pl>
-</Scrollable>";
-
+<Panel Title=""List (ol)"" Border=""BoxBorder.Rounded"" BorderColor=""@(!_isListFocused ? Color.White : Color.Aqua)"" Expand=""true"">
+    <Scrollable Items=""@AlphabetData"" PageSize=""4"">
+        //Use start attribute in ordered list to sync numeration with scrolling.
+        <ol start=""@(context.CurrentOffset + 1)""
+            @onfocus=""OnFocusList"" @onfocusout=""OnFocusOutList"" @onkeydown=""context.KeyDownEventHandler"">
+            @foreach (var item in context)
+            {
+                <li><Markup Content=""{item.Letter}"" Foreground=""@item.Color""/></li>
+            }
+        </pl>
+    </Scrollable>
+</Panel>";
 }
