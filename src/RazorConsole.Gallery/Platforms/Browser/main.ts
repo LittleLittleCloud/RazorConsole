@@ -45,34 +45,19 @@ export async function initRazorConsole() {
 }
 
 /**
- * Hook to capture console output and forward to callback
+ * Hook to capture console output and forward to callback.
+ * This is called from wasmLoader.ts to set up the callback.
  */
 export function onConsoleOutput(callback: ConsoleOutputCallback) {
     outputCallback = callback;
-    
-    // Intercept console methods
-    const originalLog = console.log;
-    const originalError = console.error;
-    const originalWarn = console.warn;
-    
-    console.log = function(...args: any[]) {
-        originalLog.apply(console, args);
-        if (outputCallback) {
-            outputCallback(args.join(' ') + '\r\n');
-        }
-    };
-    
-    console.error = function(...args: any[]) {
-        originalError.apply(console, args);
-        if (outputCallback) {
-            outputCallback('\x1b[31m' + args.join(' ') + '\x1b[0m\r\n');
-        }
-    };
-    
-    console.warn = function(...args: any[]) {
-        originalWarn.apply(console, args);
-        if (outputCallback) {
-            outputCallback('\x1b[33m' + args.join(' ') + '\x1b[0m\r\n');
-        }
-    };
 }
+
+/**
+ * Global function called by .NET BrowserConsole to output text.
+ * This is invoked via JSImport from C#.
+ */
+(globalThis as any).onConsoleOutput = function(data: string) {
+    if (outputCallback) {
+        outputCallback(data);
+    }
+};

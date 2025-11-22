@@ -19,15 +19,14 @@ public static class BrowserInteropExtensions
     /// </summary>
     public static IHostApplicationBuilder UseBrowserInterop(this IHostApplicationBuilder builder)
     {
-        // Register the browser keyboard input provider
+        // Register the browser keyboard input provider (infrastructure ready)
         builder.Services.AddSingleton<BrowserKeyboardInputProvider>();
         
-        // Register the browser keyboard interop service
+        // Register the browser keyboard interop service (JSExport methods for JS to call)
         builder.Services.AddSingleton<BrowserKeyboardInterop>();
         
-        // Note: We don't register BrowserKeyboardHostedService because the browser version
-        // of Program.cs exits early with a success message instead of running the full Gallery.
-        // This is a demonstration/infrastructure MVP showing WASM loading works.
+        // Note: Full keyboard processing requires KeyboardEventManager to be public in Core
+        // The infrastructure is in place but needs Core library modifications to complete
         
         return builder;
     }
