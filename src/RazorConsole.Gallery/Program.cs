@@ -1,21 +1,21 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+//using Microsoft.Extensions.DependencyInjection;
+//using Microsoft.Extensions.Hosting;
 
-using RazorConsole.Core;
-using RazorConsole.Gallery.Components;
-using RazorConsole.Gallery.Services;
+//using RazorConsole.Core;
+//using RazorConsole.Gallery.Components;
+//using RazorConsole.Gallery.Services;
 
-var builder = Host
-    .CreateApplicationBuilder(args);
+//var builder = Host
+//    .CreateApplicationBuilder(args);
 
-builder.UseRazorConsole<App>();
+//builder.UseRazorConsole<App>();
 
-builder.Services.AddHttpClient<INuGetUpgradeChecker, NuGetUpgradeChecker>(client =>
-{
-    client.BaseAddress = new Uri("https://api.nuget.org/v3-flatcontainer/", UriKind.Absolute);
-    client.DefaultRequestHeaders.UserAgent.ParseAdd("RazorConsoleGallery/1.0");
-});
+//builder.Services.AddHttpClient<INuGetUpgradeChecker, NuGetUpgradeChecker>(client =>
+//{
+//    client.BaseAddress = new Uri("https://api.nuget.org/v3-flatcontainer/", UriKind.Absolute);
+//    client.DefaultRequestHeaders.UserAgent.ParseAdd("RazorConsoleGallery/1.0");
+//});
 
-await builder
-    .Build()
-    .RunAsync();
+//await builder
+//    .Build()
+//    .RunAsync();

@@ -26,5 +26,7 @@
     <PackageVersion Include="Markdig" Version="0.43.0" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0" />
   </ItemGroup>
 </Project>
