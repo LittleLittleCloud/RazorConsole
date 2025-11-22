@@ -6,7 +6,7 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core;
 
-internal sealed class LiveDisplayCanvas : ConsoleLiveDisplayContext.ILiveDisplayCanvas
+internal sealed class LiveDisplayCanvas(IAnsiConsole ansiConsole) : ConsoleLiveDisplayContext.ILiveDisplayCanvas
 {
     private DiffRenderable? _current;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -30,13 +30,13 @@ internal sealed class LiveDisplayCanvas : ConsoleLiveDisplayContext.ILiveDisplay
 
         if (_current is null && renderable is not null)
         {
-            _current = new DiffRenderable(AnsiConsole.Console, renderable);
-            AnsiConsole.Write(_current);
+            _current = new DiffRenderable(ansiConsole, renderable);
+            ansiConsole.Write(_current);
         }
         else if (_current is not null && renderable is not null)
         {
             _current.UpdateRenderable(renderable);
-            AnsiConsole.Write(_current);
+            ansiConsole.Write(_current);
         }
 
         _semaphore.Release();
@@ -46,8 +46,8 @@ internal sealed class LiveDisplayCanvas : ConsoleLiveDisplayContext.ILiveDisplay
     {
         if (_current is not null)
         {
-            AnsiConsole.Write(new ControlCode(string.Empty));
-            AnsiConsole.Write(_current);
+            ansiConsole.Write(new ControlCode(string.Empty));
+            ansiConsole.Write(_current);
         }
     }
 

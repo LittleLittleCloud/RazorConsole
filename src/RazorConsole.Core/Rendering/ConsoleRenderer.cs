@@ -83,7 +83,9 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         _pendingRender = tcs;
 
         await RenderRootComponentAsync(componentId, parameters).ConfigureAwait(false);
-        return await tcs.Task.ConfigureAwait(false);
+        _lastSnapshot = await tcs.Task.ConfigureAwait(false);
+
+        return _lastSnapshot;
     }
 
     public IDisposable Subscribe(IObserver<RenderSnapshot> observer)
