@@ -14,7 +14,10 @@ using RazorConsole.Core.Vdom;
 
 namespace RazorConsole.Core.Input;
 
-internal interface IKeyboardEventDispatcher
+/// <summary>
+/// Provides a mechanism to dispatch keyboard events to component handlers.
+/// </summary>
+public interface IKeyboardEventDispatcher
 {
     Task DispatchAsync(ulong handlerId, EventArgs eventArgs, CancellationToken cancellationToken);
 }
@@ -45,7 +48,10 @@ internal sealed class RendererKeyboardEventDispatcher : IKeyboardEventDispatcher
     }
 }
 
-internal sealed class KeyboardEventManager
+/// <summary>
+/// Manages keyboard input for the console application, converting keyboard events to component events.
+/// </summary>
+public sealed class KeyboardEventManager
 {
     private readonly FocusManager _focusManager;
     private readonly IKeyboardEventDispatcher _dispatcher;
@@ -108,7 +114,12 @@ internal sealed class KeyboardEventManager
         }
     }
 
-    internal async Task HandleKeyAsync(ConsoleKeyInfo keyInfo, CancellationToken token)
+    /// <summary>
+    /// Handles a keyboard key press event and dispatches it to the appropriate component handlers.
+    /// </summary>
+    /// <param name="keyInfo">Information about the key that was pressed.</param>
+    /// <param name="token">Cancellation token.</param>
+    public async Task HandleKeyAsync(ConsoleKeyInfo keyInfo, CancellationToken token)
     {
         if (!_focusManager.TryGetFocusedTarget(out var initialTarget) || initialTarget is null)
         {
