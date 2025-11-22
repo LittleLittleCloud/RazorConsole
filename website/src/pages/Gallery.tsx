@@ -112,9 +112,16 @@ export default function Gallery() {
   }
 
   useEffect(() => {
-    initializeWasm()
+    let cleanup: (() => void) | undefined;
+    
+    initializeWasm().then(cleanupFn => {
+      cleanup = cleanupFn;
+    });
 
     return () => {
+      if (cleanup) {
+        cleanup();
+      }
       if (xtermRef.current) {
         xtermRef.current.dispose()
       }

@@ -16,7 +16,8 @@ public partial class BrowserProgram
     public static async Task<int> Run(string[] args)
     {
         // Initialize JavaScript interop
-        await JSHost.ImportAsync("main.js", "../main.js");
+        // The module path is relative to the WASM bundle location
+        await JSHost.ImportAsync("main.js", "./main.js");
 
         var builder = Host.CreateApplicationBuilder(args);
 
