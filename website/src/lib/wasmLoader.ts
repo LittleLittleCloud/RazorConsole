@@ -29,7 +29,8 @@ export async function loadWasmModule(callbacks: WasmCallbacks): Promise<WasmModu
   try {
     // For demo/development: show mock output
     // To load the main.ts module from WASM bundle:
-    // const mainModuleUrl = getWasmBundleUrl().replace('_framework/dotnet.js', 'main.ts');
+    // const wasmBaseUrl = new URL('./', getWasmBundleUrl())
+    // const mainModuleUrl = new URL('./main.ts', wasmBaseUrl).href
     // In production, this would:
     // 1. Load the main.ts module: const { initRazorConsole, onConsoleOutput } = await import(mainModuleUrl)
     // 2. Set up console output capture: onConsoleOutput(onOutput)

@@ -76,9 +76,9 @@ public partial class BrowserKeyboardInterop
             "ArrowDown" => ConsoleKey.DownArrow,
             "ArrowLeft" => ConsoleKey.LeftArrow,
             "ArrowRight" => ConsoleKey.RightArrow,
-            _ => key.Length == 1 && char.IsLetter(key[0]) && char.IsUpper(key[0]) 
-                ? (ConsoleKey)Enum.Parse(typeof(ConsoleKey), key)
-                : ConsoleKey.NoName
+            _ when key.Length == 1 && char.IsLetter(key[0]) && char.IsUpper(key[0]) 
+                && Enum.TryParse<ConsoleKey>(key, out var parsed) => parsed,
+            _ => ConsoleKey.NoName
         };
 
         var keyChar = key.Length == 1 ? key[0] : '\0';
