@@ -3,6 +3,7 @@ using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RazorConsole.Core;
 
 namespace RazorConsole.Gallery.Platforms.Browser;
 
@@ -18,8 +19,15 @@ public static class BrowserInteropExtensions
     /// </summary>
     public static IHostApplicationBuilder UseBrowserInterop(this IHostApplicationBuilder builder)
     {
+        // Register the browser keyboard input provider
+        builder.Services.AddSingleton<BrowserKeyboardInputProvider>();
+        
         // Register the browser keyboard interop service
         builder.Services.AddSingleton<BrowserKeyboardInterop>();
+        
+        // Note: We don't register BrowserKeyboardHostedService because the browser version
+        // of Program.cs exits early with a success message instead of running the full Gallery.
+        // This is a demonstration/infrastructure MVP showing WASM loading works.
         
         return builder;
     }
@@ -33,9 +41,11 @@ public static class BrowserInteropExtensions
 public partial class BrowserKeyboardInterop
 {
     private static BrowserKeyboardInterop? _instance;
+    private readonly BrowserKeyboardInputProvider _inputProvider;
 
-    public BrowserKeyboardInterop()
+    public BrowserKeyboardInterop(BrowserKeyboardInputProvider inputProvider)
     {
+        _inputProvider = inputProvider ?? throw new ArgumentNullException(nameof(inputProvider));
         _instance = this;
     }
 
@@ -53,9 +63,8 @@ public partial class BrowserKeyboardInterop
 
         var keyInfo = ConvertToConsoleKeyInfo(key, shift, ctrl, alt);
         
-        // In a real implementation, this would dispatch to KeyboardEventManager
-        // For now, log the key for demonstration
-        Console.WriteLine($"Key pressed: {key} (shift:{shift}, ctrl:{ctrl}, alt:{alt})");
+        // Enqueue the key for processing by KeyboardEventManager
+        _instance._inputProvider.EnqueueKey(keyInfo);
     }
 
     private static ConsoleKeyInfo ConvertToConsoleKeyInfo(string key, bool shift, bool ctrl, bool alt)
