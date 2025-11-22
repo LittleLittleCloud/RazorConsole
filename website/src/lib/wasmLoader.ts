@@ -18,49 +18,164 @@ export interface WasmCallbacks {
   onReady?: () => void;
 }
 
+// Singleton instance to prevent double initialization
+let wasmModuleInstance: WasmModule | null = null;
+let wasmInitPromise: Promise<WasmModule> | null = null;
+
 /**
  * Loads the RazorConsole.Gallery WASM module
  * @param callbacks Callbacks for handling WASM events
  * @returns Promise that resolves to a WasmModule interface
  */
 export async function loadWasmModule(callbacks: WasmCallbacks): Promise<WasmModule> {
+  // Return existing instance if already loaded
+  if (wasmModuleInstance) {
+    console.log('Returning existing WASM module instance');
+    return wasmModuleInstance;
+  }
+  
+  // Return existing promise if already loading
+  if (wasmInitPromise) {
+    console.log('WASM module is already loading, waiting for it...');
+    return wasmInitPromise;
+  }
+  
+  // Start loading
+  wasmInitPromise = loadWasmModuleInternal(callbacks);
+  
+  try {
+    wasmModuleInstance = await wasmInitPromise;
+    return wasmModuleInstance;
+  } catch (error) {
+    // Reset on error so it can be retried
+    wasmInitPromise = null;
+    throw error;
+  }
+}
+
+async function loadWasmModuleInternal(callbacks: WasmCallbacks): Promise<WasmModule> {
   const { onOutput, onError, onReady } = callbacks;
 
   try {
-    // Load the main.ts module from WASM bundle
-    const wasmBaseUrl = new URL('./', getWasmBundleUrl());
-    const mainModuleUrl = new URL('./main.ts', wasmBaseUrl).href;
+    // Load dotnet.js using a script tag to avoid Vite processing
+    const dotnetLoaderUrl = getWasmBundleUrl();
     
-    // Dynamically import the WASM module
-    const { initRazorConsole, onConsoleOutput } = await import(/* @vite-ignore */ mainModuleUrl);
+    console.log('Loading dotnet loader from:', dotnetLoaderUrl);
     
-    // Set up console output capture
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = dotnetLoaderUrl;
+      script.type = 'module';
+      script.onload = () => {
+        console.log('dotnet loader loaded successfully');
+        resolve();
+      };
+      script.onerror = (err) => {
+        console.error('Failed to load dotnet loader', err);
+        reject(new Error('Failed to load dotnet loader'));
+      };
+      document.head.appendChild(script);
+    });
+    
+    console.log('Waiting for dotnetRuntime global...');
+    
+    // Wait for dotnetRuntime global to be available
+    await new Promise<void>((resolve, reject) => {
+      let attempts = 0;
+      const maxAttempts = 100; // 10 seconds max
+      
+      const checkDotnet = () => {
+        attempts++;
+        if (attempts % 10 === 0) {
+          console.log(`Checking for dotnetRuntime global (attempt ${attempts}/${maxAttempts})`);
+        }
+        
+        if ((window as any).dotnetRuntime) {
+          console.log('dotnetRuntime global found!');
+          resolve();
+        } else if (attempts >= maxAttempts) {
+          reject(new Error('Timeout waiting for dotnetRuntime global'));
+        } else {
+          setTimeout(checkDotnet, 100);
+        }
+      };
+      checkDotnet();
+    });
+    
+    const dotnet = (window as any).dotnetRuntime;
+    console.log('Got dotnet:', dotnet);
+    
+    // Set up console output capture before initializing
+    const originalLog = console.log;
+    const originalError = console.error;
+    const originalWarn = console.warn;
+    
     if (onOutput) {
-      onConsoleOutput(onOutput);
+      console.log = function(...args: any[]) {
+        originalLog.apply(console, args);
+        onOutput(args.join(' ') + '\r\n');
+      };
+      
+      console.error = function(...args: any[]) {
+        originalError.apply(console, args);
+        onOutput('\x1b[31m' + args.join(' ') + '\x1b[0m\r\n');
+      };
+      
+      console.warn = function(...args: any[]) {
+        originalWarn.apply(console, args);
+        onOutput('\x1b[33m' + args.join(' ') + '\x1b[0m\r\n');
+      };
     }
     
-    // Initialize WASM and start the application
-    const wasmModule = await initRazorConsole();
+    console.log('Initializing .NET runtime...');
+    
+    // Initialize the .NET runtime
+    const { getAssemblyExports, getConfig, runMain } = await dotnet
+      .withDiagnosticTracing(false)
+      .withApplicationArguments(...[])
+      .create();
+
+    console.log('Getting config...');
+    const config = getConfig();
+    console.log('Getting exports...');
+    const exports = await getAssemblyExports(config.mainAssemblyName!);
+
+    console.log('Running main...');
+    // Start the .NET application
+    await runMain();
+    
+    console.log('.NET application started!');
     
     // Notify ready
     if (onReady) {
       onReady();
     }
     
+    // Get the browser keyboard interop exports
+    const browserInterop = (exports as any).RazorConsole?.Gallery?.Platforms?.Browser?.BrowserKeyboardInterop;
+    
     return {
       sendInput: (input: string) => {
         // Send character input
-        wasmModule.sendKey(input, false, false, false);
+        if (browserInterop?.HandleKeyFromJS) {
+          browserInterop.HandleKeyFromJS(input, false, false, false);
+        }
       },
       sendKeyPress: (key: string) => {
         // For special keys, pass them directly
-        wasmModule.sendKey(key, false, false, false);
+        if (browserInterop?.HandleKeyFromJS) {
+          browserInterop.HandleKeyFromJS(key, false, false, false);
+        }
       },
       dispose: () => {
-        console.log("Disposing WASM module");
+        // Restore console
+        console.log = originalLog;
+        console.error = originalError;
+        console.warn = originalWarn;
       },
     };
   } catch (error) {
+    console.error('Error in loadWasmModule:', error);
     if (onError) {
       onError(error instanceof Error ? error.message : "Unknown error loading WASM");
     }
@@ -75,7 +190,7 @@ export async function loadWasmModule(callbacks: WasmCallbacks): Promise<WasmModu
 export function getWasmBundleUrl(): string {
   // Use environment variable or default to production path
   const basePath = import.meta.env.BASE_URL || '/';
-  return `${basePath}wasm/_framework/dotnet.js`;
+  return `${basePath}wasm/dotnet-loader.js`;
 }
 
 /**
