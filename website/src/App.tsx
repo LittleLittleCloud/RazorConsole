@@ -5,6 +5,7 @@ import Docs from "@/pages/Docs"
 import QuickStart from "@/pages/QuickStart"
 import Components from "@/pages/Components"
 import Advanced from "@/pages/Advanced"
+import Gallery from "@/pages/Gallery"
 import { useThemeEffect } from "@/components/ThemeProvider"
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="quick-start" element={<QuickStart />} />
           <Route path="components" element={<Components />} />
           <Route path="advanced" element={<Advanced />} />
+          <Route path="gallery" element={<Gallery />} />
         </Route>
       </Routes>
     </BrowserRouter>
