@@ -1,10 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0;net10.0;net10.0-browser</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <PackAsTool>true</PackAsTool>
+    <PackAsTool Condition="'$(TargetFramework)' != 'net10.0-browser'">true</PackAsTool>
     <ToolCommandName>razorconsole-gallery</ToolCommandName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!-- Browser-specific properties -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <WasmMainJSPath>Platforms\Browser\main.js</WasmMainJSPath>
+    <DefineConstants>$(DefineConstants);BROWSER</DefineConstants>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/nuget/nuget-package.props" />

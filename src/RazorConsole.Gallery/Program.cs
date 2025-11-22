@@ -1,21 +1,14 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+// Entry point routing based on platform
+namespace RazorConsole.Gallery;
 
-using RazorConsole.Core;
-using RazorConsole.Gallery.Components;
-using RazorConsole.Gallery.Services;
-
-var builder = Host
-    .CreateApplicationBuilder(args);
-
-builder.UseRazorConsole<App>();
-
-builder.Services.AddHttpClient<INuGetUpgradeChecker, NuGetUpgradeChecker>(client =>
+internal static class Program
 {
-    client.BaseAddress = new Uri("https://api.nuget.org/v3-flatcontainer/", UriKind.Absolute);
-    client.DefaultRequestHeaders.UserAgent.ParseAdd("RazorConsoleGallery/1.0");
-});
-
-await builder
-    .Build()
-    .RunAsync();
+    private static async Task<int> Main(string[] args)
+    {
+#if BROWSER
+        return await Platforms.Browser.BrowserProgram.Run(args);
+#else
+        return await Platforms.Desktop.DesktopProgram.Run(args);
+#endif
+    }
+}
