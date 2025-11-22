@@ -17,6 +17,6 @@ Directory.Packages.props - Centralized package versions
 global.json - .NET SDK version
 README.md - Project overview and instructions
 LICENSE - License file
-RazorConsole.sln - Solution file
+RazorConsole.slnx - Solution file
 
 .gitignore - Git ignore file

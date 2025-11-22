@@ -1,0 +1,17 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/examples/">
+    <Project Path="examples/FileExplorer/FileExplorer.csproj" />
+    <Project Path="examples/LLMAgentTUI/LLMAgentTUI.csproj" />
+    <Project Path="examples/LoginForm/LoginForm.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/RazorConsole.Core/RazorConsole.Core.csproj" />
+    <Project Path="src/RazorConsole.Gallery/RazorConsole.Gallery.csproj" />
+    <Project Path="src/RazorConsole.Tests/RazorConsole.Tests.csproj" />
+  </Folder>
+</Solution>

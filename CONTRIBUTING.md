@@ -42,10 +42,10 @@ git clone https://github.com/LittleLittleCloud/RazorConsole.git
 cd RazorConsole
 
 # Build the solution
-dotnet build RazorConsole.sln
+dotnet build RazorConsole.slnx
 
 # Run tests
-dotnet test RazorConsole.sln
+dotnet test RazorConsole.slnx
 ```
 
 ## 💻 Making Changes
@@ -59,8 +59,8 @@ dotnet test RazorConsole.sln
 
 ### Before Submitting
 
-1. **Format your code**: Run `dotnet format RazorConsole.sln` before opening a pull request
-2. **Run tests**: Execute `dotnet test RazorConsole.sln` locally. CI requires a clean test run on Linux and Windows
+1. **Format your code**: Run `dotnet format RazorConsole.slnx` before opening a pull request
+2. **Run tests**: Execute `dotnet test RazorConsole.slnx` locally. CI requires a clean test run on Linux and Windows
 3. **Update tests**: When touching focus or keyboard handling, add or update tests in `FocusManagerTests` or `KeyboardEventManagerTests`
 4. **Update documentation**: Update the README when introducing user-facing features or significant architectural changes
 
