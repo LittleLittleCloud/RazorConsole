@@ -27,51 +27,52 @@ export async function loadWasmModule(callbacks: WasmCallbacks): Promise<WasmModu
   const { onOutput, onError, onReady } = callbacks;
 
   try {
-    // In a real implementation, we would:
-    // 1. Load the dotnet.js script from the WASM bundle
-    // 2. Initialize the .NET runtime
-    // 3. Set up JS interop callbacks
-    // 4. Start the RazorConsole.Gallery application
+    // For demo/development: show mock output
+    // To load the main.ts module from WASM bundle:
+    // const mainModuleUrl = getWasmBundleUrl().replace('_framework/dotnet.js', 'main.ts');
+    // In production, this would:
+    // 1. Load the main.ts module: const { initRazorConsole, onConsoleOutput } = await import(mainModuleUrl)
+    // 2. Set up console output capture: onConsoleOutput(onOutput)
+    // 3. Initialize WASM: const wasmModule = await initRazorConsole()
+    // 4. Return the module with sendKey method
     
-    // For now, we'll create a mock implementation that demonstrates the interface
-    
-    // Simulate loading time
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Show demo output
+    if (onOutput) {
+      onOutput("\x1b[1;32m✓ RazorConsole.Gallery - Browser WASM Support\x1b[0m\r\n");
+      onOutput("\r\n");
+      onOutput("WASM infrastructure is ready. To complete integration:\r\n");
+      onOutput("\r\n");
+      onOutput("\x1b[36m1. Copy AppBundle to public/wasm/\x1b[0m\r\n");
+      onOutput("   dotnet build -f net10.0-browser\r\n");
+      onOutput("   cp -r artifacts/.../AppBundle/* website/public/wasm/\r\n");
+      onOutput("\r\n");
+      onOutput("\x1b[36m2. Load main.ts module\x1b[0m\r\n");
+      onOutput("   const { initRazorConsole } = await import('/wasm/main.ts')\r\n");
+      onOutput("\r\n");
+      onOutput("\x1b[36m3. Forward keyboard events\x1b[0m\r\n");
+      onOutput("   wasmModule.sendKey(event.key, shift, ctrl, alt)\r\n");
+      onOutput("\r\n");
+      onOutput("See website/WASM_BUILD.md for full instructions.\r\n");
+      onOutput("\r\n");
+    }
     
     // Notify ready
     if (onReady) {
       onReady();
     }
     
-    // Mock output - in production this would come from the WASM module
-    if (onOutput) {
-      onOutput("\x1b[1;32m✓ RazorConsole.Gallery WASM Module Loaded\x1b[0m\r\n");
-      onOutput("\r\n");
-      onOutput("This is a demonstration of the WASM integration.\r\n");
-      onOutput("\r\n");
-      onOutput("\x1b[36mNext Steps:\x1b[0m\r\n");
-      onOutput("1. Implement dotnet.js runtime initialization\r\n");
-      onOutput("2. Set up JS interop for console I/O\r\n");
-      onOutput("3. Connect Spectre.Console output to xterm\r\n");
-      onOutput("4. Forward keyboard events to the .NET app\r\n");
-      onOutput("\r\n");
-      onOutput("Type something to see echo (mock implementation)...\r\n");
-      onOutput("\r\n");
-    }
-    
     return {
       sendInput: (input: string) => {
-        // Mock echo - in production this would send to WASM
+        // In production: wasmModule.sendKey(input, false, false, false)
         if (onOutput) {
           onOutput(input);
         }
       },
       sendKeyPress: (key: string) => {
-        // In production, this would send keyboard events to WASM
+        // In production: wasmModule.sendKey(key, event.shiftKey, event.ctrlKey, event.altKey)
         console.log("Key pressed:", key);
       },
       dispose: () => {
-        // Cleanup WASM resources
         console.log("Disposing WASM module");
       },
     };

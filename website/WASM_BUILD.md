@@ -60,8 +60,10 @@ The WASM integration consists of several components:
 
 ### .NET Side (RazorConsole.Gallery)
 
-- **Platforms/Browser/BrowserProgram.cs**: Entry point for browser-wasm target
-- **Platforms/Browser/main.js**: JavaScript interop for console I/O
+- **Program.cs**: Top-level entry point with conditional compilation for browser/desktop
+- **Platforms/Browser/BrowserInteropExtensions.cs**: Extension method for configuring browser services
+- **Platforms/Browser/BrowserKeyboardInterop.cs**: JSExport methods for JavaScript to call
+- **Platforms/Browser/main.ts**: TypeScript entry point using dotnet.create() API
 - **Platforms/Browser/MockNuGetUpgradeChecker.cs**: Browser-compatible service implementation
 
 ### Website Side (React/TypeScript)
@@ -73,10 +75,10 @@ The WASM integration consists of several components:
 
 1. User opens `/gallery` page in browser
 2. React app loads and initializes xterm.js terminal
-3. WASM loader fetches and initializes dotnet.js runtime
-4. RazorConsole.Gallery app starts in WASM
-5. Console output is captured and forwarded to xterm.js
-6. Keyboard events from xterm.js are sent to WASM app
+3. Website imports main.ts from AppBundle: `const { initRazorConsole, onConsoleOutput } = await import('/wasm/main.ts')`
+4. Set up output capture: `onConsoleOutput((data) => terminal.write(data))`
+5. Initialize WASM: `const wasmModule = await initRazorConsole()`
+6. Forward keyboard events: `wasmModule.sendKey(key, shift, ctrl, alt)`
 7. User interacts with RazorConsole components in the browser
 
 ## Troubleshooting
