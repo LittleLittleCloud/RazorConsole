@@ -15,6 +15,11 @@
     <DefineConstants>$(DefineConstants);BROWSER</DefineConstants>
   </PropertyGroup>
 
+  <!-- Include dotnet-loader.js in browser build AppBundle -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
+    <WasmExtraFilesToDeploy Include="Platforms\Browser\dotnet-loader.js" />
+  </ItemGroup>
+
   <Import Project="$(RepoRoot)/nuget/nuget-package.props" />
 
   <ItemGroup>
