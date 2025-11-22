@@ -11,7 +11,7 @@
   <!-- Browser-specific properties -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-browser'">
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-    <WasmMainJSPath>Platforms\Browser\main.js</WasmMainJSPath>
+    <WasmMainJSPath>Platforms\Browser\main.ts</WasmMainJSPath>
     <DefineConstants>$(DefineConstants);BROWSER</DefineConstants>
   </PropertyGroup>
 
