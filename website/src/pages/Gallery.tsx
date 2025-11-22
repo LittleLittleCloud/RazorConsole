@@ -57,7 +57,7 @@ export default function Gallery() {
       // Display loading message
       term.writeln("\x1b[1;32mRazorConsole Gallery - WASM Edition\x1b[0m")
       term.writeln("")
-      term.writeln("Loading WASM module...")
+      term.writeln("Initializing WASM module...")
       term.writeln("")
 
       // Handle terminal resize
@@ -66,37 +66,42 @@ export default function Gallery() {
       })
       resizeObserver.observe(terminalRef.current)
 
-      // Handle keyboard input
-      term.onData((data) => {
-        // For now, just echo the input
-        // In a full implementation, this would be sent to the WASM module
-        term.write(data)
+      // Import WASM loader dynamically
+      const { loadWasmModule, isWasmSupported } = await import("@/lib/wasmLoader")
+
+      // Check WASM support
+      if (!isWasmSupported()) {
+        throw new Error("WebAssembly is not supported in this browser")
+      }
+
+      // Load WASM module with callbacks
+      const wasmModule = await loadWasmModule({
+        onOutput: (data) => {
+          term.write(data)
+        },
+        onError: (error) => {
+          term.writeln(`\r\n\x1b[1;31mError: ${error}\x1b[0m\r\n`)
+        },
+        onReady: () => {
+          setIsLoading(false)
+          setIsReady(true)
+        },
       })
 
-      // Simulate WASM loading and console output
-      // In production, this would load the actual WASM module
-      setTimeout(() => {
-        term.writeln("\x1b[1;33m⚠ WASM Integration In Progress\x1b[0m")
-        term.writeln("")
-        term.writeln("The RazorConsole Gallery WASM module is being developed.")
-        term.writeln("")
-        term.writeln("\x1b[36mUpcoming features:\x1b[0m")
-        term.writeln("• Interactive component gallery running in browser")
-        term.writeln("• Full keyboard and mouse support")
-        term.writeln("• Real-time rendering of Spectre.Console output")
-        term.writeln("• Zero server dependencies")
-        term.writeln("")
-        term.writeln("\x1b[1;32m✓ Terminal ready\x1b[0m")
-        term.writeln("")
-        term.writeln("Press any key to see echo (WASM integration coming soon)...")
-        
-        setIsLoading(false)
-        setIsReady(true)
-      }, 1000)
+      // Handle keyboard input
+      term.onData((data) => {
+        wasmModule.sendInput(data)
+      })
+
+      // Handle keyboard events
+      term.onKey((event) => {
+        wasmModule.sendKeyPress(event.key)
+      })
 
       // Cleanup function
       return () => {
         resizeObserver.disconnect()
+        wasmModule.dispose()
         term.dispose()
       }
     } catch (err) {
