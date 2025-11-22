@@ -88,14 +88,18 @@ export default function Gallery() {
         },
       })
 
-      // Handle keyboard input
-      term.onData((data) => {
-        wasmModule.sendInput(data)
-      })
-
       // Handle keyboard events
       term.onKey((event) => {
-        wasmModule.sendKeyPress(event.key)
+        const key = event.key
+        
+        // Send to WASM
+        if (key.length === 1) {
+          // Single character
+          wasmModule.sendInput(key)
+        } else {
+          // Special key (Enter, Tab, Arrow keys, etc.)
+          wasmModule.sendKeyPress(key)
+        }
       })
 
       // Cleanup function

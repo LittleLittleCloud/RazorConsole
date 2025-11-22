@@ -27,35 +27,20 @@ export async function loadWasmModule(callbacks: WasmCallbacks): Promise<WasmModu
   const { onOutput, onError, onReady } = callbacks;
 
   try {
-    // For demo/development: show mock output
-    // To load the main.ts module from WASM bundle:
-    // const wasmBaseUrl = new URL('./', getWasmBundleUrl())
-    // const mainModuleUrl = new URL('./main.ts', wasmBaseUrl).href
-    // In production, this would:
-    // 1. Load the main.ts module: const { initRazorConsole, onConsoleOutput } = await import(mainModuleUrl)
-    // 2. Set up console output capture: onConsoleOutput(onOutput)
-    // 3. Initialize WASM: const wasmModule = await initRazorConsole()
-    // 4. Return the module with sendKey method
+    // Load the main.ts module from WASM bundle
+    const wasmBaseUrl = new URL('./', getWasmBundleUrl());
+    const mainModuleUrl = new URL('./main.ts', wasmBaseUrl).href;
     
-    // Show demo output
+    // Dynamically import the WASM module
+    const { initRazorConsole, onConsoleOutput } = await import(/* @vite-ignore */ mainModuleUrl);
+    
+    // Set up console output capture
     if (onOutput) {
-      onOutput("\x1b[1;32m✓ RazorConsole.Gallery - Browser WASM Support\x1b[0m\r\n");
-      onOutput("\r\n");
-      onOutput("WASM infrastructure is ready. To complete integration:\r\n");
-      onOutput("\r\n");
-      onOutput("\x1b[36m1. Copy AppBundle to public/wasm/\x1b[0m\r\n");
-      onOutput("   dotnet build -f net10.0-browser\r\n");
-      onOutput("   cp -r artifacts/.../AppBundle/* website/public/wasm/\r\n");
-      onOutput("\r\n");
-      onOutput("\x1b[36m2. Load main.ts module\x1b[0m\r\n");
-      onOutput("   const { initRazorConsole } = await import('/wasm/main.ts')\r\n");
-      onOutput("\r\n");
-      onOutput("\x1b[36m3. Forward keyboard events\x1b[0m\r\n");
-      onOutput("   wasmModule.sendKey(event.key, shift, ctrl, alt)\r\n");
-      onOutput("\r\n");
-      onOutput("See website/WASM_BUILD.md for full instructions.\r\n");
-      onOutput("\r\n");
+      onConsoleOutput(onOutput);
     }
+    
+    // Initialize WASM and start the application
+    const wasmModule = await initRazorConsole();
     
     // Notify ready
     if (onReady) {
@@ -64,14 +49,12 @@ export async function loadWasmModule(callbacks: WasmCallbacks): Promise<WasmModu
     
     return {
       sendInput: (input: string) => {
-        // In production: wasmModule.sendKey(input, false, false, false)
-        if (onOutput) {
-          onOutput(input);
-        }
+        // Send character input
+        wasmModule.sendKey(input, false, false, false);
       },
       sendKeyPress: (key: string) => {
-        // In production: wasmModule.sendKey(key, event.shiftKey, event.ctrlKey, event.altKey)
-        console.log("Key pressed:", key);
+        // For special keys, pass them directly
+        wasmModule.sendKey(key, false, false, false);
       },
       dispose: () => {
         console.log("Disposing WASM module");
