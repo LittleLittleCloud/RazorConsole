@@ -53,7 +53,12 @@ export default function Layout() {
                 rel="noopener noreferrer"
                 className="hidden md:block"
               >
-                <Button variant="ghost" size="sm" className="gap-1.5">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="gap-1.5 cursor-default"
+                  aria-label={stars !== null ? `GitHub - ${stars} stars` : "View on GitHub"}
+                >
                   <Github className="w-5 h-5" />
                   {stars !== null && (
                     <span className="text-sm font-medium">

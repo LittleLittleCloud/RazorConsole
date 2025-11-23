@@ -29,6 +29,7 @@ export function useGitHubStars(owner: string, repo: string) {
         if (err instanceof Error && err.name === 'AbortError') {
           return
         }
+        setStars(null)
         setError(err instanceof Error ? err : new Error('Unknown error'))
       } finally {
         setLoading(false)
