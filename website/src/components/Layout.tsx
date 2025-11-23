@@ -1,5 +1,5 @@
 import { Link, Outlet } from "react-router-dom"
-import { Github, Menu, X, Star } from "lucide-react"
+import { Github, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { useState } from "react"
@@ -53,13 +53,11 @@ export default function Layout() {
                 rel="noopener noreferrer"
                 className="hidden md:block"
               >
-                <Button variant="ghost" size="sm">
-                  <Github className="w-4 h-4 mr-2" />
-                  GitHub
+                <Button variant="ghost" size="sm" className="gap-1.5">
+                  <Github className="w-5 h-5" />
                   {stars !== null && (
-                    <span className="ml-2 flex items-center gap-1 text-xs">
-                      <Star className="w-3 h-3 fill-current" />
-                      {stars.toLocaleString()}
+                    <span className="text-sm font-medium">
+                      {stars >= 1000 ? `${(stars / 1000).toFixed(1)}k` : stars.toLocaleString()}
                     </span>
                   )}
                 </Button>
