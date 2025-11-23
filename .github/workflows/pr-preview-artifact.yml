@@ -53,9 +53,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: |
             pages project list
-            pages deploy website/dist
-            --project-name=razorconsole
-            --branch=${{ github.head_ref || github.ref_name || 'main' }}
+            pages deploy website/dist --project-name=razorconsole --branch=${{ github.head_ref || github.ref_name || 'main' }}
 
       - name: Comment PR with preview info
         if: github.event_name == 'pull_request'
