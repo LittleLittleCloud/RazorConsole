@@ -1,0 +1,121 @@
+@namespace RazorConsole.Components
+
+@using System.Globalization
+@using Spectre.Console
+
+<barchart
+    data-items="@ItemsJson"
+    data-width="@WidthAttribute"
+    data-label="@Label"
+    data-label-style="@LabelStyleAttributes"
+    data-label-alignment="@LabelAlignmentAttribute"
+    data-max-value="@MaxValueAttribute"
+    data-show-values="@ShowValuesAttribute"
+    data-culture="@CultureAttribute"
+/>
+
+@code{
+    /// <summary>
+    /// Gets or sets the bar chart data items.
+    /// Each item must provide <c>Label</c> and <c>Value</c>, with optional <c>Color</c> (as hex string, e.g. "#ff6600").
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// new BarChartItem("Jan", 12, Color.Red)
+    /// </code>
+    /// </example>
+    [Parameter]
+    [EditorRequired]
+    public required List<IBarChartItem> BarChartItems { get; set; }
+
+    /// <summary>
+    /// Gets or sets the width of the bar chart in characters.
+    /// If <c>null</c>, the chart will use the available console width.
+    /// </summary>
+    [Parameter]
+    public int? Width { get; set; }
+
+    /// <summary>
+    /// Gets or sets the label (title) displayed above the bar chart.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Gets or sets the foreground (text) color of the chart label.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Style.Plain"/>'s foreground.
+    /// </remarks>
+    [Parameter]
+    public Color LabelForeground { get; set; } = Style.Plain.Foreground;
+
+    /// <summary>
+    /// Gets or sets the background color of the chart label.
+    /// </summary>
+    /// <remarks>
+    /// Default is transparent (<see cref="Style.Plain"/> background).
+    /// </remarks>
+    [Parameter]
+    public Color LabelBackground { get; set; } = Style.Plain.Background;
+
+    /// <summary>
+    /// Gets or sets the text decoration (bold, italic, underline, etc.) for the chart label.
+    /// </summary>
+    [Parameter]
+    public Decoration LabelDecoration { get; set; } = Decoration.None;
+
+    /// <summary>
+    /// Gets or sets the alignment of the chart label.
+    /// </summary>
+    /// <remarks>
+    /// Supported values: <see cref="Justify.Left"/>, <see cref="Justify.Center"/>, <see cref="Justify.Right"/>.
+    /// </remarks>
+    [Parameter]
+    public Justify? LabelAlignment { get; set; }
+
+    /// <summary>
+    /// Gets or sets a fixed maximum value for the chart.
+    /// If set, all bars are scaled relative to this value instead of the largest data point.
+    /// </summary>
+    /// <example>
+    /// Setting <c>MaxValue = 100</c> makes the chart behave like a progress chart (0–100%).
+    /// </example>
+    [Parameter]
+    public double? MaxValue { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether numeric values should be displayed next to each bar.
+    /// </summary>
+    [Parameter]
+    public bool ShowValues { get; set; }
+
+    /// <summary>
+    /// Gets or sets the CultureInfo to use when rendering values.
+    /// </summary>
+    [Parameter]
+    public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
+
+
+    private string ItemsJson => System.Text.Json.JsonSerializer.Serialize(
+        BarChartItems.Select(item => new
+            {
+                item.Label,
+                item.Value,
+                Color = item.Color?.ToHex()
+            }
+        )
+    );
+
+    private string WidthAttribute => Width?.ToString() ?? string.Empty;
+
+    private string LabelStyleAttributes => new Style(LabelForeground, LabelBackground, LabelDecoration).ToMarkup();
+
+    private string LabelAlignmentAttribute => LabelAlignment?.ToString().ToLowerInvariant() ?? string.Empty;
+
+    private string MaxValueAttribute => MaxValue?.ToString() ?? string.Empty;
+
+    private string ShowValuesAttribute => ShowValues ? "true" : "false";
+
+    private string CultureAttribute => Culture.Name;
+}

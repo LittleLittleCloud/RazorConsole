@@ -1,0 +1,107 @@
+@namespace RazorConsole.Components
+
+@using System.Globalization
+@using Spectre.Console
+
+<breakdownchart
+    data-items="@ItemsJson"
+    data-compact="@CompactAttribute"
+    data-culture="@CultureAttribute"
+    data-expand="@ExpandAttribute"
+    data-width="@WidthAttribute"
+    data-show-tags="@ShowTagsAttribute"
+    data-show-tag-values="@ShowTagValuesAttribute"
+    data-show-tag-values-percentage="@ShowTagValuesPercentageAttribute"
+    data-value-color="@ValueColorAttribute"
+/>
+
+@code{
+    /// <summary>
+    /// Gets or sets the breakdown chart data items.
+    /// Each item must provide <c>Label</c>, <c>Value</c>, and <c>Color</c>.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// new BreakdownChartItem("Jan", 12, Color.Red)
+    /// </code>
+    /// </example>
+    [Parameter]
+    [EditorRequired]
+    public required List<IBreakdownChartItem> BreakdownChartItems { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the chart and tags should be rendered in compact mode.
+    /// </summary>
+    [Parameter]
+    public bool Compact { get; set; }
+
+    /// <summary>
+    /// Gets or sets the CultureInfo to use when rendering values.
+    /// </summary>
+    [Parameter]
+    public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the object should expand to the available space. If false, the object's width will be auto calculated.
+    /// </summary>
+    [Parameter]
+    public bool Expand { get; set; }
+
+    /// <summary>
+    /// Gets or sets the width of the breakdown chart in characters.
+    /// If <c>null</c>, the object's width will be auto calculated.
+    /// </summary>
+    [Parameter]
+    public int? Width { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show tags.
+    /// </summary>
+    [Parameter]
+    public bool ShowTags { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show tag values.
+    /// </summary>
+    [Parameter]
+    public bool ShowTagValues { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show tag values with percentage.
+    /// </summary>
+    [Parameter]
+    public bool ShowTagValuesPercentage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Color in which the values will be shown.
+    /// </summary>
+    [Parameter]
+    public Color? ValueColor { get; set; }
+
+
+    private string ItemsJson => System.Text.Json.JsonSerializer.Serialize(
+        BreakdownChartItems.Select(item => new
+            {
+                item.Label,
+                item.Value,
+                Color = item.Color.ToHex()
+            }
+        )
+    );
+
+    private string CompactAttribute => Compact ? "true" : "false";
+
+    private string CultureAttribute => Culture.Name;
+
+    private string ExpandAttribute => Expand ? "true" : "false";
+
+    private string WidthAttribute => Width?.ToString() ?? string.Empty;
+
+    private string ShowTagsAttribute => ShowTags ? "true" : "false";
+
+    private string ShowTagValuesAttribute => ShowTagValues ? "true" : "false";
+
+    private string ShowTagValuesPercentageAttribute => ShowTagValuesPercentage ? "true" : "false";
+
+    private string ValueColorAttribute => ValueColor?.ToHex() ?? string.Empty;
+}

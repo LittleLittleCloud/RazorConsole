@@ -24,18 +24,18 @@ jobs:
           global-json-file: global.json
 
       - name: Restore
-        run: dotnet restore RazorConsole.sln
+        run: dotnet restore RazorConsole.slnx
 
       - name: Build
-        run: dotnet build RazorConsole.sln --configuration Release --no-restore
+        run: dotnet build RazorConsole.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test RazorConsole.sln --configuration Release --no-build --verbosity normal
+        run: dotnet test RazorConsole.slnx --configuration Release --no-build --verbosity normal
 
       - name: Pack libraries
         id: pack
         run: |
-          dotnet pack RazorConsole.sln \
+          dotnet pack RazorConsole.slnx \
             --configuration Release \
             --no-build \
             --output artifacts/packages
