@@ -11,6 +11,8 @@ internal sealed class LiveDisplayCanvas(IAnsiConsole ansiConsole) : ConsoleLiveD
     private DiffRenderable? _current;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
+    public event Action? Refreshed;
+
     public void UpdateTarget(IRenderable? renderable)
     {
         if (_current is null && renderable is null)
@@ -48,6 +50,7 @@ internal sealed class LiveDisplayCanvas(IAnsiConsole ansiConsole) : ConsoleLiveD
         {
             ansiConsole.Write(new ControlCode(string.Empty));
             ansiConsole.Write(_current);
+            Refreshed?.Invoke();
         }
     }
 

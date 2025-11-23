@@ -123,9 +123,17 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
         _consoleRenderer.Subscribe(focusManager);
 
         var initialView = ConsoleViewResult.FromSnapshot(snapshot);
-        var consoleLiveDisplayContext = new ConsoleLiveDisplayContext(new LiveDisplayCanvas(_ansiConsole), _consoleRenderer, null);
+        var canvas = new LiveDisplayCanvas(_ansiConsole);
+        var consoleLiveDisplayContext = new ConsoleLiveDisplayContext(canvas, _consoleRenderer, initialView);
         var focusSession = focusManager.BeginSession(consoleLiveDisplayContext, initialView, CancellationToken.None);
         await focusSession.InitializationTask.ConfigureAwait(false);
+        canvas.Refreshed += () =>
+        {
+            var output = _sw.ToString();
+            SnapshotRendered?.Invoke(output);
+            XTermInterop.WriteToTerminal(_componentId, output);
+            _sw.GetStringBuilder().Clear();
+        };
     }
 
     /// <summary>
@@ -264,6 +272,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
             var output = _sw.ToString();
             SnapshotRendered?.Invoke(output);
             XTermInterop.WriteToTerminal(_componentId, output);
+            _sw.GetStringBuilder().Clear();
         }
         catch (Exception ex)
         {

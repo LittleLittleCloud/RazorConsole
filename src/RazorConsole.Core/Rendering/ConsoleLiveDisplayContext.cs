@@ -253,6 +253,8 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
         bool TryUpdateAttributes(IReadOnlyList<int> path, IReadOnlyDictionary<string, string?> attributes);
 
         void Refresh();
+
+        event Action? Refreshed;
     }
 
     private sealed class AnimationSubscription : IDisposable
@@ -302,6 +304,11 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
             => false;
 
         public void Refresh()
-            => _context.Refresh();
+        {
+            _context.Refresh();
+            Refreshed?.Invoke();
+        }
+
+        public event Action? Refreshed;
     }
 }

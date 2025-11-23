@@ -1,11 +1,11 @@
 @using Spectre.Console
 @using RazorConsole.Components
 
-<SpectreCanvas Pixels="@Pixels" CanvasWidth="@Width" CanvasHeight="@Height" PixelWidth="1" />
+<SpectreCanvas Pixels="@Pixels" CanvasWidth="@Width" CanvasHeight="@Height" PixelWidth="2" />
 
 @code {
-    private const int Width = 30;
-    private const int Height = 30;
+    private const int Width = 16;
+    private const int Height = 16;
     private (int x, int y, Color color)[] Pixels { get; set; } = [];
 
     protected override void OnInitialized()
@@ -16,34 +16,14 @@
         {
             for (int x = 0; x < Width; x++)
             {
-                double cr = (x - Width / 2.0) * 3.0 / Width - 0.5;
-                double ci = (y - Height / 2.0) * 2.0 / Height;
+                // 8x8 board, 2x2 pixels per square
+                int boardX = x / 2;
+                int boardY = y / 2;
                 
-                double zr = 0;
-                double zi = 0;
+                bool isDark = (boardX + boardY) % 2 == 1;
+                var color = isDark ? Color.Black : Color.White;
                 
-                int iter = 0;
-                int maxIter = 50;
-                
-                while (zr * zr + zi * zi < 4.0 && iter < maxIter)
-                {
-                    double temp = zr * zr - zi * zi + cr;
-                    zi = 2.0 * zr * zi + ci;
-                    zr = temp;
-                    iter++;
-                }
-                
-                if (iter < maxIter)
-                {
-                    byte r = (byte)((iter * 5) % 255);
-                    byte g = (byte)((iter * 7) % 255);
-                    byte b = (byte)((iter * 11) % 255);
-                    pixels.Add((x, y, new Color(r, g, b)));
-                }
-                else
-                {
-                    pixels.Add((x, y, Color.Black));
-                }
+                pixels.Add((x, y, color));
             }
         }
         
