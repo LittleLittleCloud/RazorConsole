@@ -6,13 +6,21 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   base: process.env.VITE_BASE ?? '/',
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(), 
+    tailwindcss(),
+    // Custom plugin to replace %VITE_BASE% in HTML files
+    {
+      name: 'html-transform',
+      transformIndexHtml(html) {
+        const base = process.env.VITE_BASE ?? '/'
+        return html.replace('{VITE_BASE}', base)
+      }
+    }
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
-  },
-  define: {
-    '%VITE_BASE%': JSON.stringify(process.env.VITE_BASE ?? '/'),
-  },
+  }
 })
