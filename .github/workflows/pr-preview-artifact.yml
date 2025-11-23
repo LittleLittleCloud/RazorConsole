@@ -40,7 +40,7 @@ jobs:
       - name: Upload preview artifact
         uses: actions/upload-artifact@v4
         with:
-          name: website-preview-pr-${{ github.event.number || github.run_number }}
+          name: website-preview-${{ github.event.pull_request.number || format('{0}-{1}', github.ref_name, github.run_number) }}
           path: website/dist
           retention-days: 30
 
@@ -54,7 +54,7 @@ jobs:
           command: >-
             pages deploy website/dist
             --project-name=razorconsole
-            --branch=${{ github.head_ref || github.ref_name }}
+            --branch=${{ github.head_ref || github.ref_name || 'main' }}
 
       - name: Comment PR with preview info
         if: github.event_name == 'pull_request'
