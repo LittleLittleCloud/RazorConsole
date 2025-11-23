@@ -42,6 +42,8 @@ function getExistingTerminal(elementId) {
     return terminal;
 }
 export function isTerminalAvailable() {
+    console.log('window:', window);
+    console.log('window.Terminal:', window ? window.Terminal : 'window is undefined');
     return typeof window !== 'undefined' && typeof window.Terminal === 'function';
 }
 export function initTerminal(elementId, options) {
@@ -53,6 +55,7 @@ export function initTerminal(elementId, options) {
         ...options,
         theme: mergeThemes(defaultOptions.theme, options?.theme)
     };
+    console.log('Merged terminal options:', mergedOptions);
     const terminal = new TerminalCtor(mergedOptions);
     host.innerHTML = '';
     terminal.open(host);

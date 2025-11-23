@@ -42,8 +42,6 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
     public RazorConsoleRenderer(string componentId)
     {
         _componentId = componentId;
-
-        Console.WriteLine($"RazorConsoleRenderer for {_componentId} created.");
         _initializationTask = InitializeAsync();
     }
 
@@ -176,7 +174,6 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     public async Task HandleKeyboardEventAsync(string xtermKey, string domKey, bool ctrlKey, bool altKey, bool shiftKey)
     {
-        Console.WriteLine($"Received xtermKey: {xtermKey}, domKey: {domKey} (Ctrl: {ctrlKey}, Alt: {altKey}, Shift: {shiftKey})");
         await EnsureInitializedAsync().ConfigureAwait(false);
         
         if (_keyboardEventManager is null)
@@ -185,6 +182,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
         }
 
         var keyInfo = ParseKeyFromBrowser(xtermKey, domKey, ctrlKey, altKey, shiftKey);
+        Console.WriteLine($"Parsed ConsoleKeyInfo: KeyChar='{keyInfo.KeyChar}', Key={keyInfo.Key}, Modifiers={keyInfo.Modifiers}");
         await _keyboardEventManager.HandleKeyAsync(keyInfo, CancellationToken.None).ConfigureAwait(false);
     }
 
@@ -263,11 +261,9 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
                 return;
             }
 
-            //_ansiConsole!.Write(value.Renderable);
-
             var output = _sw.ToString();
-
             SnapshotRendered?.Invoke(output);
+            XTermInterop.WriteToTerminal(_componentId, output);
         }
         catch (Exception ex)
         {

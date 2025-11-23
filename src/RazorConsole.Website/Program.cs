@@ -17,29 +17,24 @@ public partial class Registry
 
     [JSExport]
     [SupportedOSPlatform("browser")]
-    static void RegisterComponent(string componentName)
+    public static void RegisterComponent(string elementID)
     {
-        Console.WriteLine($"Registering component: {componentName}");
-        if (componentName == "Align")
+        if (elementID == "Align")
         {
-            _renderers[componentName] = new RazorConsoleRenderer<Align1>(componentName);
+            _renderers[elementID] = new RazorConsoleRenderer<Align1>(elementID);
         }
+    }
 
-        if (!_renderers.TryGetValue(componentName, out var renderer))
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static async Task HandleKeyboardEvent(string elementID, string xtermKey, string domKey, bool ctrlKey, bool altKey, bool shiftKey)
+    {
+        if (!_renderers.TryGetValue(elementID, out var renderer))
         {
             return;
         }
-        
-        if (!_subscriptions.Add(componentName))
-        {
-            return;
-        }
-
-        renderer.SnapshotRendered += (ansiString) =>
-        {
-            Console.WriteLine($"Writing to terminal from .NET: {ansiString}");
-            XTermInterop.WriteToTerminal(componentName, ansiString);
-        };
+        await renderer.HandleKeyboardEventAsync(xtermKey, domKey, ctrlKey, altKey, shiftKey)
+            .ConfigureAwait(false);
     }
 }
 

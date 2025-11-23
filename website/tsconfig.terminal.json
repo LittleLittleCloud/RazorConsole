@@ -16,5 +16,4 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["./src/lib/terminalInterop.ts"]
 }

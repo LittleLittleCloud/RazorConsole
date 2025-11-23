@@ -1,7 +1,14 @@
 console.log('main.js loaded');
 
 import { dotnet } from './_framework/dotnet.js'
-import { writeToTerminal as forwardToTerminal } from './xterm-interop.js';
+import {
+    writeToTerminal as forwardToTerminal,
+    initTerminal as forwardInitTerminal,
+    clearTerminal as forwardClearTerminal,
+    disposeTerminal as forwardDisposeTerminal,
+    attachKeyListener as forwardAttachKeyListener,
+    isTerminalAvailable as forwardIsTerminalAvailable
+} from './xterm-interop.js';
 const { setModuleImports } = await dotnet.create();
 
 let exportsPromise = null;
@@ -12,26 +19,57 @@ async function createRuntimeAndGetExports() {
     return await getAssemblyExports(config.mainAssemblyName);
 }
 
-
-
 setModuleImports('main.js', {
-    writeToTerminal: (componentName, data) => forwardToTerminal(componentName, data)
+    writeToTerminal: (componentName, data) => forwardToTerminal(componentName, data),
+    initTerminal: (componentName, options) => forwardInitTerminal(componentName, options),
+    clearTerminal: (componentName) => forwardClearTerminal(componentName),
+    disposeTerminal: (componentName) => forwardDisposeTerminal(componentName),
+    attachKeyListener: (componentName, helper) => forwardAttachKeyListener(componentName, helper),
+    isTerminalAvailable: () => forwardIsTerminalAvailable()
 });
 
-export async function registerComponent(componentName)
+export async function registerComponent(elementID)
 {
     if (exportsPromise === null) {
         exportsPromise = createRuntimeAndGetExports();
     }
 
     const exports = await exportsPromise;
+    return exports.Registry.RegisterComponent(elementID);
+}
 
-    console.log(`Registering component from main.js: ${componentName}`);
+export async function handleKeyboardEvent(componentName, xtermKey, domKey, ctrlKey, altKey, shiftKey) {
+    if (exportsPromise === null) {
+        exportsPromise = createRuntimeAndGetExports();
+    }
 
-    return exports.Registry.RegisterComponent(componentName);
+    const exports = await exportsPromise;
+    return exports.Registry.HandleKeyboardEvent(componentName, xtermKey, domKey, ctrlKey, altKey, shiftKey);
 }
 
 export async function writeToTerminal(componentName, data) {
-    console.log(`Writing to terminal from main.js: ${componentName}, ${data}`);
     forwardToTerminal(componentName, data);
+}
+
+export async function initTerminal(componentName, options) {
+    forwardInitTerminal(componentName, options);
+}
+
+export function clearTerminal(componentName) {
+    console.log(`Clearing terminal from main.js: ${componentName}`);
+    forwardClearTerminal(componentName);
+}
+
+export function disposeTerminal(componentName) {
+    console.log(`Disposing terminal from main.js: ${componentName}`);
+    forwardDisposeTerminal(componentName);
+}
+
+export function attachKeyListener(componentName, helper) {
+    console.log(`Attaching key listener from main.js: ${componentName}`);
+    forwardAttachKeyListener(componentName, helper);
+}
+
+export function isTerminalAvailable() {
+    return forwardIsTerminalAvailable();
 }

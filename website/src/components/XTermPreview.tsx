@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { disposeTerminal, isTerminalAvailable } from '@/lib/terminalInterop'
-import { registerComponent } from 'razor-console'
+import { isTerminalAvailable, initTerminal, registerComponent, attachKeyListener, clearTerminal, disposeTerminal, handleKeyboardEvent } from 'razor-console'
+import { Terminal } from 'xterm'
 interface XTermPreviewProps {
   componentName: string
   className?: string
@@ -10,23 +10,37 @@ export default function XTermPreview({ componentName, className = '' }: XTermPre
   const terminalRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const elementId = `terminal-${componentName.toLowerCase()}`
+  const elementId = componentName
 
   useEffect(() => {
     let cancelled = false
-    let disposePreview: (() => void) | undefined
-
     async function startPreview() {
       setError(null)
       setIsLoading(true)
       try {
+        if (window.Terminal === undefined) {
+          console.error('xterm.js is not loaded')
+          window.Terminal = Terminal
+        }
+        initTerminal(elementId)
         if (!isTerminalAvailable()) {
           throw new Error('xterm.js not loaded')
         }
 
-        console.log('Registering component:', componentName);
+        if (!terminalRef.current) {
+          console.error('Terminal host element was not found')
+          throw new Error('Terminal host element was not found')
+        }
+        await registerComponent(elementId)
 
-        await registerComponent(componentName);
+        attachKeyListener(elementId, {
+          invokeMethodAsync: async (methodName: string, ...args: unknown[]) => {
+            console.debug(`Key event forwarded from preview via ${methodName}`, args)
+            await handleKeyboardEvent(...(args as [string, string, string, boolean, boolean, boolean]))
+            return null
+          }
+        })
+
 
         if (!cancelled) {
           setIsLoading(false)
@@ -37,11 +51,6 @@ export default function XTermPreview({ componentName, className = '' }: XTermPre
           setError(message)
           setIsLoading(false)
         }
-
-        if (disposePreview) {
-          disposePreview()
-          disposePreview = undefined
-        }
       }
     }
 
@@ -49,9 +58,7 @@ export default function XTermPreview({ componentName, className = '' }: XTermPre
 
     return () => {
       cancelled = true
-      if (disposePreview) {
-        disposePreview()
-      }
+      clearTerminal(elementId)
       disposeTerminal(elementId)
     }
   }, [componentName, elementId])

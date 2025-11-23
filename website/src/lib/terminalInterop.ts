@@ -41,7 +41,8 @@ const defaultOptions: TerminalOptions = {
   fontSize: 14,
   lineHeight: 1.2,
   cursorBlink: false,
-  scrollback: 1000
+  scrollback: 1000,
+  rendererType: 'dom'
 }
 
 function getTerminalConstructor(): TerminalConstructor {
