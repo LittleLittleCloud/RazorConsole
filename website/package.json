@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build:wasm": "dotnet publish --project ../src/RazorConsole.Wasm/RazorConsole.Wasm.csproj --configuration Release"
+    "build:wasm": "dotnet publish ../src/RazorConsole.Website/RazorConsole.Website.csproj --configuration Release"
   },
   "dependencies": {
     "@radix-ui/react-tabs": "^1.1.13",

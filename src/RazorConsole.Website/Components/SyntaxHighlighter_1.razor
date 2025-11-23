@@ -6,5 +6,13 @@
                    ShowLineNumbers="true" />
 
 @code {
-    private string codeSnippet = "public void Hello() { Console.WriteLine(\"Hello\"); }";
+    private string codeSnippet = @"
+public class HelloWorld
+{
+    public void SayHello()
+    {
+        Console.WriteLine(""Hello, World!"");
+    }
+}
+".Trim();
 }

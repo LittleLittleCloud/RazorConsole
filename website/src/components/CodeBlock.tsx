@@ -7,6 +7,7 @@ interface CodeBlockProps {
     code: string;
     language?: BundledLanguage;
     showCopy?: boolean;
+    className?: string;
 }
 
 
@@ -14,7 +15,8 @@ function CodeBlock(
     {
         code,
         language = 'csharp',
-        showCopy = true
+        showCopy = true,
+        className = ''
     }: CodeBlockProps) {
     const [html, setHtml] = useState('');
     const theme = useTheme((s) => s.theme);
@@ -37,7 +39,7 @@ function CodeBlock(
 
 
     return (
-        <pre className="relative group my-6 overflow-hidden rounded-xl border bg-slate-100 dark:bg-slate-900 p-4 text-sm border-slate-200 dark:border-slate-700 overflow-x-auto">
+        <div className={`relative group my-6 overflow-hidden rounded-xl border bg-slate-100 dark:bg-slate-900 p-4 text-sm border-slate-200 dark:border-slate-700 overflow-x-auto ${className}`}>
           {showCopy && (
             <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
               <CopyButton content={code} />
@@ -48,7 +50,7 @@ function CodeBlock(
             className="[&_code]:leading-relaxed [&_code]:text-sm"
             dangerouslySetInnerHTML={{ __html: html }}
           />
-        </pre>
+        </div>
 
     );
 }

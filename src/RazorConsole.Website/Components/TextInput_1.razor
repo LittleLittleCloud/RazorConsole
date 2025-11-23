@@ -1,9 +1,20 @@
 @using Spectre.Console
 @using RazorConsole.Components
 
-<TextInput Value="@inputValue"
-           ValueChanged="@((v) => inputValue = v)"
-           Placeholder="Enter your name" />
+<Rows>
+    <TextInput Value="@inputValue"
+               ValueChanged="@((v) => inputValue = v)"
+               Placeholder="Enter your name"
+               Expand="true" />
+
+    @if (!string.IsNullOrEmpty(inputValue))
+    {
+        <Panel Header="Greeting" Expand="true">
+            <span data-text="true">@($"Hello, [blue]{inputValue}[/]!")</span>
+        </Panel>
+        <TextButton Content="Clear" OnClick="@(() => inputValue = null)" />
+    }
+</Rows>
 
 @code {
     private string? inputValue;

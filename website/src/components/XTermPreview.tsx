@@ -5,6 +5,7 @@ import {
     handleKeyboardEvent,
     registerTerminalInstance,
 } from "razor-console";
+import 'xterm/css/xterm.css';
 import { Terminal } from "xterm";
 interface XTermPreviewProps {
     elementId: string;
