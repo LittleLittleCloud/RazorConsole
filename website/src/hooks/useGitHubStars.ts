@@ -10,9 +10,14 @@ export function useGitHubStars(owner: string, repo: string) {
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
+    const abortController = new AbortController()
+
     const fetchStars = async () => {
       try {
-        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`)
+        const response = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}`,
+          { signal: abortController.signal }
+        )
         if (!response.ok) {
           throw new Error('Failed to fetch repository data')
         }
@@ -20,6 +25,10 @@ export function useGitHubStars(owner: string, repo: string) {
         setStars(data.stargazers_count)
         setError(null)
       } catch (err) {
+        // Ignore abort errors
+        if (err instanceof Error && err.name === 'AbortError') {
+          return
+        }
         setError(err instanceof Error ? err : new Error('Unknown error'))
       } finally {
         setLoading(false)
@@ -27,6 +36,10 @@ export function useGitHubStars(owner: string, repo: string) {
     }
 
     fetchStars()
+
+    return () => {
+      abortController.abort()
+    }
   }, [owner, repo])
 
   return { stars, loading, error }
