@@ -4,7 +4,6 @@ import {
     attachKeyListener,
     handleKeyboardEvent,
     registerTerminalInstance,
-    disposeTerminal,
 } from "razor-console";
 import { Terminal } from "xterm";
 interface XTermPreviewProps {
