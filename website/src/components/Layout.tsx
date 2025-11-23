@@ -57,7 +57,9 @@ export default function Layout() {
                   <Github className="w-5 h-5" />
                   {stars !== null && (
                     <span className="text-sm font-medium">
-                      {stars >= 1000 ? `${(stars / 1000).toFixed(1)}k` : stars.toLocaleString()}
+                      {stars >= 1000 
+                        ? `${(stars / 1000).toFixed(1).replace(/\.0$/, '')}k` 
+                        : stars.toLocaleString()}
                     </span>
                   )}
                 </Button>
