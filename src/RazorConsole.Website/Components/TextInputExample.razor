@@ -1,0 +1,17 @@
+@using Spectre.Console
+@using RazorConsole.Components
+
+<Panel Title="Text Input Example">
+    <Rows>
+        <Markup Content="Enter your name:" />
+        <TextInput Placeholder="Type here..." 
+                   Value="@name" 
+                   OnValueChanged="OnNameChanged" />
+        <Markup Content="@($"Hello, {name}!")" Foreground="Color.Green" />
+    </Rows>
+</Panel>
+
+@code {
+    private string name = "World";
+    private void OnNameChanged(string newValue) => name = newValue;
+}

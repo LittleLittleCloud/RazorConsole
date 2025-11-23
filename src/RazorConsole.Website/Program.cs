@@ -85,6 +85,21 @@ public partial class Registry
             case "BreakdownChart":
                 _renderers[elementID] = new RazorConsoleRenderer<BreakdownChart_1>(elementID);
                 break;
+            case "counter":
+                _renderers[elementID] = new RazorConsoleRenderer<Counter>(elementID);
+                break;
+            case "textButton":
+                _renderers[elementID] = new RazorConsoleRenderer<TextButtonExample>(elementID);
+                break;
+            case "textInput":
+                _renderers[elementID] = new RazorConsoleRenderer<TextInputExample>(elementID);
+                break;
+            case "select":
+                _renderers[elementID] = new RazorConsoleRenderer<SelectExample>(elementID);
+                break;
+            case "markup":
+                _renderers[elementID] = new RazorConsoleRenderer<MarkupExample>(elementID);
+                break;
         }
     }
 
