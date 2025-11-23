@@ -1,0 +1,10 @@
+@using Spectre.Console
+@using RazorConsole.Components
+
+<TextInput Value="@inputValue"
+           ValueChanged="@((v) => inputValue = v)"
+           Placeholder="Enter your name" />
+
+@code {
+    private string? inputValue;
+}

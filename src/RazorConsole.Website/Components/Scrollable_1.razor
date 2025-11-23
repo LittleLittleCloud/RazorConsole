@@ -1,0 +1,30 @@
+@using Spectre.Console
+@using RazorConsole.Components
+
+<Scrollable Items="@AlphabetData" PageSize="3">
+    <table @onkeydown="context.KeyDownEventHandler">
+        <tbody>
+            @foreach (var item in context)
+            {
+                <tr>
+                    <td>@item.Number</td>
+                    <td style="color:@item.Color.ToMarkup()">@item.Letter</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <Markup Content="@($"Page {context.CurrentOffset} of {context.PagesCount}")" />
+</Scrollable>
+
+@code {
+    record Item(int Number, string Letter, Color Color);
+    private IReadOnlyList<Item> AlphabetData = new[]
+    {
+        new Item(1, "A", Color.Red),
+        new Item(2, "B", Color.Green),
+        new Item(3, "C", Color.Blue),
+        new Item(4, "D", Color.Yellow),
+        new Item(5, "E", Color.Cyan),
+        new Item(6, "F", Color.Magenta),
+    };
+}

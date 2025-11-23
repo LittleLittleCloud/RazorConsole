@@ -1,0 +1,10 @@
+@using Spectre.Console
+@using RazorConsole.Components
+
+<SyntaxHighlighter Language="csharp"
+                   Code="@codeSnippet"
+                   ShowLineNumbers="true" />
+
+@code {
+    private string codeSnippet = "public void Hello() { Console.WriteLine(\"Hello\"); }";
+}

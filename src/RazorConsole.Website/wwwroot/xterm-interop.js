@@ -138,13 +138,9 @@ export function attachKeyListener(elementId, helper) {
  * @param {string} elementId
  */
 export function disposeTerminal(elementId) {
+    terminalInstances.delete(elementId);
     keyHandlers.get(elementId)?.dispose();
     keyHandlers.delete(elementId);
-    const terminal = document.getElementById(elementId);
-    if (!terminal) {
-        return;
-    }
-    terminal.dispose();
 }
 function ensureGlobalApi() {
     if (typeof window === 'undefined') {

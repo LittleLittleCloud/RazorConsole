@@ -4,6 +4,7 @@ import {
     attachKeyListener,
     handleKeyboardEvent,
     registerTerminalInstance,
+    disposeTerminal,
 } from "razor-console";
 import { Terminal } from "xterm";
 interface XTermPreviewProps {
@@ -24,6 +25,7 @@ export default function XTermPreview({
         let disposeTimer: ReturnType<typeof setTimeout> | null = null;
 
         if (terminalRef.current === null) {
+            console.log("Terminal host element is not available");
             return;
         }
 
@@ -43,6 +45,7 @@ export default function XTermPreview({
             disposed = true;
             term.dispose();
         };
+        console.log("Initializing terminal preview for", elementId);
         async function startPreview() {
             setError(null);
             setIsLoading(true);
@@ -86,7 +89,6 @@ export default function XTermPreview({
                 clearTimeout(disposeTimer);
             }
             disposeTimer = window.setTimeout(disposeSafely, 0);
-            terminalRef.current = null;
         };
     }, [elementId]);
 

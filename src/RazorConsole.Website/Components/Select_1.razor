@@ -1,0 +1,12 @@
+@using Spectre.Console
+@using RazorConsole.Components
+
+<Select Options="@options"
+        Value="@selectedValue"
+        ValueChanged="@((v) => selectedValue = v)"
+        Placeholder="Choose an option" />
+
+@code {
+    private string[] options = new[] { "Option 1", "Option 2", "Option 3" };
+    private string? selectedValue;
+}
