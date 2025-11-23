@@ -1,6 +1,8 @@
-# How RazorConsole Components are Rendered in the browser - JavaScript Interop with .NET WASM
+# How RazorConsole Components are Rendered in the Browser - JavaScript Interop with .NET WASM
 
-This document explains how the RazorConsole website delivers live, interactive component demonstrations by integrating xterm.js terminals with .NET WASM components through JavaScript interop. The website showcases RazorConsole components (like TextInput, Select, Table, etc.) running in real-time within browser terminals, where users can interact with fully functional Razor components that render to ANSI output and respond to keyboard events just as they would in a native console application.
+The preview examples on the RazorConsole website are not pre-recorded videos or static images—they are fully interactive, real-time rendered components running directly in your browser. These live demonstrations are powered by the exact same RazorConsole rendering pipeline used in console applications, but executed via .NET WebAssembly (WASM) in the browser environment.
+
+This document explains how the RazorConsole website delivers these live, interactive component demonstrations by integrating xterm.js terminals with .NET WASM components through JavaScript interop. The website showcases RazorConsole components (like TextInput, Select, Table, etc.) running in real-time within browser terminals, where users can interact with fully functional Razor components that render to ANSI output and respond to keyboard events just as they would in a native console application.
 
 ## Architecture Overview
 
