@@ -1,11 +1,13 @@
 import { Link, Outlet } from "react-router-dom"
-import { Github, Menu, X } from "lucide-react"
+import { Github, Menu, X, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { useState } from "react"
+import { useGitHubStars } from "@/hooks/useGitHubStars"
 
 export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { stars } = useGitHubStars('LittleLittleCloud', 'RazorConsole')
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -54,6 +56,12 @@ export default function Layout() {
                 <Button variant="ghost" size="sm">
                   <Github className="w-4 h-4 mr-2" />
                   GitHub
+                  {stars !== null && (
+                    <span className="ml-2 flex items-center gap-1 text-xs">
+                      <Star className="w-3 h-3 fill-current" />
+                      {stars.toLocaleString()}
+                    </span>
+                  )}
                 </Button>
               </a>
 
