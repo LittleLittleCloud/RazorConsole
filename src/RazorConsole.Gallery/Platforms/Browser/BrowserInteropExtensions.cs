@@ -18,7 +18,7 @@ public static class BrowserInteropExtensions
     /// Configures RazorConsole to use browser-based interop for keyboard and console I/O.
     /// Replaces the default Console.ReadKey() keyboard manager with a browser-compatible version.
     /// </summary>
-    public static void UseBrowserInterop(this IHostApplicationBuilder builder)
+    public static IHostApplicationBuilder UseBrowserInterop(this IHostApplicationBuilder builder)
     {
         // Replace the default KeyboardEventManager (which polls Console.ReadKey())
         // with our BrowserKeyboardEventManager (which receives events from JavaScript)
@@ -28,6 +28,8 @@ public static class BrowserInteropExtensions
 
         // Register browser console output for capturing and forwarding to JavaScript
         builder.Services.AddSingleton<BrowserConsoleOutput>();
+        
+        return builder;
     }
 }
 #endif
