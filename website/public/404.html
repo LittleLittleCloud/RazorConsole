@@ -22,7 +22,9 @@
       // https://username.github.io/repo-name/one/two?a=b&c=d#qwe becomes
       // https://username.github.io/repo-name/?/one/two&a=b~and~c=d#qwe
       // Otherwise, leave pathSegmentsToKeep as 0.
-      var pathSegmentsToKeep = 1;
+      // for github page, vite base is /repo-name/, so we need to keep 1 segment
+      // for custom domain, vite base is '/', so we need to keep 0 segment
+      var pathSegmentsToKeep = '{VITE_BASE}' === '/' ? 0 : 1;
 
       var l = window.location;
       l.replace(
