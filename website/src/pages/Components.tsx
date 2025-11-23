@@ -71,7 +71,7 @@ function ComponentCard({ component }: { component: ComponentInfo }) {
 
           <TabsContent value="preview">
             <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-              <XTermPreview componentName={component.name} className="h-96" />
+              <XTermPreview elementId={component.name} className="h-96" />
             </div>
           </TabsContent>
           <TabsContent value="example">

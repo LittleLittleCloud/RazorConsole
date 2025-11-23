@@ -39,6 +39,11 @@ export declare function clearTerminal(componentName: TerminalComponentName): voi
 export declare function disposeTerminal(componentName: TerminalComponentName): void;
 
 /**
+ * Tracks xterm.js instances so they can be retrieved for later operations.
+ */
+export declare function registerTerminalInstance(componentName: TerminalComponentName, terminal: import('xterm').Terminal): void;
+
+/**
  * Attaches a key listener to the xterm.js instance.
  */
 export declare function attachKeyListener(componentName: TerminalComponentName, helper: {

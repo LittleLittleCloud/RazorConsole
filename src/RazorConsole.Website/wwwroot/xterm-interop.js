@@ -4,10 +4,10 @@
 /** @typedef {{ theme?: Partial<ITheme> }} RazorConsoleTerminalOverrides */
 /** @typedef {Partial<ITerminalOptions> & RazorConsoleTerminalOverrides} RazorConsoleTerminalOptions */
 
-/** @type {Map<string, import('xterm').Terminal>} */
-const terminals = new Map();
 /** @type {Map<string, import('xterm').IDisposable>} */
 const keyHandlers = new Map();
+
+const terminalInstances = new Map();
 /** @type {RazorConsoleTerminalOptions} */
 const defaultOptions = {
     convertEol: true,
@@ -63,7 +63,9 @@ function ensureHostElement(elementId) {
  * @returns {import('xterm').Terminal}
  */
 function getExistingTerminal(elementId) {
-    const terminal = terminals.get(elementId);
+    console.log(`Getting existing terminal: ${elementId}`);
+    const terminal = getTerminalInstance(elementId);
+    console.log('Terminal found:', terminal);
     if (!terminal) {
         throw new Error(`Terminal with id '${elementId}' has not been initialized.`);
     }
@@ -71,6 +73,14 @@ function getExistingTerminal(elementId) {
 }
 export function isTerminalAvailable() {
     return typeof window !== 'undefined' && typeof window.Terminal === 'function';
+}
+
+export function registerTerminalInstance(elementId, terminal) {
+    terminalInstances.set(elementId, terminal);
+}
+
+export function getTerminalInstance(elementId) {
+    return terminalInstances.get(elementId);
 }
 /**
  * @param {string} elementId
@@ -91,7 +101,6 @@ export function initTerminal(elementId, options) {
     const terminal = new TerminalCtor(mergedOptions);
     host.innerHTML = '';
     terminal.open(host);
-    terminals.set(elementId, terminal);
     return terminal;
 }
 /**
@@ -131,12 +140,11 @@ export function attachKeyListener(elementId, helper) {
 export function disposeTerminal(elementId) {
     keyHandlers.get(elementId)?.dispose();
     keyHandlers.delete(elementId);
-    const terminal = terminals.get(elementId);
+    const terminal = document.getElementById(elementId);
     if (!terminal) {
         return;
     }
     terminal.dispose();
-    terminals.delete(elementId);
 }
 function ensureGlobalApi() {
     if (typeof window === 'undefined') {

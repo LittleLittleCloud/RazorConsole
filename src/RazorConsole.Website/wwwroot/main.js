@@ -7,7 +7,8 @@ import {
     clearTerminal as forwardClearTerminal,
     disposeTerminal as forwardDisposeTerminal,
     attachKeyListener as forwardAttachKeyListener,
-    isTerminalAvailable as forwardIsTerminalAvailable
+    isTerminalAvailable as forwardIsTerminalAvailable,
+    registerTerminalInstance as forwardRegisterTerminalInstance
 } from './xterm-interop.js';
 const { setModuleImports } = await dotnet.create();
 
@@ -38,6 +39,14 @@ export async function registerComponent(elementID)
     return exports.Registry.RegisterComponent(elementID);
 }
 
+export function registerTerminalInstance(elementId, terminal) {
+    if (!terminal) {
+        throw new Error(`Cannot register terminal '${elementId}' because no instance was provided.`);
+    }
+
+    forwardRegisterTerminalInstance(elementId, terminal);
+}
+
 export async function handleKeyboardEvent(componentName, xtermKey, domKey, ctrlKey, altKey, shiftKey) {
     if (exportsPromise === null) {
         exportsPromise = createRuntimeAndGetExports();
@@ -66,7 +75,6 @@ export function disposeTerminal(componentName) {
 }
 
 export function attachKeyListener(componentName, helper) {
-    console.log(`Attaching key listener from main.js: ${componentName}`);
     forwardAttachKeyListener(componentName, helper);
 }
 
