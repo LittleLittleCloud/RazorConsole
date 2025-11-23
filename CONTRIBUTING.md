@@ -48,6 +48,26 @@ dotnet build RazorConsole.slnx
 dotnet test RazorConsole.slnx
 ```
 
+### Optional: Enable Git Hooks
+
+Git hooks provide fast, local feedback by running format checks before commits and tests before pushes. This is **optional** but recommended as it helps catch issues early and saves CI resources.
+
+```bash
+# One-time setup to enable hooks
+git config core.hooksPath .githooks
+```
+
+**What the hooks do:**
+- **pre-commit**: Runs `dotnet format --verify-no-changes` (~10 seconds)
+- **pre-push**: Runs `dotnet test --no-build` (~30 seconds)
+
+**Benefits:**
+- Catch formatting and test issues before pushing
+- Get feedback in seconds instead of waiting for CI
+- Reduce failed CI runs
+
+For detailed setup instructions and usage examples, see [`.githooks/README.md`](.githooks/README.md). You can bypass hooks when needed using `git commit --no-verify` or `git push --no-verify`.
+
 ## 💻 Making Changes
 
 ### Coding Standards

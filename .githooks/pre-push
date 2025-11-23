@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Pre-push hook for RazorConsole
+# Runs tests before pushing to remote
+
+set -e
+
+echo "🔍 Running pre-push checks..."
+
+# Change to repository root
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# Run tests
+echo "🧪 Running tests..."
+if dotnet test RazorConsole.slnx --no-build --nologo --verbosity minimal; then
+    echo "✅ All tests passed"
+    exit 0
+else
+    echo "❌ Tests failed"
+    echo ""
+    echo "Please fix failing tests before pushing."
+    echo ""
+    exit 1
+fi

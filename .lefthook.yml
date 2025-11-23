@@ -1,0 +1,18 @@
+# Lefthook configuration for RazorConsole
+# See: https://github.com/evilmartians/lefthook
+
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      # Verify code formatting before commit
+      run: dotnet format RazorConsole.slnx --verify-no-changes
+      # Only run if C# files are changed
+      glob: "*.cs"
+
+pre-push:
+  commands:
+    test:
+      # Run tests before pushing
+      # Note: Uses --no-build for speed, ensure you build before testing
+      run: dotnet test RazorConsole.slnx --no-build --nologo --verbosity minimal

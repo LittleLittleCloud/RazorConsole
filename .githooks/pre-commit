@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Pre-commit hook for RazorConsole
+# Runs dotnet format to verify code formatting before commit
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Change to repository root
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# Run dotnet format with verification
+echo "📝 Checking code formatting..."
+if dotnet format RazorConsole.slnx --verify-no-changes --verbosity quiet; then
+    echo "✅ Code formatting check passed"
+    exit 0
+else
+    echo "❌ Code formatting check failed"
+    echo ""
+    echo "Please run the following command to fix formatting issues:"
+    echo "  dotnet format RazorConsole.slnx"
+    echo ""
+    exit 1
+fi
