@@ -131,7 +131,7 @@ internal class DiffRenderable : Renderable
         {
             return true;
         }
-        
+
         return linesToMoveUp > Console.CursorTop;
     }
 

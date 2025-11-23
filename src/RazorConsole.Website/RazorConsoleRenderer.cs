@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +18,6 @@ using RazorConsole.Core.Utilities;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
-using System.Diagnostics.CodeAnalysis;
 
 namespace RazorConsole.Website;
 
@@ -143,7 +143,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
     public async Task<string> RenderAsync()
     {
         await EnsureInitializedAsync().ConfigureAwait(false);
-        
+
         if (_consoleRenderer is null)
         {
             throw new InvalidOperationException("The renderer has not been initialized.");
@@ -183,7 +183,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
     public async Task HandleKeyboardEventAsync(string xtermKey, string domKey, bool ctrlKey, bool altKey, bool shiftKey)
     {
         await EnsureInitializedAsync().ConfigureAwait(false);
-        
+
         if (_keyboardEventManager is null)
         {
             return;
@@ -235,7 +235,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
             _ when xtermKey.Length == 1 => xtermKey[0],
             _ => '\0'
         };
-        
+
         return new ConsoleKeyInfo(keyChar, consoleKey, shiftKey, altKey, ctrlKey);
     }
 

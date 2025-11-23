@@ -5,7 +5,7 @@ using System.Runtime.Versioning;
 using RazorConsole.Components;
 using RazorConsole.Website;
 using RazorConsole.Website.Components;
-[assembly:System.Runtime.Versioning.SupportedOSPlatform("browser")]
+[assembly: System.Runtime.Versioning.SupportedOSPlatform("browser")]
 
 
 Console.WriteLine("Program.cs loaded");
