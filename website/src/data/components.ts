@@ -148,16 +148,7 @@ export const components: ComponentInfo[] = [
             description: "Culture used to format numbers."
         },
     ],
-    example: "" +
-        "<Barchart BarChartItems=\"@SalesData\"\n" +
-        "          Label=\"Revenue 2025\"\n" +
-        "          Width=\"80\"\n" +
-        "          ShowValues=\"true\"\n" +
-        "          LabelAlignment=\"Justify.Center\" />\n" +
-        "\n\n@code {\n " +
-        "   private List<IBarChartItem> SalesData => new()\n    " +
-        "{\n        new BarChartItem(\"Jan\", 65.2, Color.Aqua),\n        new BarChartItem(\"Feb\", 78.9, Color.Green),\n        new BarChartItem(\"Mar\", 91.5, Color.Yellow)\n    };" +
-        "\n}"
+    examples: ["BarChart_1.razor"]
 },
 {
     name: "BreakdownChart",
@@ -218,23 +209,7 @@ export const components: ComponentInfo[] = [
             description: "Color used for numeric values in tags. If null, uses default console foreground."
         }
     ],
-    example: "" +
-        "<BreakdownChart BreakdownChartItems=\"@Expenses\"\n" +
-        "                Compact=\"true\"\n" +
-        "                ShowTags=\"true\"\n" +
-        "                ShowTagValues=\"true\"\n" +
-        "                ShowTagValuesPercentage=\"true\"\n" +
-        "                Culture=\"@CultureInfo.GetCultureInfo(\"en-US\")\" />\n\n" +
-        "\n@code {\n" +
-        "    private List<IBreakdownChartItem> Expenses => new()\n" +
-        "    {\n" +
-        "        new BreakdownChartItem(\"Food\",       3200, Color.Orange1),\n" +
-        "        new BreakdownChartItem(\"Transport\",  1800, Color.Blue),\n" +
-        "        new BreakdownChartItem(\"Utilities\",  2500, Color.Red),\n" +
-        "        new BreakdownChartItem(\"Fun\",        1400, Color.Green),\n" +
-        "        new BreakdownChartItem(\"Other\",      1100, Color.Grey)\n" +
-        "    };\n" +
-        "}"
+    examples: ["BreakdownChart_1.razor"]
 },
 {
     name: "Scrollable",

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using RazorConsole.Components;
 using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -28,7 +29,7 @@ public class BreakdownChartTranslator : IVdomElementTranslator
         List<JsonElement> rawItems;
         try
         {
-            rawItems = JsonSerializer.Deserialize<List<JsonElement>>(itemsAttribute) ??
+            rawItems = JsonSerializer.Deserialize(itemsAttribute, ChartJsonContext.Default.ListJsonElement) ??
                        throw new InvalidOperationException();
         }
         catch
@@ -36,7 +37,7 @@ public class BreakdownChartTranslator : IVdomElementTranslator
             return false;
         }
 
-        var breakdownChart = new BreakdownChart();
+        var breakdownChart = new Spectre.Console.BreakdownChart();
         try
         {
             AddBreakdownChartItems(breakdownChart, rawItems);
@@ -123,7 +124,7 @@ public class BreakdownChartTranslator : IVdomElementTranslator
         return true;
     }
 
-    private void AddBreakdownChartItems(BreakdownChart breakdownChart, List<JsonElement> rawItems)
+    private void AddBreakdownChartItems(Spectre.Console.BreakdownChart breakdownChart, List<JsonElement> rawItems)
     {
         foreach (var el in rawItems)
         {

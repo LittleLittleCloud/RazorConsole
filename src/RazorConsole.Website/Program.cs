@@ -79,6 +79,12 @@ public partial class Registry
             case "SpectreCanvas":
                 _renderers[elementID] = new RazorConsoleRenderer<SpectreCanvas_1>(elementID);
                 break;
+            case "BarChart":
+                _renderers[elementID] = new RazorConsoleRenderer<BarChart_1>(elementID);
+                break;
+            case "BreakdownChart":
+                _renderers[elementID] = new RazorConsoleRenderer<BreakdownChart_1>(elementID);
+                break;
         }
     }
 

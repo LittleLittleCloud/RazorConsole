@@ -80,13 +80,12 @@
 
 
     private string ItemsJson => System.Text.Json.JsonSerializer.Serialize(
-        BreakdownChartItems.Select(item => new
-            {
-                item.Label,
-                item.Value,
-                Color = item.Color.ToHex()
-            }
-        )
+        BreakdownChartItems.Select(item => new ChartItemData(
+            item.Label,
+            item.Value,
+            item.Color.ToHex()
+        )).ToList(),
+        ChartJsonContext.Default.ListChartItemData
     );
 
     private string CompactAttribute => Compact ? "true" : "false";

@@ -1,0 +1,21 @@
+@using RazorConsole.Components
+@using System.Globalization
+@using Spectre.Console
+
+<RazorConsole.Components.BreakdownChart BreakdownChartItems="@Expenses"
+                Compact="true"
+                ShowTags="true"
+                ShowTagValues="true"
+                ShowTagValuesPercentage="true"
+                Culture="@CultureInfo.GetCultureInfo("en-US")" />
+
+@code {
+    private List<IBreakdownChartItem> Expenses => new()
+    {
+        new BreakdownChartItem("Food",       3200, Color.Orange1),
+        new BreakdownChartItem("Transport",  1800, Color.Blue),
+        new BreakdownChartItem("Utilities",  2500, Color.Red),
+        new BreakdownChartItem("Fun",        1400, Color.Green),
+        new BreakdownChartItem("Other",      1100, Color.Grey)
+    };
+}

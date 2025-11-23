@@ -98,13 +98,12 @@
 
 
     private string ItemsJson => System.Text.Json.JsonSerializer.Serialize(
-        BarChartItems.Select(item => new
-            {
-                item.Label,
-                item.Value,
-                Color = item.Color?.ToHex()
-            }
-        )
+        BarChartItems.Select(item => new ChartItemData(
+            item.Label,
+            item.Value,
+            item.Color?.ToHex()
+        )).ToList(),
+        ChartJsonContext.Default.ListChartItemData
     );
 
     private string WidthAttribute => Width?.ToString() ?? string.Empty;

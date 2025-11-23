@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using RazorConsole.Components;
 using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -28,7 +29,7 @@ public class BarChartTranslator : IVdomElementTranslator
         List<JsonElement> rawItems;
         try
         {
-            rawItems = JsonSerializer.Deserialize<List<JsonElement>>(itemsAttribute) ??
+            rawItems = JsonSerializer.Deserialize(itemsAttribute, ChartJsonContext.Default.ListJsonElement) ??
                        throw new InvalidOperationException();
         }
         catch
@@ -36,7 +37,7 @@ public class BarChartTranslator : IVdomElementTranslator
             return false;
         }
 
-        var barChart = new BarChart();
+        var barChart = new Spectre.Console.BarChart();
         try
         {
             AddBarChartItems(barChart, rawItems);
@@ -120,7 +121,7 @@ public class BarChartTranslator : IVdomElementTranslator
         return true;
     }
 
-    private void AddBarChartItems(BarChart barChart, List<JsonElement> rawItems)
+    private void AddBarChartItems(Spectre.Console.BarChart barChart, List<JsonElement> rawItems)
     {
         foreach (var el in rawItems)
         {
