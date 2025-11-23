@@ -48,8 +48,14 @@ jobs:
       - name: Build
         run: dotnet build RazorConsole.slnx --configuration Release --no-restore
 
-      - name: Test
+      - name: Test (net8.0)
+        run: dotnet run --project src/RazorConsole.Tests --configuration Release --no-build --framework net8.0
+
+      - name: Test (net9.0)
         run: dotnet run --project src/RazorConsole.Tests --configuration Release --no-build --framework net9.0
+
+      - name: Test (net10.0)
+        run: dotnet run --project src/RazorConsole.Tests --configuration Release --no-build --framework net10.0
 
   website-build:
     name: Build website
@@ -122,8 +128,14 @@ jobs:
       - name: Build
         run: dotnet build RazorConsole.slnx --configuration Release --no-restore -p:VersionSuffix=$VersionSuffix
 
-      - name: Test
+      - name: Test (net8.0)
+        run: dotnet run --project src/RazorConsole.Tests --configuration Release --no-build --framework net8.0
+
+      - name: Test (net9.0)
         run: dotnet run --project src/RazorConsole.Tests --configuration Release --no-build --framework net9.0
+
+      - name: Test (net10.0)
+        run: dotnet run --project src/RazorConsole.Tests --configuration Release --no-build --framework net10.0
 
       - name: Pack libraries
         run: |
