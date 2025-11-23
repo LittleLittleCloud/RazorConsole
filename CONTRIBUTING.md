@@ -74,6 +74,15 @@ dotnet test RazorConsole.slnx
 6. **Run `dotnet test`** to ensure all tests pass
 7. **Submit a pull request** with a clear description of the changes
 
+### Website Preview Deployments
+
+When you submit a pull request that includes changes to the website, an automated workflow will:
+- Build the website with your changes
+- Upload the built site as a downloadable artifact
+- Post a comment on your PR with instructions to preview the changes
+
+For automatic live preview deployments (optional), see [`.github/PREVIEW_DEPLOYMENT.md`](.github/PREVIEW_DEPLOYMENT.md) for setup instructions using Cloudflare Pages.
+
 ### Pull Request Guidelines
 
 - Keep PRs focused on a single feature or bug fix
