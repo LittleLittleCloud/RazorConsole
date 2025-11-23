@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import XTermPreview from "@/components/XTermPreview";
 import { useTheme } from "@/components/ThemeProvider";
@@ -110,9 +110,10 @@ export default function Repl() {
   const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof sampleTemplates>("counter");
   const { theme } = useTheme();
   const [isDark, setIsDark] = useState(true);
+  const [editorMounted, setEditorMounted] = useState(false);
 
   // Sync theme
-  useState(() => {
+  useEffect(() => {
     const checkTheme = () => {
       if (theme === "system") {
         setIsDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -121,7 +122,13 @@ export default function Repl() {
       }
     };
     checkTheme();
-  });
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => checkTheme();
+    
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  }, [theme]);
 
   const handleTemplateChange = (template: keyof typeof sampleTemplates) => {
     setSelectedTemplate(template);
@@ -172,13 +179,19 @@ export default function Repl() {
             </h2>
           </div>
           <div className="flex-1 overflow-hidden">
+            {!editorMounted && (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-slate-600 dark:text-slate-400">Loading editor...</div>
+              </div>
+            )}
             <Editor
               height="100%"
-              defaultLanguage="razor"
-              language="razor"
+              defaultLanguage="csharp"
+              language="csharp"
               value={code}
               onChange={(value) => setCode(value || "")}
               theme={isDark ? "vs-dark" : "light"}
+              onMount={() => setEditorMounted(true)}
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
