@@ -15,31 +15,26 @@ namespace RazorConsole.Gallery.Platforms.Browser;
 /// Browser-specific keyboard event manager that receives events from JavaScript instead of polling Console.ReadKey().
 /// </summary>
 [SupportedOSPlatform("browser")]
-public sealed class BrowserKeyboardEventManager
+public sealed class BrowserKeyboardEventManager : KeyboardEventManager
 {
     private static BrowserKeyboardEventManager? _instance;
     private static readonly ConcurrentQueue<ConsoleKeyInfo> _keyQueue = new();
-    private readonly FocusManager _focusManager;
-    private readonly IKeyboardEventDispatcher _dispatcher;
     private readonly ILogger<BrowserKeyboardEventManager> _logger;
-    private readonly KeyboardEventManager _coreManager;
 
     public BrowserKeyboardEventManager(
         FocusManager focusManager,
         IKeyboardEventDispatcher dispatcher,
         ILogger<BrowserKeyboardEventManager>? logger = null)
+        : base(focusManager, dispatcher, logger)
     {
-        _focusManager = focusManager ?? throw new ArgumentNullException(nameof(focusManager));
-        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _logger = logger ?? NullLogger<BrowserKeyboardEventManager>.Instance;
-        _coreManager = new KeyboardEventManager(focusManager, dispatcher, NullLogger<KeyboardEventManager>.Instance);
         _instance = this;
     }
 
     /// <summary>
-    /// Runs the keyboard event loop, processing events from JavaScript.
+    /// Runs the keyboard event loop, processing events from JavaScript instead of Console.ReadKey().
     /// </summary>
-    public async Task RunAsync(CancellationToken token)
+    public override async Task RunAsync(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {
@@ -47,7 +42,7 @@ public sealed class BrowserKeyboardEventManager
             {
                 if (_keyQueue.TryDequeue(out var keyInfo))
                 {
-                    await _coreManager.HandleKeyAsync(keyInfo, token).ConfigureAwait(false);
+                    await HandleKeyAsync(keyInfo, token).ConfigureAwait(false);
                 }
                 else
                 {

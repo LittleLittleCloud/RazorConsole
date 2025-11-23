@@ -51,7 +51,7 @@ internal sealed class RendererKeyboardEventDispatcher : IKeyboardEventDispatcher
 /// <summary>
 /// Manages keyboard input for the console application, converting keyboard events to component events.
 /// </summary>
-public sealed class KeyboardEventManager
+public class KeyboardEventManager
 {
     private readonly FocusManager _focusManager;
     private readonly IKeyboardEventDispatcher _dispatcher;
@@ -72,7 +72,7 @@ public sealed class KeyboardEventManager
         _focusManager.FocusChanged += OnFocusChanged;
     }
 
-    public async Task RunAsync(CancellationToken token)
+    public virtual async Task RunAsync(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {

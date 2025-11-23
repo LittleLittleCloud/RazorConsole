@@ -8,7 +8,7 @@ interface DotNetExports {
         Gallery: {
             Platforms: {
                 Browser: {
-                    BrowserKeyboardInterop: {
+                    BrowserKeyboardEventManager: {
                         HandleKeyFromJS: (key: string, shift: boolean, ctrl: boolean, alt: boolean) => void;
                     }
                 }
@@ -37,7 +37,7 @@ export async function initRazorConsole() {
 
     return {
         sendKey: (key: string, shift: boolean = false, ctrl: boolean = false, alt: boolean = false) => {
-            exports.RazorConsole.Gallery.Platforms.Browser.BrowserKeyboardInterop.HandleKeyFromJS(
+            exports.RazorConsole.Gallery.Platforms.Browser.BrowserKeyboardEventManager.HandleKeyFromJS(
                 key, shift, ctrl, alt
             );
         }
