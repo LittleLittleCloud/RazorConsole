@@ -56,7 +56,7 @@ export default function Layout() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="gap-1.5 cursor-default"
+                  className="gap-1.5 hover:cursor-pointer"
                   aria-label={stars !== null ? `GitHub - ${stars} stars` : "View on GitHub"}
                 >
                   <Github className="w-5 h-5" />
