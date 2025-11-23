@@ -1,0 +1,96 @@
+name: Auto-assign Copilot to Feature Request
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  assign-copilot:
+    name: Assign Copilot if requested
+    runs-on: ubuntu-latest
+    # Only run for feature requests
+    if: contains(github.event.issue.labels.*.name, 'feature-request')
+    
+    steps:
+      - name: Check if Copilot contribution is requested
+        id: check-copilot
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          echo "Checking issue body for Copilot contribution checkbox..."
+          
+          # Check if the "Copilot willing to contribute" checkbox is checked
+          # The checked checkbox will appear as [x] or [X] in the issue body
+          if echo "$ISSUE_BODY" | grep -q '\[x\]\s*Copilot willing to contribute on this feature request' || \
+             echo "$ISSUE_BODY" | grep -q '\[X\]\s*Copilot willing to contribute on this feature request'; then
+            echo "copilot_requested=true" >> "$GITHUB_OUTPUT"
+            echo "✓ Copilot contribution requested"
+          else
+            echo "copilot_requested=false" >> "$GITHUB_OUTPUT"
+            echo "Copilot contribution not requested"
+          fi
+
+      - name: Assign Copilot to issue
+        if: steps.check-copilot.outputs.copilot_requested == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          echo "Assigning @copilot to issue #$ISSUE_NUMBER..."
+          
+          # Get current assignees
+          CURRENT_ASSIGNEES=$(gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER --jq '.assignees[].login' 2>/dev/null || echo "")
+          
+          # Check if copilot is already assigned
+          if echo "$CURRENT_ASSIGNEES" | grep -q "^copilot$"; then
+            echo "✓ Copilot is already assigned to this issue"
+          else
+            echo "Adding copilot as assignee..."
+            # Use the GitHub API to add assignees
+            gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER/assignees \
+              --method POST \
+              -f "assignees[]=copilot" 2>/dev/null && \
+            echo "✓ Successfully assigned copilot to issue #$ISSUE_NUMBER" || \
+            echo "⚠ Failed to assign copilot. This may be due to permissions or copilot not being a collaborator."
+          fi
+
+      - name: Unassign Copilot if no longer requested
+        if: steps.check-copilot.outputs.copilot_requested == 'false' && github.event.action == 'edited'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          echo "Checking if copilot should be unassigned from issue #$ISSUE_NUMBER..."
+          
+          # Get current assignees
+          CURRENT_ASSIGNEES=$(gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER --jq '.assignees[].login' 2>/dev/null || echo "")
+          
+          # Check if copilot is assigned
+          if echo "$CURRENT_ASSIGNEES" | grep -q "^copilot$"; then
+            echo "Removing copilot from assignees..."
+            # Use the GitHub API to remove assignees
+            gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER/assignees \
+              --method DELETE \
+              -f "assignees[]=copilot" 2>/dev/null && \
+            echo "✓ Successfully unassigned copilot from issue #$ISSUE_NUMBER" || \
+            echo "⚠ Failed to unassign copilot. This may be due to permissions."
+          else
+            echo "Copilot is not assigned to this issue"
+          fi
+
+      - name: Summary
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          COPILOT_REQUESTED: ${{ steps.check-copilot.outputs.copilot_requested }}
+        run: |
+          echo "✅ Auto-assign Copilot workflow completed!"
+          echo "- Issue: #$ISSUE_NUMBER"
+          echo "- Copilot requested: $COPILOT_REQUESTED"
+          if [ "$COPILOT_REQUESTED" = "true" ]; then
+            echo "- Action: Assigned copilot to the issue"
+          else
+            echo "- Action: No assignment needed"
+          fi

@@ -61,3 +61,5 @@ body:
       options:
         - label: I'd be willing to contribute this feature
           required: false
+        - label: Copilot willing to contribute on this feature request
+          required: false
