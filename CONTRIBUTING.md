@@ -78,10 +78,11 @@ dotnet test RazorConsole.slnx
 
 When you submit a pull request that includes changes to the website, an automated workflow will:
 - Build the website with your changes
-- Upload the built site as a downloadable artifact
-- Post a comment on your PR with instructions to preview the changes
+- Upload the built site as a downloadable artifact (30-day retention)
+- Optionally deploy to Cloudflare Pages for live preview (if configured)
+- Post a comment on your PR with download instructions and/or live preview URL
 
-For automatic live preview deployments (optional), see [`.github/PREVIEW_DEPLOYMENT.md`](.github/PREVIEW_DEPLOYMENT.md) for setup instructions using Cloudflare Pages.
+The workflow can also be manually triggered via the Actions tab. For automatic live preview deployments, see [`.github/PREVIEW_DEPLOYMENT.md`](.github/PREVIEW_DEPLOYMENT.md) for setup instructions.
 
 ### Pull Request Guidelines
 

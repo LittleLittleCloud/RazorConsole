@@ -1,4 +1,4 @@
-name: PR Preview (Artifact)
+name: Deploy Preview
 
 on:
   pull_request:
@@ -6,13 +6,15 @@ on:
     paths:
       - 'website/**'
       - '.github/workflows/pr-preview-artifact.yml'
+  workflow_dispatch:
 
 jobs:
-  build-preview:
-    name: Build website preview
+  build-and-deploy-preview:
+    name: Build and deploy preview
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      deployments: write
       pull-requests: write
     steps:
       - name: Checkout repository
@@ -38,11 +40,24 @@ jobs:
       - name: Upload preview artifact
         uses: actions/upload-artifact@v4
         with:
-          name: website-preview-pr-${{ github.event.number }}
+          name: website-preview-pr-${{ github.event.number || github.run_number }}
           path: website/dist
           retention-days: 30
 
-      - name: Comment PR with artifact info
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        continue-on-error: true
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy website/dist
+            --project-name=razorconsole
+            --branch=${{ github.head_ref || github.ref_name }}
+
+      - name: Comment PR with preview info
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -52,8 +67,10 @@ jobs:
             const repo = context.repo.repo;
             const artifactUrl =
               `https://github.com/${owner}/${repo}/actions/runs/${runId}`;
+            const deploymentUrl = '${{ steps.deploy.outputs.deployment-url }}';
+            const deploymentSuccess = '${{ steps.deploy.outcome }}' === 'success';
 
-            const comment = `## 📦 Preview Build Artifact
+            let comment = `## 🚀 Preview Deployment
 
             A preview build has been generated for this PR!
 
@@ -65,12 +82,24 @@ jobs:
             2. Extract the ZIP file
             3. Serve the files with a local web server
                (e.g., \`npx serve dist\`)
+            `;
 
-            > 💡 **Tip:** For automatic preview deployments, see
+            if (deploymentSuccess && deploymentUrl) {
+              comment += `
+
+            **Live Preview URL:** ${deploymentUrl}
+
+            The live preview will be automatically updated when you push new
+            commits to this PR.`;
+            } else {
+              comment += `
+
+            > 💡 **Tip:** For automatic live preview deployments, see
             [\`.github/PREVIEW_DEPLOYMENT.md\`](https://github.com/${owner}/${repo}/blob/main/.github/PREVIEW_DEPLOYMENT.md)
             to set up Cloudflare Pages.`;
+            }
 
-            // Find existing artifact comment
+            // Find existing preview comment
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -79,7 +108,8 @@ jobs:
 
             const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
-              comment.body.includes('Preview Build Artifact')
+              (comment.body.includes('Preview Deployment') ||
+               comment.body.includes('Preview Build Artifact'))
             );
 
             if (botComment) {
