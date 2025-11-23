@@ -58,9 +58,9 @@
 
     private string? TitleAttribute => string.IsNullOrWhiteSpace(Title) ? null : Title;
 
-    private string? HeaderColorAttribute => TitleColor?.ToString();
+    private string? HeaderColorAttribute => TitleColor?.ToMarkup();
 
-    private string? BorderColorAttribute => BorderColor?.ToString();
+    private string? BorderColorAttribute => BorderColor?.ToMarkup();
 
     private string? BorderAttribute
     {

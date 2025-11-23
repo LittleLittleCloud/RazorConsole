@@ -1,0 +1,19 @@
+@using Spectre.Console
+@using RazorConsole.Components
+
+<Select Options="@options" Value="@selectedValue" FocusedValue="@focusedValue"
+    FocusedValueChanged="@((v) => focusedValue = v)" ValueChanged="@((v) => selectedValue = v)"
+    Placeholder="Choose an option" />
+@* add helper text *@
+<Rows>
+    <Markup Content="@($"Selected: {selectedValue ?? "None"}")" Foreground="Color.Yellow" />
+    <Markup Content="@($"Focused: {focusedValue ?? "None"}")" Foreground="Color.Cyan" />
+    <Newline />
+    <Markup Content="Use arrow keys to navigate and Enter to select." Foreground="Color.Green" />
+</Rows>
+@code {
+    private string[] options = new[] { "Option 1", "Option 2", "Option 3" };
+    private string? selectedValue;
+
+    private string? focusedValue;
+}

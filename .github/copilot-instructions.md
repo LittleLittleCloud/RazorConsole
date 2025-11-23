@@ -19,8 +19,8 @@ These instructions are automatically appended to Copilot Chat sessions when work
 
 ## Development workflow
 
-- Run `dotnet format RazorConsole.sln` before opening a pull request to ensure formatting checks pass.
-- Execute `dotnet test RazorConsole.sln` locally; CI requires a clean test run on Linux and Windows.
+- Run `dotnet format RazorConsole.slnx` before opening a pull request to ensure formatting checks pass.
+- Execute `dotnet test RazorConsole.slnx` locally; CI requires a clean test run on Linux and Windows.
 - When touching focus or keyboard handling, add or update tests in `FocusManagerTests` or `KeyboardEventManagerTests`.
 - Update the README when introducing user-facing features or significant architectural changes.
 

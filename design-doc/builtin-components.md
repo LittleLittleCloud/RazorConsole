@@ -27,6 +27,37 @@ Creates a bordered panel around its children.
 | `BoxBorder` | `BoxBorder` | `Rounded` | Border style (`Rounded`, `Square`, `Double`, etc.). |
 | `Padding` | `Padding` | `new(0,0,0,0)` | Inner padding inside the border. |
 
+## BarChart
+Renders a beautiful horizontal bar chart using provided data.
+
+| Parameter           | Type                      | Default                  | Description                                                                                                                |
+|---------------------|---------------------------|--------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| `BarChartItems`     | `List<IBarChartItem>`     | —                        | Collection of data items. Each item must have `Label` and `Value`. Optional `Color` (as `Spectre.Console.Color`). Required. |
+| `Width`             | `int?`                      | `null`                   | Chart width in characters. If omitted — uses full available console width.                                                 |
+| `Label`             | `string?`                   | `null`                   | Title displayed above the chart.                                           |
+| `LabelForeground`   | `Color`                     | `Style.Plain.Foreground` | Text color of the label (default: white/terminal default).                                                                 |
+| `LabelBackground`   | `Color`                     | `Style.Plain.Background` | Background color of the label (default: transparent).                                                                      |
+| `LabelDecoration`   | `Decoration`                | `Decoration.None`        | Label style: `Bold`, `Italic`, `Underline`, etc.                                                              |
+| `LabelAlignment`    | `Justify?`                  | `null`                   | Label alignment: `Left`, `Center`, or `Right`.                                                                             |
+| `MaxValue`          | `double?`                   | `null`                   | Fixed maximum value for scaling (e.g. set to `100` for percentage-style charts).                                           |
+| `ShowValues`        | `bool`                      | `false`                  | If `true` — shows numeric values next to each bar (e.g. `42.3`).                                                           |
+| `Culture`           | `CultureInfo`             | `CultureInfo.CurrentCulture` | Culture used to format numbers.                                          |
+
+## BreakdownChart
+Renders a colorful breakdown (pie-style) chart using provided data.
+
+| Parameter                        | Type                        | Default                      | Description                                                                              |
+|----------------------------------|-----------------------------|------------------------------|------------------------------------------------------------------------------------------|
+| `BreakdownChartItems`            | `List<IBreakdownChartItem>` | —                            | Collection of data items. Each item must have `Label`, `Value`, and `Color`. Required.   |
+| `Compact`                        | `bool`                      | `false`                      | If `true`, renders the chart and tags in compact mode with reduced spacing.              |
+| `Culture`                        | `CultureInfo`               | `CultureInfo.CurrentCulture` | Culture used to format numbers and percentages.                                          |
+| `Expand`                         | `bool`                      | `false`                      | If `true`, the chart expands to fill all available horizontal space.                     |
+| `Width`                          | `int?`                      | `null`                       | Fixed width of the chart in characters. If `null`, width is calculated automatically.    |
+| `ShowTags`                       | `bool`                      | `false`                      | If `true`, displays a legend with colored tags below the chart.                          |
+| `ShowTagValues`                  | `bool`                      | `false`                      | If `true`, shows absolute values next to tags (e.g. `1,234`).                            |
+| `ShowTagValuesPercentage`        | `bool`                      | `false`                      | If `true`, shows percentage values next to tags (e.g. `42.3%`).                          |
+| `ValueColor`                     | `Color?`                    | `null`                       | Color used for numeric values in tags. If `null`, uses default console foreground color. |
+
 ## Columns
 Flow child renderables in Spectre.Console columns.
 

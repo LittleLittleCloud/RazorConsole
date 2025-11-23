@@ -1,0 +1,19 @@
+@using Spectre.Console
+@using RazorConsole.Components
+<Columns Expand="true">
+    <Border>
+        <Align Width="18" Height="5" Horizontal="@(HorizontalAlignment.Left)" Vertical="@(VerticalAlignment.Top)">
+            <Markup Content="Top / Left" />
+        </Align>
+    </Border>
+    <Border>
+        <Align Width="18" Height="5" Horizontal="@(HorizontalAlignment.Center)" Vertical="@(VerticalAlignment.Middle)">
+            <Markup Content="Center" />
+        </Align>
+    </Border>
+    <Border>
+        <Align Width="18" Height="5" Horizontal="@(HorizontalAlignment.Right)" Vertical="@(VerticalAlignment.Bottom)">
+            <Markup Content="Bottom / Right" />
+        </Align>
+    </Border>
+</Columns>

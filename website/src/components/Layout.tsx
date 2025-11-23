@@ -3,9 +3,11 @@ import { Github, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { useState } from "react"
+import { useGitHubStars } from "@/hooks/useGitHubStars"
 
 export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { stars } = useGitHubStars('LittleLittleCloud', 'RazorConsole')
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -51,9 +53,20 @@ export default function Layout() {
                 rel="noopener noreferrer"
                 className="hidden md:block"
               >
-                <Button variant="ghost" size="sm">
-                  <Github className="w-4 h-4 mr-2" />
-                  GitHub
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="gap-1.5 hover:cursor-pointer"
+                  aria-label={stars !== null ? `GitHub - ${stars} stars` : "View on GitHub"}
+                >
+                  <Github className="w-5 h-5" />
+                  {stars !== null && (
+                    <span className="text-sm font-medium">
+                      {stars >= 1000 
+                        ? `${(stars / 1000).toFixed(1).replace(/\.0$/, '')}k` 
+                        : stars.toLocaleString()}
+                    </span>
+                  )}
                 </Button>
               </a>
 

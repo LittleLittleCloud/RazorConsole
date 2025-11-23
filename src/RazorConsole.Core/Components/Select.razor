@@ -12,29 +12,58 @@
 <div
      @onfocus="OnFocus"
      @onfocusout="OnFocusOut"
-     @onkeydown="OnKeyDown">
+     @onkeydown="OnKeyDown"
+     @attributes="AdditionalAttributes">
     <Rows Expand="@Expand">
         @foreach (var option in Options)
         {
-            var isHighlighted = string.Equals(option, _highlightedValue, StringComparison.Ordinal);
-            var indicator = isHighlighted ? ">" : " ";
+            var isSelected = string.Equals(option, Value, StringComparison.Ordinal);
+            var isFocused = string.Equals(option, FocusedValue, StringComparison.Ordinal);
+            var indicator = isSelected ? SelectedIndicator : UnselectedIndicator;
             <Columns>
                 <Markup Content="@($" {indicator} {option}")"
-                        Foreground="@(isHighlighted ? GetFocusAdjustedColor(SelectedOptionForeground) : GetFocusAdjustedColor(OptionForeground))"
-                        Decoration="@(isHighlighted ? GetFocusAdjustedDecoration(SelectedOptionDecoration) : GetFocusAdjustedDecoration(OptionDecoration))" />
+                        Foreground="@(isFocused ? GetFocusAdjustedColor(SelectedOptionForeground) : GetFocusAdjustedColor(OptionForeground))"
+                        Decoration="@(isFocused ? GetFocusAdjustedDecoration(SelectedOptionDecoration) : GetFocusAdjustedDecoration(OptionDecoration))" />
             </Columns>
         }
     </Rows>
 </div>
 
 @code {
-    // Private fields
-    private string? _selectedValue;
-    private string? _highlightedValue;
-    private string? _lastSuppliedValue;
-    private bool _isFocused;
+    /// <summary>
+    /// Additional attributes to apply to the root element.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+	public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     // Basic parameters
+    /// <summary>
+    /// Indicates whether the select currently has focus.
+    /// </summary>
+    [Parameter]
+    public bool IsFocused { get; set; }
+
+    /// <summary>
+    /// Event raised when the focus state changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> IsFocusedChanged { get; set; }
+
+    /// <summary>
+    /// Character used to indicate the focused option.
+    /// </summary>
+    [Parameter]
+    public char SelectedIndicator { get; set; } = '>';
+
+    /// <summary>
+    /// Character used to indicate non-focused options.
+    /// </summary>
+    [Parameter]
+    public char UnselectedIndicator { get; set; } = ' ';
+
+    /// <summary>
+    /// Available options rendered by the select.
+    /// </summary>
     [Parameter]
     public string[] Options
     {
@@ -42,80 +71,116 @@
         set => _options = value ?? Array.Empty<string>();
     }
 
+    /// <summary>
+    /// Currently committed option value.
+    /// </summary>
     [Parameter]
     public string? Value { get; set; }
 
+    /// <summary>
+    /// Expands the rows layout to fill available space when true.
+    /// </summary>
     [Parameter]
     public bool Expand { get; set; } = false;
 
+    /// <summary>
+    /// Event raised when the committed value changes.
+    /// </summary>
     [Parameter]
     public EventCallback<string?> ValueChanged { get; set; }
 
+    /// <summary>
+    /// Currently highlighted option during keyboard navigation (may differ from committed Value).
+    /// </summary>
     [Parameter]
-    public EventCallback<string?> OnSelected { get; set; }
+    public string? FocusedValue { get; set; }
 
+    /// <summary>
+    /// Event raised when the focused option changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> FocusedValueChanged { get; set; }
+
+    /// <summary>
+    /// Foreground color for non-focused options.
+    /// </summary>
     [Parameter]
     public Color OptionForeground { get; set; } = Color.White;
 
+    /// <summary>
+    /// Text decoration for non-focused options.
+    /// </summary>
     [Parameter]
     public Decoration OptionDecoration { get; set; } = Decoration.None;
 
+    /// <summary>
+    /// Foreground color for the focused option.
+    /// </summary>
     [Parameter]
     public Color SelectedOptionForeground { get; set; } = Color.Chartreuse1;
 
+    /// <summary>
+    /// Text decoration for the focused option.
+    /// </summary>
     [Parameter]
     public Decoration SelectedOptionDecoration { get; set; } = Decoration.Bold;
 
     private string[] _options = Array.Empty<string>();
 
-    protected override void OnParametersSet()
-    {
-        var incomingValue = Value;
-        if (!string.Equals(incomingValue, _lastSuppliedValue, StringComparison.Ordinal))
-        {
-            _selectedValue = incomingValue;
-            _lastSuppliedValue = incomingValue;
-        }
-
-        SyncHighlightedValue();
-    }
-
-
-
     // Focus-adjusted styling methods
-    private Color GetFocusAdjustedColor(Color color) => _isFocused ? color : Color.Grey50;
+    private Color GetFocusAdjustedColor(Color color) => IsFocused ? color : Color.Grey50;
 
     private Decoration GetFocusAdjustedDecoration(Decoration decoration) => 
-        _isFocused ? decoration : decoration | Decoration.Dim;
+        IsFocused ? decoration : decoration | Decoration.Dim;
 
+    private async Task NotifyFocusedValueChangedAsync()
+    {
+        if (FocusedValueChanged.HasDelegate)
+        {
+            await FocusedValueChanged.InvokeAsync(FocusedValue).ConfigureAwait(false);
+        }
+    }
 
     private async Task SelectOptionAsync(string option)
     {
-        _selectedValue = option;
-        _highlightedValue = option;
-        _lastSuppliedValue = option;
+        Value = option;
+        FocusedValue = option;
 
         if (ValueChanged.HasDelegate)
         {
             await ValueChanged.InvokeAsync(option).ConfigureAwait(false);
         }
 
-        if (OnSelected.HasDelegate)
+        if (FocusedValueChanged.HasDelegate)
         {
-            await OnSelected.InvokeAsync(option).ConfigureAwait(false);
+            await FocusedValueChanged.InvokeAsync(option).ConfigureAwait(false);
         }
 
         await InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
-    private void OnFocus()
+    private async Task OnFocus()
     {
-        _isFocused = true;
+        IsFocused = true;
+        EnsureFocusedValue();
+
+        if (IsFocusedChanged.HasDelegate)
+        {
+            await IsFocusedChanged.InvokeAsync(IsFocused).ConfigureAwait(false);
+        }
+
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
 
-    private void OnFocusOut()
+    private async Task OnFocusOut()
     {
-        _isFocused = false;
-        _highlightedValue = _selectedValue;
+        IsFocused = false;
+
+        if (IsFocusedChanged.HasDelegate)
+        {
+            await IsFocusedChanged.InvokeAsync(IsFocused).ConfigureAwait(false);
+        }
+
+        await InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
 
     private async Task OnKeyDown(KeyboardEventArgs args)
@@ -137,15 +202,16 @@
             return;
         }
 
-        if (IsCommitKey(key) && _highlightedValue is not null)
+        if (IsCommitKey(key) && FocusedValue is not null)
         {
-            await SelectOptionAsync(_highlightedValue).ConfigureAwait(false);
+            await SelectOptionAsync(FocusedValue).ConfigureAwait(false);
             return;
         }
 
         if (IsCancelKey(key))
         {
-            _highlightedValue = _selectedValue;
+            FocusedValue = Value;
+            await NotifyFocusedValueChangedAsync().ConfigureAwait(false);
             await InvokeAsync(StateHasChanged).ConfigureAwait(false);
             return;
         }
@@ -170,21 +236,22 @@
             return;
         }
 
+        await NotifyFocusedValueChangedAsync().ConfigureAwait(false);
         await InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
 
     private bool TryMoveSelection(int offset)
     {
-        EnsureHighlightedValue();
+        EnsureFocusedValue();
 
         if (_options.Length == 0)
         {
             return false;
         }
 
-        var currentIndex = _highlightedValue is null
+        var currentIndex = FocusedValue is null
             ? -1
-            : Array.IndexOf(_options, _highlightedValue);
+            : Array.IndexOf(_options, FocusedValue);
 
         if (currentIndex < 0)
         {
@@ -204,27 +271,27 @@
 
         var nextValue = _options[nextIndex];
 
-        if (string.Equals(nextValue, _highlightedValue, StringComparison.Ordinal))
+        if (string.Equals(nextValue, FocusedValue, StringComparison.Ordinal))
         {
             return false;
         }
 
-        _highlightedValue = nextValue;
+        FocusedValue = nextValue;
         return true;
     }
 
     private bool TryTypeAhead(char key)
     {
-        EnsureHighlightedValue();
+        EnsureFocusedValue();
 
         if (char.IsControl(key))
         {
             return false;
         }
 
-        var startIndex = _highlightedValue is null
+        var startIndex = FocusedValue is null
             ? 0
-            : Array.IndexOf(_options, _highlightedValue);
+            : Array.IndexOf(_options, FocusedValue);
 
         var comparison = StringComparison.CurrentCultureIgnoreCase;
         var prefix = key.ToString();
@@ -236,9 +303,9 @@
 
             if (!string.IsNullOrEmpty(candidate) && candidate.StartsWith(prefix, comparison))
             {
-                if (!string.Equals(candidate, _highlightedValue, StringComparison.Ordinal))
+                if (!string.Equals(candidate, FocusedValue, StringComparison.Ordinal))
                 {
-                    _highlightedValue = candidate;
+                    FocusedValue = candidate;
                     return true;
                 }
 
@@ -272,38 +339,33 @@
         => string.Equals(key, "Escape", StringComparison.OrdinalIgnoreCase)
             || string.Equals(key, "Esc", StringComparison.OrdinalIgnoreCase);
 
-    private void EnsureHighlightedValue()
+    private void EnsureFocusedValue()
     {
         if (_options.Length == 0)
         {
-            _highlightedValue = null;
+            FocusedValue = null;
             return;
         }
 
-        if (!string.IsNullOrEmpty(_highlightedValue))
+        if (!string.IsNullOrEmpty(FocusedValue))
         {
-            var index = Array.IndexOf(_options, _highlightedValue);
+            var index = Array.IndexOf(_options, FocusedValue);
             if (index >= 0)
             {
                 return;
             }
         }
 
-        if (!string.IsNullOrEmpty(_selectedValue))
+        if (!string.IsNullOrEmpty(Value))
         {
-            var selectedIndex = Array.IndexOf(_options, _selectedValue);
+            var selectedIndex = Array.IndexOf(_options, Value);
             if (selectedIndex >= 0)
             {
-                _highlightedValue = _selectedValue;
+                FocusedValue = Value;
                 return;
             }
         }
 
-        _highlightedValue = _options[0];
-    }
-
-    private void SyncHighlightedValue()
-    {
-        _highlightedValue = _selectedValue;
+        FocusedValue = _options[0];
     }
 }

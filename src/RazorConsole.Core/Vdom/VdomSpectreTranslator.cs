@@ -133,6 +133,8 @@ public sealed class VdomSpectreTranslator
             new SpinnerElementTranslator(),
             new ButtonElementTranslator(),
             new CanvasElementTranslator(),
+            new BarChartTranslator(),
+            new BreakdownChartTranslator(),
             new HtmlButtonElementTranslator(),
             new SyntaxHighlighterElementTranslator(),
             new HtmlHeadingElementTranslator(),
@@ -569,6 +571,23 @@ public sealed class VdomSpectreTranslator
     public static bool TryParsePositiveInt(string? raw, out int result)
     {
         if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value > 0)
+        {
+            result = value;
+            return true;
+        }
+
+        result = default;
+        return false;
+    }
+    /// <summary>
+    /// Tries to parse a positive double from a string.
+    /// </summary>
+    /// <param name="raw">The string value to parse.</param>
+    /// <param name="result">The parsed double value if successful.</param>
+    /// <returns>True if parsing was successful and the value is positive; otherwise, false.</returns>
+    public static bool TryParsePositiveDouble(string? raw, out double result)
+    {
+        if (double.TryParse(raw, CultureInfo.InvariantCulture, out var value) && value > 0)
         {
             result = value;
             return true;

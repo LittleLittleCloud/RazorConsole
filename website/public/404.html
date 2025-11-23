@@ -22,7 +22,11 @@
       // https://username.github.io/repo-name/one/two?a=b&c=d#qwe becomes
       // https://username.github.io/repo-name/?/one/two&a=b~and~c=d#qwe
       // Otherwise, leave pathSegmentsToKeep as 0.
-      var pathSegmentsToKeep = 1;
+      // for github page, keep 1 segment
+      // for custom domain, keep 0 segment
+      // check domain to decide if it is custom domain or github pages
+      var isGitHubPages = window.location.hostname.endsWith('github.io');
+      var pathSegmentsToKeep = isGitHubPages ? 1 : 0;
 
       var l = window.location;
       l.replace(

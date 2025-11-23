@@ -1,0 +1,11 @@
+@using Spectre.Console
+@using RazorConsole.Components
+
+<Rows>
+        <Markup Content="Emphasize important labels" Foreground="@Color.Chartreuse1" Decoration="@Decoration.Bold" />
+        <Markup Content="Callouts can be dimmed" Foreground="@Color.Grey70"
+                Decoration="@(Decoration.Dim | Decoration.Italic)" />
+        <Markup Content="Link to the repository" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline"
+                link="https://github.com/LittleLittleCloud/RazorConsole" />
+</Rows>
+

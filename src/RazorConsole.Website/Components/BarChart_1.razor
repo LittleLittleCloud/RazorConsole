@@ -1,0 +1,18 @@
+@using RazorConsole.Components
+@using System.Globalization
+@using Spectre.Console
+
+<RazorConsole.Components.BarChart BarChartItems="@SalesData"
+          Label="Revenue 2025"
+          Width="80"
+          ShowValues="true"
+          LabelAlignment="Justify.Center" />
+
+@code {
+   private List<IBarChartItem> SalesData => new()
+   {
+        new BarChartItem("Jan", 65.2, Color.Aqua),
+        new BarChartItem("Feb", 78.9, Color.Green),
+        new BarChartItem("Mar", 91.5, Color.Yellow)
+   };
+}

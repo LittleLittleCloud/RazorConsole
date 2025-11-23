@@ -357,7 +357,10 @@ public class KeyboardEventManagerTests
 
         public void Refresh()
         {
+            Refreshed?.Invoke();
         }
+
+        public event Action? Refreshed;
     }
 
     private sealed class FakeRenderable : IRenderable

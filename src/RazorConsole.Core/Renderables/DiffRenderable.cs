@@ -64,7 +64,7 @@ internal class DiffRenderable : Renderable
 
             // Move cursor to the first different line in the viewport
             int linesToMoveUp = _shape.Height - renderFromLine;
-            bool needFullClear = linesToMoveUp > Console.CursorTop;
+            bool needFullClear = NeedsFullClear(linesToMoveUp);
             if (needFullClear)
             {
                 // The previous content is larger than the current console height, we need to clear everything
@@ -117,6 +117,17 @@ internal class DiffRenderable : Renderable
             yield return Segment.Control(SM(DECTCEM));
             yield break;
         }
+    }
+
+    private bool NeedsFullClear(int linesToMoveUp)
+    {
+        // Console.CursorTop is not supported in WebAssembly, always full clear
+        if (OperatingSystem.IsBrowser())
+        {
+            return true;
+        }
+
+        return linesToMoveUp > Console.CursorTop;
     }
 
     private static bool LinesAreEqual(SegmentLine line1, SegmentLine line2)

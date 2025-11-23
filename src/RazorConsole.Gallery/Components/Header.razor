@@ -1,22 +1,9 @@
-@inject INuGetUpgradeChecker UpgradeChecker
-@using RazorConsole.Gallery.Services
+@using RazorConsole.Components
 @using Spectre.Console
+
 <Figlet Content="Component Gallery" />
 <Align Horizontal="@HorizontalAlignment.Center">
     <Rows>
-        <Markup Content="Tab / Ctrl+Tab to change focus • Enter to select • Type to input • Control+C to exit" Foreground="@Color.Grey58" />
-        @if (!string.IsNullOrEmpty(_versionSummary))
-        {
-            <Markup Content="@_versionSummary" Foreground="@Color.Grey70" />
-        }
-        @if (_upgradeResult?.HasUpgrade == true)
-        {
-            <Markup Content="@_upgradeBanner" Foreground="@Color.Gold3_1" Decoration="@(Decoration.Bold | Decoration.Italic)" />
-            @if (!string.IsNullOrEmpty(_upgradeLink))
-            {
-                <Markup Content="Open NuGet package page" Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline" link="@_upgradeLink" />
-            }
-        }
         <Columns>
             <Markup Content="Repo link: RazorConsole" Foreground="@Color.DeepSkyBlue1" Decoration="Decoration.Underline" link="https://github.com/LittleLittleCloud/RazorConsole" />
             <Markup Content="README" Foreground="@Color.DeepSkyBlue1" Decoration="Decoration.Underline" link="https://github.com/LittleLittleCloud/RazorConsole/blob/main/README.md" />
@@ -24,36 +11,3 @@
         </Columns>
     </Rows>
 </Align>
-
-@code {
-
-    private UpgradeCheckResult? _upgradeResult;
-    private string? _upgradeBanner;
-    private string? _upgradeLink;
-    private string? _versionSummary;
-
-
-    protected override async Task OnInitializedAsync()
-    {
-        _upgradeResult = await UpgradeChecker.CheckForUpgradeAsync().ConfigureAwait(false);
-
-        if (_upgradeResult is null)
-        {
-            _versionSummary = "Version information is currently unavailable.";
-            return;
-        }
-
-        var currentVersion = string.IsNullOrWhiteSpace(_upgradeResult.CurrentVersion) ? "unknown" : _upgradeResult.CurrentVersion;
-        var latestVersion = string.IsNullOrWhiteSpace(_upgradeResult.LatestVersion) ? "unknown" : _upgradeResult.LatestVersion;
-
-        _versionSummary = $"Current version: {currentVersion} • Latest available: {latestVersion}";
-
-        if (_upgradeResult.HasUpgrade)
-        {
-            _upgradeBanner = $"New gallery version available: {latestVersion} (current {currentVersion}).";
-            _upgradeLink = _upgradeResult.PackageUri?.ToString();
-            return;
-        }
-    }
-
-}

@@ -1,0 +1,17 @@
+@using Spectre.Console
+@using RazorConsole.Components
+
+<p>Count: @count</p>
+<TextButton Content="Click me" OnClick="HandleClick" BackgroundColor="Color.Grey" FocusedColor="Color.Blue" />
+<div>
+    <Markup Content="hit enter to click the button" Foreground="Color.Green" />
+</div>
+
+@code {
+    private int count = 0;
+    private void HandleClick()
+    {
+        count++;
+        StateHasChanged();
+    }
+}

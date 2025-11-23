@@ -1,0 +1,32 @@
+@using Spectre.Console
+@using RazorConsole.Components
+
+<SpectreCanvas Pixels="@Pixels" CanvasWidth="@Width" CanvasHeight="@Height" PixelWidth="2" />
+
+@code {
+    private const int Width = 16;
+    private const int Height = 16;
+    private (int x, int y, Color color)[] Pixels { get; set; } = [];
+
+    protected override void OnInitialized()
+    {
+        var pixels = new List<(int, int, Color)>();
+        
+        for (int y = 0; y < Height; y++)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                // 8x8 board, 2x2 pixels per square
+                int boardX = x / 2;
+                int boardY = y / 2;
+                
+                bool isDark = (boardX + boardY) % 2 == 1;
+                var color = isDark ? Color.Black : Color.White;
+                
+                pixels.Add((x, y, color));
+            }
+        }
+        
+        Pixels = pixels.ToArray();
+    }
+}

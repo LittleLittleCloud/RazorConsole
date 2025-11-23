@@ -42,10 +42,10 @@ git clone https://github.com/LittleLittleCloud/RazorConsole.git
 cd RazorConsole
 
 # Build the solution
-dotnet build RazorConsole.sln
+dotnet build RazorConsole.slnx
 
 # Run tests
-dotnet test RazorConsole.sln
+dotnet test RazorConsole.slnx
 ```
 
 ## 💻 Making Changes
@@ -59,8 +59,8 @@ dotnet test RazorConsole.sln
 
 ### Before Submitting
 
-1. **Format your code**: Run `dotnet format RazorConsole.sln` before opening a pull request
-2. **Run tests**: Execute `dotnet test RazorConsole.sln` locally. CI requires a clean test run on Linux and Windows
+1. **Format your code**: Run `dotnet format RazorConsole.slnx` before opening a pull request
+2. **Run tests**: Execute `dotnet test RazorConsole.slnx` locally. CI requires a clean test run on Linux and Windows
 3. **Update tests**: When touching focus or keyboard handling, add or update tests in `FocusManagerTests` or `KeyboardEventManagerTests`
 4. **Update documentation**: Update the README when introducing user-facing features or significant architectural changes
 
@@ -73,6 +73,16 @@ dotnet test RazorConsole.sln
 5. **Run `dotnet format`** to ensure formatting is correct
 6. **Run `dotnet test`** to ensure all tests pass
 7. **Submit a pull request** with a clear description of the changes
+
+### Website Preview Deployments
+
+When you submit a pull request that includes changes to the website, an automated workflow will:
+- Build the website with your changes
+- Upload the built site as a downloadable artifact (30-day retention)
+- Optionally deploy to Cloudflare Pages for live preview (if configured)
+- Post a comment on your PR with download instructions and/or live preview URL
+
+The workflow can also be manually triggered via the Actions tab. For automatic live preview deployments, see [`.github/PREVIEW_DEPLOYMENT.md`](.github/PREVIEW_DEPLOYMENT.md) for setup instructions.
 
 ### Pull Request Guidelines
 

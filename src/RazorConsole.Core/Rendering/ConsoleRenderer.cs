@@ -2,6 +2,7 @@
 
 #nullable enable
 #pragma warning disable BL0006 // RenderTree types are "internal-ish"; acceptable for console renderer.
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -72,7 +73,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
     public override Dispatcher Dispatcher => DispatcherInstance;
 
-    public async Task<RenderSnapshot> MountComponentAsync<TComponent>(ParameterView parameters, CancellationToken cancellationToken)
+    public async Task<RenderSnapshot> MountComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(ParameterView parameters, CancellationToken cancellationToken)
         where TComponent : IComponent
     {
         var component = InstantiateComponent(typeof(TComponent));
@@ -84,7 +85,9 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         _pendingRender = tcs;
 
         await RenderRootComponentAsync(componentId, parameters).ConfigureAwait(false);
-        return await tcs.Task.ConfigureAwait(false);
+        _lastSnapshot = await tcs.Task.ConfigureAwait(false);
+
+        return _lastSnapshot;
     }
 
     public IDisposable Subscribe(IObserver<RenderSnapshot> observer)
