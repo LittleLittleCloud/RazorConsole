@@ -1,21 +1,7 @@
 @using RazorConsole.Components
 @using Spectre.Console
-
-<Columns>
-    <p>Current count</p>
-    <Markup Content="@currentCount.ToString()" Foreground="@Spectre.Console.Color.Green" />
-</Columns>
-<TextButton Content="Click me"
-            OnClick="IncrementCount"
-            BackgroundColor="@Spectre.Console.Color.Grey"
-            FocusedColor="@Spectre.Console.Color.Blue" />
-
-
-@code {
-    private int currentCount = 0;
-    private void IncrementCount()
-    {
-        currentCount++;
-        StateHasChanged();
-    }
-}
+<Border>
+<Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle" Width="40" Height="10">
+    <Markup Content="Centered content" />
+</Align>
+</Border>
