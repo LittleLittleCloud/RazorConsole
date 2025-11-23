@@ -24,8 +24,8 @@ jobs:
           
           # Check if the "Copilot willing to contribute" checkbox is checked
           # The checked checkbox will appear as [x] or [X] in the issue body
-          if echo "$ISSUE_BODY" | grep -q '\[x\]\s*Copilot willing to contribute on this feature request' || \
-             echo "$ISSUE_BODY" | grep -q '\[X\]\s*Copilot willing to contribute on this feature request'; then
+          # Use a more flexible pattern that handles various whitespace
+          if echo "$ISSUE_BODY" | grep -Eq '\[[xX]\][[:space:]]*Copilot willing to contribute on this feature request'; then
             echo "copilot_requested=true" >> "$GITHUB_OUTPUT"
             echo "✓ Copilot contribution requested"
           else
@@ -50,11 +50,17 @@ jobs:
           else
             echo "Adding copilot as assignee..."
             # Use the GitHub API to add assignees
-            gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER/assignees \
+            ASSIGN_ERROR=$(gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER/assignees \
               --method POST \
-              -f "assignees[]=copilot" 2>/dev/null && \
-            echo "✓ Successfully assigned copilot to issue #$ISSUE_NUMBER" || \
-            echo "⚠ Failed to assign copilot. This may be due to permissions or copilot not being a collaborator."
+              -f "assignees[]=copilot" 2>&1)
+            
+            if [ $? -eq 0 ]; then
+              echo "✓ Successfully assigned copilot to issue #$ISSUE_NUMBER"
+            else
+              echo "⚠ Failed to assign copilot to issue #$ISSUE_NUMBER"
+              echo "   Error details: $ASSIGN_ERROR"
+              echo "   This may be due to permissions or copilot not being a collaborator."
+            fi
           fi
 
       - name: Unassign Copilot if no longer requested
@@ -72,11 +78,17 @@ jobs:
           if echo "$CURRENT_ASSIGNEES" | grep -q "^copilot$"; then
             echo "Removing copilot from assignees..."
             # Use the GitHub API to remove assignees
-            gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER/assignees \
+            UNASSIGN_ERROR=$(gh api repos/${{ github.repository }}/issues/$ISSUE_NUMBER/assignees \
               --method DELETE \
-              -f "assignees[]=copilot" 2>/dev/null && \
-            echo "✓ Successfully unassigned copilot from issue #$ISSUE_NUMBER" || \
-            echo "⚠ Failed to unassign copilot. This may be due to permissions."
+              -f "assignees[]=copilot" 2>&1)
+            
+            if [ $? -eq 0 ]; then
+              echo "✓ Successfully unassigned copilot from issue #$ISSUE_NUMBER"
+            else
+              echo "⚠ Failed to unassign copilot from issue #$ISSUE_NUMBER"
+              echo "   Error details: $UNASSIGN_ERROR"
+              echo "   This may be due to permissions."
+            fi
           else
             echo "Copilot is not assigned to this issue"
           fi
