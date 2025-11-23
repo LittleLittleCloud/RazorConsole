@@ -60,6 +60,7 @@ export function initTerminal(elementId, options) {
     return terminal;
 }
 export function writeToTerminal(elementId, text) {
+    console.log(`writeToTerminal called with elementId: ${elementId}, text length: ${text?.length}`);
     if (typeof text !== 'string' || text.length === 0) {
         return;
     }

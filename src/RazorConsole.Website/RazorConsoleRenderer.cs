@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using RazorConsole.Core;
@@ -15,12 +17,20 @@ using RazorConsole.Core.Utilities;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RazorConsole.Website;
 
-internal class RazorConsoleRenderer<TComponent> : IObserver<ConsoleRenderer.RenderSnapshot>
+internal interface IRazorConsoleRenderer
+{
+    Task HandleKeyboardEventAsync(string xtermKey, string domKey, bool ctrlKey, bool altKey, bool shiftKey);
+    event Action<string>? SnapshotRendered;
+}
+
+internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent> : IObserver<ConsoleRenderer.RenderSnapshot>, IRazorConsoleRenderer
     where TComponent : IComponent
 {
+    private readonly string _componentId;
     private IServiceProvider? _serviceProvider;
     private ConsoleRenderer? _consoleRenderer;
     private IAnsiConsole? _ansiConsole;
@@ -29,8 +39,12 @@ internal class RazorConsoleRenderer<TComponent> : IObserver<ConsoleRenderer.Rend
     private Task? _initializationTask;
     public event Action<string>? SnapshotRendered;
 
-    public RazorConsoleRenderer()
+    public RazorConsoleRenderer(string componentId)
     {
+        _componentId = componentId;
+
+        Console.WriteLine($"RazorConsoleRenderer for {_componentId} created.");
+        _initializationTask = InitializeAsync();
     }
 
     private Task EnsureInitializedAsync()

@@ -1,17 +1,27 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly;Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <OutputType>exe</OutputType>
     <TargetFrameworks></TargetFrameworks>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
     <EnableUnsupportedPlatformAnalyzer>true</EnableUnsupportedPlatformAnalyzer>
+    <WasmMainJSPath>main.js</WasmMainJSPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WasmEmitSymbolMap>true</WasmEmitSymbolMap>
+    <WasmBundlerFriendlyBootConfig>true</WasmBundlerFriendlyBootConfig>
+    <WasmFingerprintAssets>false</WasmFingerprintAssets>
+    <CompressionEnabled>false</CompressionEnabled>
+    <ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+    <!-- use .net10 ASP.NET  -->
+    <!-- <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" VersionOverride="10.0.0" /> -->
+    <!-- <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" VersionOverride="10.0.0" PrivateAssets="all" /> -->
   </ItemGroup>
 
   <ItemGroup>

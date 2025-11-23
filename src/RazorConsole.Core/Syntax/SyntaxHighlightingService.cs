@@ -59,7 +59,7 @@ public sealed class SyntaxHighlightingService
     public static string EncodePayload(SyntaxHighlightRenderModel model)
     {
         var payload = new SyntaxHighlightPayload(model.ShowLineNumbers, model.LineNumberStyleMarkup, model.PlaceholderMarkup, model.Lines.ToArray());
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(payload);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(payload, SyntaxHighlightingJsonContext.Default.SyntaxHighlightPayload);
         return Convert.ToBase64String(bytes);
     }
 
@@ -71,7 +71,8 @@ public sealed class SyntaxHighlightingService
         }
 
         var bytes = Convert.FromBase64String(encoded);
-        var payload = JsonSerializer.Deserialize<SyntaxHighlightPayload>(bytes) ?? new SyntaxHighlightPayload(false, Style.Plain.ToMarkup(), SyntaxOptions.Default.PlaceholderMarkup, Array.Empty<string>());
+        var payload = JsonSerializer.Deserialize(bytes, SyntaxHighlightingJsonContext.Default.SyntaxHighlightPayload)
+                      ?? new SyntaxHighlightPayload(false, Style.Plain.ToMarkup(), SyntaxOptions.Default.PlaceholderMarkup, Array.Empty<string>());
         return new SyntaxHighlightRenderModel(payload.Lines, payload.ShowLineNumbers, payload.LineNumberStyleMarkup, payload.PlaceholderMarkup);
     }
 
@@ -87,5 +88,5 @@ public sealed class SyntaxHighlightingService
                      .Split('\n');
     }
 
-    private sealed record SyntaxHighlightPayload(bool ShowLineNumbers, string LineNumberStyleMarkup, string PlaceholderMarkup, string[] Lines);
+    internal sealed record SyntaxHighlightPayload(bool ShowLineNumbers, string LineNumberStyleMarkup, string PlaceholderMarkup, string[] Lines);
 }

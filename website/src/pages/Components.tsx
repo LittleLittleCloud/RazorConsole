@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { components, type ComponentInfo } from "@/data/components"
 import CodeBlock from "@/components/CodeBlock"
+import XTermPreview from "@/components/XTermPreview"
 export default function Components() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
@@ -61,12 +62,18 @@ function ComponentCard({ component }: { component: ComponentInfo }) {
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="example">
+        <Tabs defaultValue="preview">
           <TabsList className="mb-4">
+            <TabsTrigger value="preview">Preview</TabsTrigger>
             <TabsTrigger value="example">Example</TabsTrigger>
             {component.parameters && <TabsTrigger value="parameters">Parameters</TabsTrigger>}
           </TabsList>
 
+          <TabsContent value="preview">
+            <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+              <XTermPreview componentName={component.name} className="h-96" />
+            </div>
+          </TabsContent>
           <TabsContent value="example">
             <div>
               <h4 className="font-semibold mb-2 text-sm">Usage Example</h4>
