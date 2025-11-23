@@ -33,7 +33,7 @@ jobs:
 
       - name: Build website
         env:
-          VITE_BASE: /
+          VITE_BASE: /${{ github.event.repository.name }}/
         run: npm run build
         working-directory: website
 
