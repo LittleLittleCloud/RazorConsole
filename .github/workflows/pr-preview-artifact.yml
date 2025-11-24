@@ -106,12 +106,13 @@ jobs:
             const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
               owner,
               repo,
-              event: 'pull_request',
               per_page: 10
             });
             
             const buildRun = runs.workflow_runs.find(run => 
               run.name === 'Deploy Preview' && 
+              run.event === 'pull_request' &&
+              run.pull_requests && 
               run.pull_requests.some(pr => pr.number === prNumber)
             );
             
@@ -119,6 +120,7 @@ jobs:
               ? `https://github.com/${owner}/${repo}/actions/runs/${buildRun.id}`
               : `https://github.com/${owner}/${repo}/actions?query=event%3Apull_request`;
               
+            const artifactName = `website-preview-${prNumber}`;
             const deploymentUrl = '${{ steps.deploy.outputs.deployment-url }}';
             const deploymentSuccess = '${{ steps.deploy.outcome }}' === 'success';
 
@@ -127,7 +129,7 @@ jobs:
             A preview build has been generated for this PR!
 
             **Download the artifact:**
-            [website-preview-${prNumber}](${artifactUrl})
+            [${artifactName}](${artifactUrl})
 
             To view the preview locally:
             1. Download the artifact from the workflow run
