@@ -111,6 +111,9 @@ export default function Repl() {
   const { theme } = useTheme();
   const [isDark, setIsDark] = useState(true);
   const [editorMounted, setEditorMounted] = useState(false);
+  const [isCompiling, setIsCompiling] = useState(false);
+  const [compilationResult, setCompilationResult] = useState<string | null>(null);
+  const [dynamicComponentId, setDynamicComponentId] = useState<string>("dynamic");
 
   // Sync theme
   useEffect(() => {
@@ -133,6 +136,34 @@ export default function Repl() {
   const handleTemplateChange = (template: keyof typeof sampleTemplates) => {
     setSelectedTemplate(template);
     setCode(sampleTemplates[template].code);
+    setCompilationResult(null);
+  };
+
+  const handleRunCode = async () => {
+    setIsCompiling(true);
+    setCompilationResult(null);
+    
+    try {
+      // Import the WASM runtime
+      const razorConsole = await import("razor-console");
+      
+      // Generate a unique component ID for this compilation
+      const componentId = `dynamic_${Date.now()}`;
+      setDynamicComponentId(componentId);
+      
+      // Call the WASM compilation method
+      const result = await (razorConsole as any).compileAndRegisterComponent(componentId, code);
+      
+      if (result.startsWith("ERROR:")) {
+        setCompilationResult(result);
+      } else {
+        setCompilationResult("✓ Compilation successful!");
+      }
+    } catch (error) {
+      setCompilationResult(`ERROR: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setIsCompiling(false);
+    }
   };
 
   return (
@@ -165,6 +196,13 @@ export default function Repl() {
                 ))}
               </select>
             </div>
+            <button
+              onClick={handleRunCode}
+              disabled={isCompiling}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            >
+              {isCompiling ? "Compiling..." : "Run"}
+            </button>
           </div>
         </div>
       </div>
@@ -205,9 +243,19 @@ export default function Repl() {
             />
           </div>
           <div className="bg-slate-50 dark:bg-slate-800 px-4 py-2 border-t border-slate-200 dark:border-slate-700">
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              💡 Note: This REPL uses pre-compiled templates. Full dynamic compilation is not yet supported.
-            </p>
+            {compilationResult ? (
+              <p className={`text-xs font-medium ${
+                compilationResult.startsWith("ERROR:") 
+                  ? "text-red-600 dark:text-red-400" 
+                  : "text-green-600 dark:text-green-400"
+              }`}>
+                {compilationResult}
+              </p>
+            ) : (
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                💡 Click "Run" to compile and preview your code
+              </p>
+            )}
           </div>
         </div>
 
@@ -220,8 +268,9 @@ export default function Repl() {
           </div>
           <div className="flex-1 p-4 overflow-auto">
             <XTermPreview
-              elementId={selectedTemplate}
+              elementId={compilationResult?.startsWith("✓") ? dynamicComponentId : selectedTemplate}
               className="h-full"
+              key={compilationResult?.startsWith("✓") ? dynamicComponentId : selectedTemplate}
             />
           </div>
         </div>

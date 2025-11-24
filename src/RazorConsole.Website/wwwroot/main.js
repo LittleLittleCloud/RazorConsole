@@ -81,3 +81,12 @@ export function attachKeyListener(componentName, helper) {
 export function isTerminalAvailable() {
     return forwardIsTerminalAvailable();
 }
+
+export async function compileAndRegisterComponent(elementID, razorCode) {
+    if (exportsPromise === null) {
+        exportsPromise = createRuntimeAndGetExports();
+    }
+
+    const exports = await exportsPromise;
+    return exports.Registry.CompileAndRegisterComponent(elementID, razorCode);
+}

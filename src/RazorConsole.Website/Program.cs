@@ -14,6 +14,7 @@ public partial class Registry
 {
     private static readonly Dictionary<string, IRazorConsoleRenderer> _renderers = new();
     private static readonly HashSet<string> _subscriptions = new();
+    private static readonly Dictionary<string, Type> _dynamicComponents = new();
 
     [JSExport]
     [SupportedOSPlatform("browser")]
@@ -100,6 +101,46 @@ public partial class Registry
             case "markup":
                 _renderers[elementID] = new RazorConsoleRenderer<MarkupExample>(elementID);
                 break;
+        }
+    }
+
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2081", Justification = "Dynamic component type is preserved by DynamicallyAccessedMembers")]
+    public static async Task<string> CompileAndRegisterComponent(string elementID, string razorCode)
+    {
+        try
+        {
+            Console.WriteLine($"Compiling component for {elementID}");
+            var (componentType, error) = await DynamicComponentCompiler.CompileRazorComponentAsync(razorCode);
+            
+            if (error != null)
+            {
+                Console.WriteLine($"Compilation failed: {error}");
+                return $"ERROR: {error}";
+            }
+
+            if (componentType == null)
+            {
+                return "ERROR: Component type is null";
+            }
+
+            // Store the dynamic component type
+            _dynamicComponents[elementID] = componentType;
+            
+            // Create renderer using reflection
+            var rendererType = typeof(RazorConsoleRenderer<>).MakeGenericType(componentType);
+            var renderer = (IRazorConsoleRenderer)Activator.CreateInstance(rendererType, elementID)!;
+            _renderers[elementID] = renderer;
+
+            Console.WriteLine($"Successfully registered dynamic component: {elementID}");
+            return "SUCCESS";
+        }
+        catch (Exception ex)
+        {
+            var errorMsg = $"ERROR: {ex.Message}\n{ex.StackTrace}";
+            Console.WriteLine(errorMsg);
+            return errorMsg;
         }
     }
 
