@@ -74,6 +74,9 @@ jobs:
         run: npm install
         working-directory: website
 
+      # Note: We rebuild here instead of downloading the artifact from the build job
+      # because the build and deploy jobs run on different triggers (pull_request vs pull_request_target)
+      # and cannot easily share artifacts across different workflow runs.
       - name: Build website
         env:
           VITE_BASE: /
@@ -96,11 +99,26 @@ jobs:
         with:
           script: |
             const prNumber = context.issue.number;
-            const runId = context.runId;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const artifactUrl =
-              `https://github.com/${owner}/${repo}/actions/runs/${runId}`;
+            
+            // Find the build workflow run for this PR
+            const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner,
+              repo,
+              event: 'pull_request',
+              per_page: 10
+            });
+            
+            const buildRun = runs.workflow_runs.find(run => 
+              run.name === 'Deploy Preview' && 
+              run.pull_requests.some(pr => pr.number === prNumber)
+            );
+            
+            const artifactUrl = buildRun 
+              ? `https://github.com/${owner}/${repo}/actions/runs/${buildRun.id}`
+              : `https://github.com/${owner}/${repo}/actions?query=event%3Apull_request`;
+              
             const deploymentUrl = '${{ steps.deploy.outputs.deployment-url }}';
             const deploymentSuccess = '${{ steps.deploy.outcome }}' === 'success';
 
