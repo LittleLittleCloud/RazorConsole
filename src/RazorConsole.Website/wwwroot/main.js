@@ -4,9 +4,12 @@ import { dotnet } from './_framework/dotnet.js'
 
 const { setModuleImports } = await dotnet.create();
 
-let exportsPromise = null;
-
-async function createRuntimeAndGetExports() {
+/**
+ * Creates the .NET runtime and returns the assembly exports.
+ * This is the only exported function from main.js.
+ * All other APIs are in xtermConsole.ts.
+ */
+export async function createRuntimeAndGetExports() {
     const { getAssemblyExports, getConfig } = await dotnet.create();
     const config = getConfig();
     return await getAssemblyExports(config.mainAssemblyName);
@@ -32,22 +35,3 @@ setModuleImports('main.js', {
     attachKeyListener: (componentName, helper) => getTerminalApi().attachKeyListener(componentName, helper),
     isTerminalAvailable: () => typeof window !== 'undefined' && !!window.razorConsoleTerminal
 });
-
-export async function registerComponent(elementID)
-{
-    if (exportsPromise === null) {
-        exportsPromise = createRuntimeAndGetExports();
-    }
-
-    const exports = await exportsPromise;
-    return exports.Registry.RegisterComponent(elementID);
-}
-
-export async function handleKeyboardEvent(componentName, xtermKey, domKey, ctrlKey, altKey, shiftKey) {
-    if (exportsPromise === null) {
-        exportsPromise = createRuntimeAndGetExports();
-    }
-
-    const exports = await exportsPromise;
-    return exports.Registry.HandleKeyboardEvent(componentName, xtermKey, domKey, ctrlKey, altKey, shiftKey);
-}

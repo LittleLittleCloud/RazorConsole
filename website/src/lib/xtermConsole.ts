@@ -182,4 +182,89 @@ function ensureGlobalApi(): void {
 
 ensureGlobalApi()
 
+// ================================
+// C# WASM Interop Functions
+// ================================
+// These functions call into the C# WebAssembly runtime via the main.js module.
+// They are wrappers around the exported C# methods from the Registry class.
+
+type WasmExports = {
+  Registry: {
+    RegisterComponent: (elementId: string) => Promise<void>
+    HandleKeyboardEvent: (
+      componentName: string,
+      xtermKey: string,
+      domKey: string,
+      ctrlKey: boolean,
+      altKey: boolean,
+      shiftKey: boolean
+    ) => Promise<void>
+  }
+}
+
+let wasmExportsPromise: Promise<WasmExports> | null = null
+
+/**
+ * Path to the main.js WASM module.
+ * This path is relative to the website's public directory.
+ */
+const WASM_MAIN_JS_PATH = '/wasm/wwwroot/main.js'
+
+/**
+ * Gets the WASM exports from main.js.
+ * This dynamically imports main.js to get access to createRuntimeAndGetExports.
+ */
+async function getWasmExports(): Promise<WasmExports> {
+  if (wasmExportsPromise === null) {
+    wasmExportsPromise = (async () => {
+      try {
+        // Import the main.js module which provides createRuntimeAndGetExports
+        const mainModule = await import(/* @vite-ignore */ WASM_MAIN_JS_PATH) as { createRuntimeAndGetExports?: () => Promise<WasmExports> }
+        
+        if (typeof mainModule.createRuntimeAndGetExports !== 'function') {
+          throw new Error('main.js does not export createRuntimeAndGetExports function')
+        }
+        
+        return await mainModule.createRuntimeAndGetExports()
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to load WASM module from ${WASM_MAIN_JS_PATH}: ${message}`)
+      }
+    })()
+  }
+  return wasmExportsPromise
+}
+
+/**
+ * Registers a Razor component so its renderer can stream updates into the terminal.
+ * Calls into C# WASM: Registry.RegisterComponent(elementId)
+ * @param elementId - The ID of the terminal element to register
+ */
+export async function registerComponent(elementId: string): Promise<void> {
+  const exports = await getWasmExports()
+  return exports.Registry.RegisterComponent(elementId)
+}
+
+/**
+ * Forwards a keyboard event from xterm.js to the RazorConsole renderer.
+ * Calls into C# WASM: Registry.HandleKeyboardEvent(componentName, xtermKey, domKey, ctrlKey, altKey, shiftKey)
+ * @param componentName - The name of the component receiving the event
+ * @param xtermKey - The key as reported by xterm.js
+ * @param domKey - The key as reported by the DOM event
+ * @param ctrlKey - Whether Ctrl was held
+ * @param altKey - Whether Alt was held
+ * @param shiftKey - Whether Shift was held
+ */
+export async function handleKeyboardEvent(
+  componentName: string,
+  xtermKey: string,
+  domKey: string,
+  ctrlKey: boolean,
+  altKey: boolean,
+  shiftKey: boolean
+): Promise<void> {
+  const exports = await getWasmExports()
+  return exports.Registry.HandleKeyboardEvent(componentName, xtermKey, domKey, ctrlKey, altKey, shiftKey)
+}
+
 export type { DotNetHelper, RazorConsoleTerminalApi, TerminalOptions }
