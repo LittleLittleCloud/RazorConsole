@@ -213,6 +213,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
         // Use domKey for key identification (cleaner names like "Enter", "Tab", etc.)
         var consoleKey = domKey switch
         {
+            // Navigation keys
             "Enter" => ConsoleKey.Enter,
             "Tab" => ConsoleKey.Tab,
             "Backspace" => ConsoleKey.Backspace,
@@ -221,6 +222,48 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
             "ArrowDown" => ConsoleKey.DownArrow,
             "ArrowLeft" => ConsoleKey.LeftArrow,
             "ArrowRight" => ConsoleKey.RightArrow,
+
+            // Additional navigation and editing keys
+            "Home" => ConsoleKey.Home,
+            "End" => ConsoleKey.End,
+            "PageUp" => ConsoleKey.PageUp,
+            "PageDown" => ConsoleKey.PageDown,
+            "Insert" => ConsoleKey.Insert,
+            "Delete" => ConsoleKey.Delete,
+
+            // Function keys (F1-F12)
+            "F1" => ConsoleKey.F1,
+            "F2" => ConsoleKey.F2,
+            "F3" => ConsoleKey.F3,
+            "F4" => ConsoleKey.F4,
+            "F5" => ConsoleKey.F5,
+            "F6" => ConsoleKey.F6,
+            "F7" => ConsoleKey.F7,
+            "F8" => ConsoleKey.F8,
+            "F9" => ConsoleKey.F9,
+            "F10" => ConsoleKey.F10,
+            "F11" => ConsoleKey.F11,
+            "F12" => ConsoleKey.F12,
+
+            // Modifier keys (standalone)
+            "Shift" => ConsoleKey.None,
+            "Control" => ConsoleKey.None,
+            "Alt" => ConsoleKey.None,
+            "Meta" => ConsoleKey.None,
+
+            // Lock keys
+            "CapsLock" => ConsoleKey.None,
+            "NumLock" => ConsoleKey.None,
+            "ScrollLock" => ConsoleKey.None,
+
+            // Other special keys
+            "ContextMenu" => ConsoleKey.Applications,
+            "Pause" => ConsoleKey.Pause,
+            "PrintScreen" => ConsoleKey.PrintScreen,
+
+            // Clear key (Numpad 5 when NumLock is off)
+            "Clear" => ConsoleKey.Clear,
+
             _ when domKey.Length == 1 => ParseSingleChar(domKey[0]),
             _ => ConsoleKey.None
         };
@@ -232,9 +275,24 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
             "Enter" => '\r',
             "Tab" => '\t',
             "Backspace" => '\b',
+            "Escape" => '\x1b',
+            "Delete" => '\x7f',
             _ when xtermKey.Length == 1 => xtermKey[0],
             _ => '\0'
         };
+
+        // Handle control key combinations for letters (Ctrl+A through Ctrl+Z)
+        // Control characters are ASCII 1-26 corresponding to Ctrl+A through Ctrl+Z
+        if (ctrlKey && !altKey && xtermKey.Length == 1)
+        {
+            var c = xtermKey[0];
+            if (c >= '\x01' && c <= '\x1a')
+            {
+                // Control character: Ctrl+A = 0x01, ..., Ctrl+Z = 0x1A
+                consoleKey = ConsoleKey.A + (c - '\x01');
+                keyChar = c;
+            }
+        }
 
         return new ConsoleKeyInfo(keyChar, consoleKey, shiftKey, altKey, ctrlKey);
     }
@@ -243,10 +301,32 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         return c switch
         {
+            // Letters
             >= 'a' and <= 'z' => ConsoleKey.A + (c - 'a'),
             >= 'A' and <= 'Z' => ConsoleKey.A + (c - 'A'),
+
+            // Digit row keys
             >= '0' and <= '9' => ConsoleKey.D0 + (c - '0'),
+
+            // Spacebar
             ' ' => ConsoleKey.Spacebar,
+
+            // Punctuation and symbol keys (common US keyboard layout)
+            '-' or '_' => ConsoleKey.OemMinus,
+            '=' or '+' => ConsoleKey.OemPlus,
+            '[' or '{' => ConsoleKey.Oem4,
+            ']' or '}' => ConsoleKey.Oem6,
+            '\\' or '|' => ConsoleKey.Oem5,
+            ';' or ':' => ConsoleKey.Oem1,
+            '\'' or '"' => ConsoleKey.Oem7,
+            ',' or '<' => ConsoleKey.OemComma,
+            '.' or '>' => ConsoleKey.OemPeriod,
+            '/' or '?' => ConsoleKey.Oem2,
+            '`' or '~' => ConsoleKey.Oem3,
+
+            // Math operators (from numpad or Shift combinations)
+            '*' => ConsoleKey.Multiply,
+
             _ => ConsoleKey.None
         };
     }
