@@ -5,6 +5,7 @@ using System.Text;
 using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
+using RazorConsole.Core.Vdom.Translators;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
