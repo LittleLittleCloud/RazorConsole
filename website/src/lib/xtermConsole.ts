@@ -185,8 +185,11 @@ ensureGlobalApi()
 // ================================
 // C# WASM Interop Functions
 // ================================
-// These functions call into the C# WebAssembly runtime via the main.js module.
+// These functions call into the C# WebAssembly runtime via the razor-console module.
 // They are wrappers around the exported C# methods from the Registry class.
+// The razor-console module is linked to RazorConsole.Website's published output at build time.
+
+import { createRuntimeAndGetExports } from 'razor-console'
 
 type WasmExports = {
   Registry: {
@@ -205,32 +208,12 @@ type WasmExports = {
 let wasmExportsPromise: Promise<WasmExports> | null = null
 
 /**
- * Path to the main.js WASM module.
- * This path is relative to the website's public directory.
- */
-const WASM_MAIN_JS_PATH = '/wasm/wwwroot/main.js'
-
-/**
- * Gets the WASM exports from main.js.
- * This dynamically imports main.js to get access to createRuntimeAndGetExports.
+ * Gets the WASM exports from main.js via the razor-console package.
+ * The razor-console package is an npm alias to the published RazorConsole.Website output.
  */
 async function getWasmExports(): Promise<WasmExports> {
   if (wasmExportsPromise === null) {
-    wasmExportsPromise = (async () => {
-      try {
-        // Import the main.js module which provides createRuntimeAndGetExports
-        const mainModule = await import(/* @vite-ignore */ WASM_MAIN_JS_PATH) as { createRuntimeAndGetExports?: () => Promise<WasmExports> }
-        
-        if (typeof mainModule.createRuntimeAndGetExports !== 'function') {
-          throw new Error('main.js does not export createRuntimeAndGetExports function')
-        }
-        
-        return await mainModule.createRuntimeAndGetExports()
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error)
-        throw new Error(`Failed to load WASM module from ${WASM_MAIN_JS_PATH}: ${message}`)
-      }
-    })()
+    wasmExportsPromise = createRuntimeAndGetExports() as Promise<WasmExports>
   }
   return wasmExportsPromise
 }
