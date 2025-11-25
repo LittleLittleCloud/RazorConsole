@@ -70,9 +70,18 @@ jobs:
         run: npm ci
         working-directory: website
 
-      - name: Build website
+      - name: Build website for preview
         run: npm run build
+        env:
+          VITE_BASE: /
         working-directory: website
+      - name: Upload preview artifact
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-preview-${{ github.event.pull_request.number }}
+          path: website/dist
+          retention-days: 30
 
   publish-nightly:
     name: Publish nightly build

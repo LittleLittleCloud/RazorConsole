@@ -1,48 +1,102 @@
 name: Deploy Preview
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [main]
     paths:
       - 'website/**'
       - '.github/workflows/pr-preview-artifact.yml'
+      - '.github/workflows/ci.yml'
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to deploy'
+        required: true
+        type: string
 
 jobs:
-  build-and-deploy-preview:
-    name: Build and deploy preview
+  deploy:
+    name: Deploy preview
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       deployments: write
       pull-requests: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Get PR number
+        id: get-pr
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "pr_number=${{ github.event.inputs.pr_number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "pr_number=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Find CI workflow run
+        id: find-ci-run
+        uses: actions/github-script@v7
         with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: website/package-lock.json
+          script: |
+            const prNumber = '${{ steps.get-pr.outputs.pr_number }}';
+            const headSha = '${{ github.event.pull_request.head.sha || github.sha }}';
+            
+            // Find the CI workflow run for this PR
+            const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ci.yml',
+              per_page: 100
+            });
+            
+            // Look for CI runs that match this PR's head SHA or are associated with this PR
+            const ciRun = runs.workflow_runs.find(run => 
+              run.head_sha === headSha || 
+              (run.pull_requests && run.pull_requests.some(pr => pr.number == prNumber))
+            );
+            
+            if (!ciRun) {
+              throw new Error(`No CI workflow run found for PR #${prNumber} with SHA ${headSha}`);
+            }
+            
+            console.log(`Found CI run: ${ciRun.id} (${ciRun.status})`);
+            core.setOutput('run_id', ciRun.id);
+            core.setOutput('run_status', ciRun.status);
 
-      - name: Install dependencies
-        run: npm install
-        working-directory: website
-
-      - name: Build website
-        env:
-          VITE_BASE: /
-        run: npm run build
-        working-directory: website
-
-      - name: Upload preview artifact
-        uses: actions/upload-artifact@v4
+      - name: Wait for CI workflow to complete
+        if: steps.find-ci-run.outputs.run_status != 'completed'
+        uses: actions/github-script@v7
         with:
-          name: website-preview-${{ github.event.pull_request.number || format('{0}-{1}', github.ref_name, github.run_number) }}
-          path: website/dist
-          retention-days: 30
+          script: |
+            const runId = '${{ steps.find-ci-run.outputs.run_id }}';
+            let status = '${{ steps.find-ci-run.outputs.run_status }}';
+            
+            console.log(`Waiting for CI run ${runId} to complete. Current status: ${status}`);
+            
+            while (status !== 'completed') {
+              await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 seconds
+              
+              const { data: run } = await github.rest.actions.getWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: runId
+              });
+              
+              status = run.status;
+              console.log(`CI run status: ${status}`);
+              
+              if (status === 'completed' && run.conclusion !== 'success') {
+                throw new Error(`CI workflow failed with conclusion: ${run.conclusion}`);
+              }
+            }
+
+      - name: Download website artifact from CI run
+        uses: actions/download-artifact@v4
+        with:
+          name: website-preview-${{ steps.get-pr.outputs.pr_number }}
+          path: website-dist
+          run-id: ${{ steps.find-ci-run.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy to Cloudflare Pages
         id: deploy
@@ -53,31 +107,31 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: |
             pages project list
-            pages deploy website/dist --project-name=razorconsole --branch=${{ github.head_ref || github.ref_name || 'main' }}
+            pages deploy website-dist --project-name=razorconsole --branch=pr-${{ steps.get-pr.outputs.pr_number }}
 
       - name: Comment PR with preview info
-        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            const prNumber = context.issue.number;
-            const runId = context.runId;
+            const prNumber = ${{ steps.get-pr.outputs.pr_number }};
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const artifactUrl =
-              `https://github.com/${owner}/${repo}/actions/runs/${runId}`;
+            const ciRunId = '${{ steps.find-ci-run.outputs.run_id }}';
+            
+            const artifactUrl = `https://github.com/${owner}/${repo}/actions/runs/${ciRunId}`;
+            const artifactName = `website-preview-${prNumber}`;
             const deploymentUrl = '${{ steps.deploy.outputs.deployment-url }}';
             const deploymentSuccess = '${{ steps.deploy.outcome }}' === 'success';
 
             let comment = `## 🚀 Preview Deployment
 
-            A preview build has been generated for this PR!
+            A preview build has been generated for this PR from CI run [#${ciRunId}](${artifactUrl})!
 
             **Download the artifact:**
-            [website-preview-pr-${prNumber}](${artifactUrl})
+            [${artifactName}](${artifactUrl})
 
             To view the preview locally:
-            1. Download the artifact from the workflow run
+            1. Download the artifact from the CI workflow run
             2. Extract the ZIP file
             3. Serve the files with a local web server
                (e.g., \`npx serve dist\`)
@@ -86,22 +140,23 @@ jobs:
             if (deploymentSuccess && deploymentUrl) {
               comment += `
 
-            **Live Preview URL:** ${deploymentUrl}
+            **🌐 Live Preview URL:** ${deploymentUrl}
 
             The live preview will be automatically updated when you push new
             commits to this PR.`;
             } else {
               comment += `
 
-            > 💡 **Tip:** For automatic live preview deployments, see
-            [\`.github/PREVIEW_DEPLOYMENT.md\`](https://github.com/${owner}/${repo}/blob/main/.github/PREVIEW_DEPLOYMENT.md)
-            to set up Cloudflare Pages.`;
+            ⚠️ **Cloudflare deployment failed.** You can still download and test the artifact locally.
+
+            > 💡 **Tip:** For automatic live preview deployments, ensure Cloudflare Pages
+            > is properly configured with the required secrets.`;
             }
 
             // Find existing preview comment
             const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner,
+              repo,
               issue_number: prNumber
             });
 
@@ -114,16 +169,16 @@ jobs:
             if (botComment) {
               // Update existing comment
               await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner,
+                repo,
                 comment_id: botComment.id,
                 body: comment
               });
             } else {
               // Create new comment
               await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner,
+                repo,
                 issue_number: prNumber,
                 body: comment
               });
