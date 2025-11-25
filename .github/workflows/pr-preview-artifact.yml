@@ -18,6 +18,7 @@ jobs:
   deploy:
     name: Deploy preview
     runs-on: ubuntu-latest
+    environment: cloudflare
     permissions:
       actions: read
       contents: read
