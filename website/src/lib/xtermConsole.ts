@@ -129,15 +129,68 @@ export function attachKeyListener(elementId: string, helper: DotNetHelper): void
 
   keyHandlers.get(elementId)?.dispose()
 
-  const subscription = terminal.onKey(event => {
+  const subscription = terminal.onKey(async event => {
+    const { key, domEvent } = event
+    const { ctrlKey, metaKey, key: domKey } = domEvent
+
+    // Handle Ctrl+C (or Cmd+C on Mac) - Copy selected text
+    if ((ctrlKey || metaKey) && (domKey === 'c' || domKey === 'C')) {
+      const selection = terminal.getSelection()
+      if (selection) {
+        try {
+          await navigator.clipboard.writeText(selection)
+          console.debug('Copied to clipboard:', selection)
+        } catch (err) {
+          console.warn('Failed to copy to clipboard:', err)
+        }
+      }
+      // Still forward the event to WASM in case it needs to handle it
+      void helper.invokeMethodAsync(
+        'HandleKeyboardEvent',
+        elementId,
+        key,
+        domEvent.key,
+        domEvent.ctrlKey,
+        domEvent.altKey,
+        domEvent.shiftKey
+      )
+      return
+    }
+
+    // Handle Ctrl+V (or Cmd+V on Mac) - Paste from clipboard
+    if ((ctrlKey || metaKey) && (domKey === 'v' || domKey === 'V')) {
+      try {
+        const text = await navigator.clipboard.readText()
+        if (text) {
+          console.debug('Pasting from clipboard:', text)
+          // Send each character individually to WASM
+          for (const char of text) {
+            await helper.invokeMethodAsync(
+              'HandleKeyboardEvent',
+              elementId,
+              char,
+              char.length === 1 ? char : 'Unidentified',
+              false,
+              false,
+              false
+            )
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to paste from clipboard:', err)
+      }
+      return
+    }
+
+    // Forward all other keyboard events to WASM
     void helper.invokeMethodAsync(
       'HandleKeyboardEvent',
       elementId,
-      event.key,
-      event.domEvent.key,
-      event.domEvent.ctrlKey,
-      event.domEvent.altKey,
-      event.domEvent.shiftKey
+      key,
+      domEvent.key,
+      domEvent.ctrlKey,
+      domEvent.altKey,
+      domEvent.shiftKey
     )
   })
 
