@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
     registerComponent,
-    attachKeyListener,
     handleKeyboardEvent,
-    registerTerminalInstance,
 } from "razor-console";
+import {
+    attachKeyListener,
+    registerTerminalInstance,
+} from "@/lib/xtermConsole";
 import 'xterm/css/xterm.css';
 import { Terminal } from "xterm";
 import { useTheme } from "@/components/ThemeProvider";

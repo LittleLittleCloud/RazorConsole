@@ -1,4 +1,4 @@
-import { disposeTerminal, isTerminalAvailable } from '@/lib/terminalInterop'
+import { disposeTerminal, isTerminalAvailable } from '@/lib/xtermConsole'
 
 declare global {
   interface Window {

@@ -83,6 +83,14 @@ export function isTerminalAvailable(): boolean {
   return typeof window !== 'undefined' && typeof window.Terminal === 'function'
 }
 
+export function registerTerminalInstance(elementId: string, terminal: TerminalType): void {
+  terminals.set(elementId, terminal)
+}
+
+export function getTerminalInstance(elementId: string): TerminalType | undefined {
+  return terminals.get(elementId)
+}
+
 export function initTerminal(elementId: string, options?: TerminalOptions): TerminalType {
   const TerminalCtor = getTerminalConstructor()
   const host = ensureHostElement(elementId)
