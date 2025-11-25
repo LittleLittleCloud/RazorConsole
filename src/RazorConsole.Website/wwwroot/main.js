@@ -2,7 +2,16 @@ console.log('main.js loaded');
 
 import { dotnet } from './_framework/dotnet.js'
 
-const { setModuleImports } = await dotnet.create();
+let dotnetInstancePromise = null;
+
+async function getDotnetInstance() {
+    if (!dotnetInstancePromise) {
+        dotnetInstancePromise = dotnet.create();
+    }
+    return dotnetInstancePromise;
+}
+
+const { setModuleImports } = await getDotnetInstance();
 
 /**
  * Creates the .NET runtime and returns the assembly exports.
@@ -10,7 +19,7 @@ const { setModuleImports } = await dotnet.create();
  * All other APIs are in xtermConsole.ts.
  */
 export async function createRuntimeAndGetExports() {
-    const { getAssemblyExports, getConfig } = await dotnet.create();
+    const { getAssemblyExports, getConfig } = await getDotnetInstance();
     const config = getConfig();
     return await getAssemblyExports(config.mainAssemblyName);
 }
