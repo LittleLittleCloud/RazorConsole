@@ -189,21 +189,7 @@ ensureGlobalApi()
 // They are wrappers around the exported C# methods from the Registry class.
 // The razor-console module is linked to RazorConsole.Website's published output at build time.
 
-import { createRuntimeAndGetExports } from 'razor-console'
-
-type WasmExports = {
-  Registry: {
-    RegisterComponent: (elementId: string) => Promise<void>
-    HandleKeyboardEvent: (
-      componentName: string,
-      xtermKey: string,
-      domKey: string,
-      ctrlKey: boolean,
-      altKey: boolean,
-      shiftKey: boolean
-    ) => Promise<void>
-  }
-}
+import { createRuntimeAndGetExports, type WasmExports } from 'razor-console'
 
 let wasmExportsPromise: Promise<WasmExports> | null = null
 
@@ -213,7 +199,7 @@ let wasmExportsPromise: Promise<WasmExports> | null = null
  */
 async function getWasmExports(): Promise<WasmExports> {
   if (wasmExportsPromise === null) {
-    wasmExportsPromise = createRuntimeAndGetExports() as Promise<WasmExports>
+    wasmExportsPromise = createRuntimeAndGetExports()
   }
   return wasmExportsPromise
 }
