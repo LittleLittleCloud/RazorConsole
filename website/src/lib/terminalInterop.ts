@@ -83,14 +83,6 @@ export function isTerminalAvailable(): boolean {
   return typeof window !== 'undefined' && typeof window.Terminal === 'function'
 }
 
-export function registerTerminalInstance(elementId: string, terminal: TerminalType): void {
-  terminals.set(elementId, terminal)
-}
-
-export function getTerminalInstance(elementId: string): TerminalType | undefined {
-  return terminals.get(elementId)
-}
-
 export function initTerminal(elementId: string, options?: TerminalOptions): TerminalType {
   const TerminalCtor = getTerminalConstructor()
   const host = ensureHostElement(elementId)
@@ -181,59 +173,5 @@ function ensureGlobalApi(): void {
 }
 
 ensureGlobalApi()
-
-// ================================
-// C# WASM Interop Functions
-// ================================
-// These functions call into the C# WebAssembly runtime via the razor-console module.
-// They are wrappers around the exported C# methods from the Registry class.
-// The razor-console module is linked to RazorConsole.Website's published output at build time.
-
-import { createRuntimeAndGetExports, type WasmExports } from 'razor-console'
-
-let wasmExportsPromise: Promise<WasmExports> | null = null
-
-/**
- * Gets the WASM exports from main.js via the razor-console package.
- * The razor-console package is an npm alias to the published RazorConsole.Website output.
- */
-async function getWasmExports(): Promise<WasmExports> {
-  if (wasmExportsPromise === null) {
-    wasmExportsPromise = createRuntimeAndGetExports()
-  }
-  return wasmExportsPromise
-}
-
-/**
- * Registers a Razor component so its renderer can stream updates into the terminal.
- * Calls into C# WASM: Registry.RegisterComponent(elementId)
- * @param elementId - The ID of the terminal element to register
- */
-export async function registerComponent(elementId: string): Promise<void> {
-  const exports = await getWasmExports()
-  return exports.Registry.RegisterComponent(elementId)
-}
-
-/**
- * Forwards a keyboard event from xterm.js to the RazorConsole renderer.
- * Calls into C# WASM: Registry.HandleKeyboardEvent(componentName, xtermKey, domKey, ctrlKey, altKey, shiftKey)
- * @param componentName - The name of the component receiving the event
- * @param xtermKey - The key as reported by xterm.js
- * @param domKey - The key as reported by the DOM event
- * @param ctrlKey - Whether Ctrl was held
- * @param altKey - Whether Alt was held
- * @param shiftKey - Whether Shift was held
- */
-export async function handleKeyboardEvent(
-  componentName: string,
-  xtermKey: string,
-  domKey: string,
-  ctrlKey: boolean,
-  altKey: boolean,
-  shiftKey: boolean
-): Promise<void> {
-  const exports = await getWasmExports()
-  return exports.Registry.HandleKeyboardEvent(componentName, xtermKey, domKey, ctrlKey, altKey, shiftKey)
-}
 
 export type { DotNetHelper, RazorConsoleTerminalApi, TerminalOptions }
