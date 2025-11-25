@@ -15,7 +15,7 @@ async function createRuntimeAndGetExports() {
 /**
  * Gets the terminal API from the global window object.
  * The terminal API is set up by xtermConsole.ts in the website bundle.
- * @returns {import('./main.d.ts').RazorConsoleTerminalApi}
+ * @returns {object} The terminal API with init, write, clear, dispose, and attachKeyListener methods
  */
 function getTerminalApi() {
     if (typeof window === 'undefined' || !window.razorConsoleTerminal) {
