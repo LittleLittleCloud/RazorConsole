@@ -12,10 +12,10 @@ export default function ComponentsLayout() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 lg:py-16">
       <div className="flex flex-col md:grid md:grid-cols-[220px_1fr] lg:grid-cols-[240px_1fr] gap-8">
-        
+
         {/* Sidebar */}
         <aside className="hidden md:block w-full shrink-0">
-            <div className="sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto pr-4">
+            <div className="sticky top-24 h-[calc(90vh-3rem)] overflow-y-auto pr-4">
                 <div className="pb-4">
                     <h4 className="mb-1 rounded-md px-2 py-1 text-sm font-semibold">
                         Getting Started

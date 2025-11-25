@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("RazorConsole.Tests")]

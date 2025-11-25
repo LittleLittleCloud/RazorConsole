@@ -1,21 +1,13 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using RazorConsole.Core;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Focus;
 using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
-using RazorConsole.Core.Rendering.Markdown;
-using RazorConsole.Core.Rendering.Syntax;
-using RazorConsole.Core.Rendering.Vdom;
-using RazorConsole.Core.Utilities;
-using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -66,41 +58,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
 
         var services = new ServiceCollection();
         services.Configure<ConsoleAppOptions>(_ => { });
-
-        services.TryAddSingleton<IComponentActivator>(sp => new ComponentActivator(sp));
-        services.TryAddSingleton<ConsoleNavigationManager>();
-        services.TryAddSingleton<NavigationManager>(sp => sp.GetRequiredService<ConsoleNavigationManager>());
-        services.AddSingleton<INavigationInterception, NoopNavigationInterception>();
-        services.AddSingleton<IScrollToLocationHash, NoopScrollToLocationHash>();
-
-        services.TryAddSingleton<ILoggerFactory>(_ => NullLoggerFactory.Instance);
-        services.TryAddSingleton<VdomDiffService>();
-
-        services.TryAddSingleton<RendererKeyboardEventDispatcher>();
-        services.TryAddSingleton<IKeyboardEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
-        services.TryAddSingleton<IFocusEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
-        services.TryAddSingleton<FocusManager>(sp => new FocusManager(sp.GetService<IFocusEventDispatcher>()));
-        services.TryAddSingleton<KeyboardEventManager>();
-
-        services.TryAddSingleton<ISyntaxLanguageRegistry, ColorCodeLanguageRegistry>();
-        services.TryAddSingleton<ISyntaxThemeRegistry, SyntaxThemeRegistry>();
-        services.TryAddSingleton<SpectreMarkupFormatter>();
-        services.TryAddSingleton<SyntaxHighlightingService>();
-        services.TryAddSingleton<MarkdownRenderingService>();
-
-        services.AddDefaultVdomTranslators();
-        services.AddSingleton<IVdomElementTranslator>(sp =>
-            new HtmlCodeBlockElementTranslator(sp.GetRequiredService<SyntaxHighlightingService>()));
-        services.TryAddSingleton(sp =>
-        {
-            var translators = sp.GetServices<IVdomElementTranslator>()
-                .OrderBy(t => t.Priority)
-                .ToList();
-            return new VdomSpectreTranslator(translators);
-        });
-
-        services.TryAddSingleton<ConsoleRenderer>();
-        services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<ConsoleAppOptions>>().Value);
+        services.AddRazorConsoleServices();
 
         _serviceProvider = services.BuildServiceProvider();
         _consoleRenderer = _serviceProvider.GetRequiredService<ConsoleRenderer>();

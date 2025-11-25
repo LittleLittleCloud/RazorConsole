@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 #if DEBUG
 [assembly: System.Reflection.Metadata.MetadataUpdateHandlerAttribute(typeof(RazorConsole.Core.HotReload.HotReloadService))]
 namespace RazorConsole.Core.HotReload;

@@ -1,8 +1,7 @@
-// Create a Main method to make tool chain happy.
-using System.Collections.Generic;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
-using RazorConsole.Components;
 using RazorConsole.Website;
 using RazorConsole.Website.Components;
 [assembly: System.Runtime.Versioning.SupportedOSPlatform("browser")]
