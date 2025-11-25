@@ -1,20 +1,13 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Focus;
 using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
-using RazorConsole.Core.Rendering.Markdown;
-using RazorConsole.Core.Rendering.Syntax;
 using RazorConsole.Core.Utilities;
-using RazorConsole.Core.Vdom;
 
 using Spectre.Console;
 
@@ -65,38 +58,7 @@ public static class HostBuilderExtension
 
     private static void RegisterDefaults<TComponent>(IServiceCollection services) where TComponent : IComponent
     {
-        services.TryAddSingleton<IComponentActivator, ComponentActivator>();
-        services.TryAddSingleton<ConsoleNavigationManager>();
-        services.TryAddSingleton<NavigationManager>(sp => sp.GetRequiredService<ConsoleNavigationManager>());
-        services.AddSingleton<INavigationInterception, NoopNavigationInterception>();
-        services.AddSingleton<IScrollToLocationHash, NoopScrollToLocationHash>();
-        services.TryAddSingleton<ILoggerFactory>(_ => NullLoggerFactory.Instance);
-        services.TryAddSingleton<ConsoleRenderer>();
-        services.TryAddSingleton<VdomDiffService>();
-        services.TryAddSingleton<RendererKeyboardEventDispatcher>();
-        services.TryAddSingleton<IKeyboardEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
-        services.TryAddSingleton<IFocusEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
-        services.TryAddSingleton<FocusManager>(sp => new FocusManager(sp.GetService<IFocusEventDispatcher>()));
-        services.TryAddSingleton<KeyboardEventManager>();
-        services.TryAddSingleton<ISyntaxLanguageRegistry, ColorCodeLanguageRegistry>();
-        services.TryAddSingleton<ISyntaxThemeRegistry, SyntaxThemeRegistry>();
-        services.TryAddSingleton<SpectreMarkupFormatter>();
-        services.TryAddSingleton<SyntaxHighlightingService>();
-        services.TryAddSingleton<MarkdownRenderingService>();
-        services.AddDefaultVdomTranslators();
-        // Register HtmlCodeBlockElementTranslator with dependency injection
-        services.AddSingleton<Rendering.Vdom.IVdomElementTranslator>(sp =>
-            new Rendering.Vdom.HtmlCodeBlockElementTranslator(sp.GetRequiredService<SyntaxHighlightingService>()));
-        services.TryAddSingleton(sp =>
-        {
-            var translators = sp.GetServices<Rendering.Vdom.IVdomElementTranslator>()
-                .OrderBy(t => t.Priority)
-                .ToList();
-            return new Rendering.Vdom.VdomSpectreTranslator(translators);
-        });
-
-        // Add ConsoleAppOptions as a singleton by resolving the IOptions value in a factory to avoid IOptions dependency in injecting components.
-        services.AddSingleton<ConsoleAppOptions>(resolver => resolver.GetRequiredService<IOptions<ConsoleAppOptions>>().Value);
+        services.AddRazorConsoleServices();
         services.AddHostedService<ComponentService<TComponent>>();
 
         // clear all log providers because it would interfere with console rendering
