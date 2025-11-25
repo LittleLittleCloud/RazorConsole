@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'website/**'
+      - 'src/**'
       - '.github/workflows/pr-preview-artifact.yml'
       - '.github/workflows/ci.yml'
   workflow_dispatch:
