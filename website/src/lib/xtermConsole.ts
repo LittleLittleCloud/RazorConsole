@@ -132,6 +132,7 @@ export function attachKeyListener(elementId: string, helper: DotNetHelper): void
   const subscription = terminal.onKey(event => {
     void helper.invokeMethodAsync(
       'HandleKeyboardEvent',
+      elementId,
       event.key,
       event.domEvent.key,
       event.domEvent.ctrlKey,
