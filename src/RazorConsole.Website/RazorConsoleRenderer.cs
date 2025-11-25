@@ -257,6 +257,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
             "ScrollLock" => ConsoleKey.None,
 
             // Other special keys
+            // "ContextMenu" maps to Applications key (right-click menu key on Windows keyboards)
             "ContextMenu" => ConsoleKey.Applications,
             "Pause" => ConsoleKey.Pause,
             "PrintScreen" => ConsoleKey.PrintScreen,
@@ -282,7 +283,9 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
         };
 
         // Handle control key combinations for letters (Ctrl+A through Ctrl+Z)
-        // Control characters are ASCII 1-26 corresponding to Ctrl+A through Ctrl+Z
+        // When Ctrl is pressed with a letter, xterm sends the corresponding control character
+        // (ASCII 1-26). We override the consoleKey and keyChar here because the switch above
+        // cannot properly identify the letter from a control character.
         if (ctrlKey && !altKey && xtermKey.Length == 1)
         {
             var c = xtermKey[0];
