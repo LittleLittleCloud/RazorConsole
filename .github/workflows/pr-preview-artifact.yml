@@ -34,67 +34,66 @@ jobs:
             echo "pr_number=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Find CI workflow run
+      - name: Wait for CI workflow and artifact
         id: find-ci-run
         uses: actions/github-script@v7
         with:
           script: |
             const prNumber = '${{ steps.get-pr.outputs.pr_number }}';
             const headSha = '${{ github.event.pull_request.head.sha || github.sha }}';
+            const expectedArtifactName = `website-preview-${prNumber}-${headSha}`;
             
-            // Find the CI workflow run for this PR
-            const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'ci.yml',
-              per_page: 100
-            });
+            let ciRun = null;
+            let artifactFound = false;
+            const maxWaitTimeMs = 10 * 60 * 1000; // 10 minutes
+            const startTime = Date.now();
             
-            // Look for CI runs that match this PR's head SHA or are associated with this PR
-            const ciRun = runs.workflow_runs.find(run => 
-              run.head_sha === headSha || 
-              (run.pull_requests && run.pull_requests.some(pr => pr.number == prNumber))
-            );
+            console.log(`Looking for CI workflow and artifact: ${expectedArtifactName}`);
+            console.log(`Will wait up to 10 minutes for the artifact to be created.`);
             
-            if (!ciRun) {
-              throw new Error(`No CI workflow run found for PR #${prNumber} with SHA ${headSha}`);
-            }
-            
-            console.log(`Found CI run: ${ciRun.id} (${ciRun.status})`);
-            core.setOutput('run_id', ciRun.id);
-            core.setOutput('run_status', ciRun.status);
-
-      - name: Wait for CI workflow to complete
-        if: steps.find-ci-run.outputs.run_status != 'completed'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const runId = '${{ steps.find-ci-run.outputs.run_id }}';
-            let status = '${{ steps.find-ci-run.outputs.run_status }}';
-            
-            console.log(`Waiting for CI run ${runId} to complete. Current status: ${status}`);
-            
-            while (status !== 'completed') {
-              await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 seconds
-              
-              const { data: run } = await github.rest.actions.getWorkflowRun({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                run_id: runId
-              });
-              
-              status = run.status;
-              console.log(`CI run status: ${status}`);
-              
-              if (status === 'completed' && run.conclusion !== 'success') {
-                throw new Error(`CI workflow failed with conclusion: ${run.conclusion}`);
+            while (!artifactFound && (Date.now() - startTime) < maxWaitTimeMs) {
+              // Check if the artifact exists using repository-level API
+              try {
+                const { data: artifacts } = await github.rest.actions.listArtifactsForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: expectedArtifactName,
+                  per_page: 10
+                });
+                
+                // Find artifact that matches our expected name
+                const artifact = artifacts.artifacts.find(a => a.name === expectedArtifactName);
+                
+                if (artifact) {
+                  console.log(`✓ Found artifact: ${artifact.name} from run ${artifact.workflow_run.id}`);
+                  artifactFound = true;
+                  ciRun = { id: artifact.workflow_run.id };
+                } else {
+                  const elapsedMinutes = Math.floor((Date.now() - startTime) / 60000);
+                  console.log(`Artifact ${expectedArtifactName} not found. (${elapsedMinutes}/10 minutes elapsed)`);
+                  if (artifacts.artifacts.length > 0) {
+                    console.log(`Found ${artifacts.artifacts.length} artifacts with similar name.`);
+                  }
+                  console.log('Waiting for artifact to be created...');
+                  await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 seconds
+                }
+              } catch (error) {
+                console.log(`Error checking artifacts: ${error.message}. Retrying...`);
+                await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 seconds
               }
             }
+            
+            if (!artifactFound) {
+              throw new Error(`Timeout: Artifact ${expectedArtifactName} was not found within 10 minutes.`);
+            }
+            
+            core.setOutput('run_id', ciRun.id);
+            core.setOutput('artifact_name', expectedArtifactName);
 
       - name: Download website artifact from CI run
         uses: actions/download-artifact@v4
         with:
-          name: website-preview-${{ steps.get-pr.outputs.pr_number }}
+          name: ${{ steps.find-ci-run.outputs.artifact_name }}
           path: website-dist
           run-id: ${{ steps.find-ci-run.outputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -120,7 +119,7 @@ jobs:
             const ciRunId = '${{ steps.find-ci-run.outputs.run_id }}';
             
             const artifactUrl = `https://github.com/${owner}/${repo}/actions/runs/${ciRunId}`;
-            const artifactName = `website-preview-${prNumber}`;
+            const artifactName = '${{ steps.find-ci-run.outputs.artifact_name }}';
             const deploymentUrl = '${{ steps.deploy.outputs.deployment-url }}';
             const deploymentSuccess = '${{ steps.deploy.outcome }}' === 'success';
 
