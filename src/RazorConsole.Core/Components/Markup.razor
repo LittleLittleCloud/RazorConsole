@@ -10,8 +10,25 @@
       data-content="@_escapedContent" />
 
 @code {
+    /// <summary>
+    /// Renders plain text with optional styling using Spectre.Console's <see cref="global::Spectre.Console.Text"/> renderable.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Fundamental text rendering component with automatic escaping to prevent interpretation of special characters.
+    /// Styling is controlled through parameters (Foreground, Background, Decoration, link) which are merged into a Style object.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/markup">Spectre.Console Markup documentation</see> for more information.
+    /// </para>
+    /// </remarks>
+
     private string StyleAttributes => new Style(Foreground, Background, Decoration, link).ToMarkup();
     private string _escapedContent = string.Empty;
+
+    /// <summary>
+    /// Text content to render. Content is automatically escaped to prevent markup interpretation.
+    /// </summary>
     [Parameter]
     [EditorRequired]
     public string Content
@@ -26,15 +43,27 @@
         }
     }
 
+    /// <summary>
+    /// Foreground (text) color. Default is <see cref="Style.Plain"/> foreground.
+    /// </summary>
     [Parameter]
     public Color Foreground { get; set; } = Spectre.Console.Style.Plain.Foreground;
 
+    /// <summary>
+    /// Background color. Default is <see cref="Style.Plain"/> background.
+    /// </summary>
     [Parameter]
     public Color Background { get; set; } = Spectre.Console.Style.Plain.Background;
 
+    /// <summary>
+    /// Text decoration (bold, italic, underline, etc.). Default is <see cref="Decoration.None"/>. Combine decorations with bitwise OR.
+    /// </summary>
     [Parameter]
     public Decoration Decoration { get; set; } = Spectre.Console.Decoration.None;
 
+    /// <summary>
+    /// Optional hyperlink URL. When specified, text renders as a clickable link in supported terminals.
+    /// </summary>
     [Parameter]
     public string? link
     {

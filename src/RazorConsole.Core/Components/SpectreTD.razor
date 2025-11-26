@@ -9,12 +9,28 @@
 </td>
 
 @code {
+    /// <summary>
+    /// Table data cell for <see cref="SpectreTable"/>.
+    /// </summary>
+    /// <remarks>
+    /// Use within <see cref="SpectreTR"/> in <see cref="SpectreTBody"/> or <see cref="SpectreTFoot"/> to define data cells.
+    /// </remarks>
+
+    /// <summary>
+    /// Content of the data cell.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Horizontal alignment of the cell content. Options: <see cref="Justify.Left"/>, <see cref="Justify.Center"/>, <see cref="Justify.Right"/>. If <c>null</c>, uses default.
+    /// </summary>
     [Parameter]
     public Justify? Align { get; set; }
 
+    /// <summary>
+    /// Additional HTML attributes for the td element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 

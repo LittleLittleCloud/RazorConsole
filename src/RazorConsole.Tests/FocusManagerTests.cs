@@ -243,7 +243,7 @@ public sealed class FocusManagerTests
         await manager.FocusAsync("third", CancellationToken.None);
 
         // Wait a bit for the async dispatch to complete
-        await Task.Delay(100);
+        await Task.Delay(100, Xunit.TestContext.Current.CancellationToken);
 
         // Focus should be on third after explicit focus call
         Assert.Equal("third", manager.CurrentFocusKey);
