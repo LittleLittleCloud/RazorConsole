@@ -102,11 +102,32 @@
 }
 
 @code {
-
+    /// <summary>
+    /// Represents the context passed to the child render fragment containing visible items and scroll state.
+    /// </summary>
+    /// <typeparam name="T">The type of items in the scrollable list.</typeparam>
+    /// <param name="Items">The currently visible items in the scrollable viewport.</param>
+    /// <param name="KeyDownEventHandler">The keyboard event handler for navigation (arrow keys, page up/down, etc.).</param>
+    /// <param name="CurrentOffset">The current scroll offset (index of the first visible item).</param>
+    /// <param name="PagesCount">The total number of available scroll positions.</param>
     public sealed record ScrollContext<T>(IReadOnlyList<T> Items, Func<KeyboardEventArgs,Task> KeyDownEventHandler, int CurrentOffset, int PagesCount)
     {
+        /// <summary>
+        /// Gets the item at the specified index within the visible items.
+        /// </summary>
+        /// <param name="i">The index of the item to retrieve.</param>
+        /// <returns>The item at the specified index.</returns>
         public T this[int i] => Items[i];
+
+        /// <summary>
+        /// Gets the number of visible items.
+        /// </summary>
         public int Count => Items.Count;
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the visible items.
+        /// </summary>
+        /// <returns>An enumerator for the visible items.</returns>
         public IEnumerator<T> GetEnumerator() => Items.GetEnumerator();
     }
 }
