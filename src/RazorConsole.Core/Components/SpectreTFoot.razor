@@ -9,21 +9,20 @@
 
 @code {
     /// <summary>
-    /// Represents the footer section of a table.
+    /// Table footer section for <see cref="SpectreTable"/>.
     /// </summary>
     /// <remarks>
-    /// Use this component within a <see cref="SpectreTable"/> to define table footers.
     /// Contains <see cref="SpectreTR"/> rows with <see cref="SpectreTD"/> or <see cref="SpectreTH"/> cells.
     /// </remarks>
 
     /// <summary>
-    /// Gets or sets the child content containing footer rows.
+    /// Content containing footer rows.
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Gets or sets additional HTML attributes to apply to the tfoot element.
+    /// Additional HTML attributes for the tfoot element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

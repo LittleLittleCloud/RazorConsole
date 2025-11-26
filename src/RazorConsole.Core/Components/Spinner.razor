@@ -16,58 +16,46 @@
 
 @code {
     /// <summary>
-    /// Displays an animated spinner with an optional message to indicate ongoing operations.
+    /// Displays an animated spinner with optional message using Spectre.Console's <see cref="global::Spectre.Console.Spinner"/> renderable.
     /// </summary>
     /// <remarks>
-    /// Spinners are useful for showing progress during long-running tasks. Multiple spinner styles
-    /// are available from <see cref="global::Spectre.Console.Spinner.Known"/>.
+    /// <para>
+    /// Shows visual feedback during long-running operations with various animation styles available from <see cref="global::Spectre.Console.Spinner.Known"/>.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/live/status">Spectre.Console Status documentation</see> for more information.
+    /// </para>
     /// </remarks>
 
     private static readonly IReadOnlyDictionary<global::Spectre.Console.Spinner, string> SpinnerNames = BuildSpinnerNameMap();
 
     /// <summary>
-    /// Gets or sets the type of spinner animation to display.
+    /// Type of spinner animation. Default is <see cref="global::Spectre.Console.Spinner.Known.Dots"/>. See <see cref="global::Spectre.Console.Spinner.Known"/> for all available styles.
     /// </summary>
-    /// <remarks>
-    /// Default is <see cref="global::Spectre.Console.Spinner.Known.Dots"/>. Other options include
-    /// Dots2, Dots3, Line, Star, and many more from <see cref="global::Spectre.Console.Spinner.Known"/>.
-    /// </remarks>
     [Parameter]
     public global::Spectre.Console.Spinner SpinnerType { get; set; } = global::Spectre.Console.Spinner.Known.Dots;
 
     /// <summary>
-    /// Gets or sets the name of the spinner to use (alternative to <see cref="SpinnerType"/>).
+    /// Name of the spinner to use (alternative to <see cref="SpinnerType"/>). Takes precedence when specified.
     /// </summary>
-    /// <remarks>
-    /// If specified, this takes precedence over <see cref="SpinnerType"/>.
-    /// </remarks>
     [Parameter]
     public string? SpinnerName { get; set; }
 
     /// <summary>
-    /// Gets or sets the message displayed next to the spinner.
+    /// Message displayed next to the spinner. If <c>null</c> or empty, no message is shown.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c> or whitespace, no message is shown.
-    /// </remarks>
     [Parameter]
     public string? Message { get; set; }
 
     /// <summary>
-    /// Gets or sets the Spectre.Console style markup to apply to the spinner.
+    /// Spectre.Console style markup to apply. If <c>null</c>, uses default style.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c>, the default style is used.
-    /// </remarks>
     [Parameter]
     public string? Style { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the spinner should automatically dismiss when complete.
+    /// Whether the spinner should automatically dismiss when complete. Default is <c>false</c>.
     /// </summary>
-    /// <remarks>
-    /// Default is <c>false</c>.
-    /// </remarks>
     [Parameter]
     public bool AutoDismiss { get; set; }
 

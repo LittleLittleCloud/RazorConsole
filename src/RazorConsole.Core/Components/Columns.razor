@@ -12,26 +12,27 @@
 
 @code {
     /// <summary>
-    /// Arranges child elements in a horizontal column layout.
+    /// Arranges content in horizontal columns using Spectre.Console's <see cref="global::Spectre.Console.Columns"/> renderable.
     /// </summary>
     /// <remarks>
-    /// Use this component to create side-by-side layouts. Each direct child is rendered as a column.
-    /// For vertical layouts, use <see cref="Rows"/> instead.
+    /// <para>
+    /// Creates side-by-side layouts where each child is rendered as a column. For vertical layouts, use <see cref="Rows"/>.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/widgets/columns">Spectre.Console Columns documentation</see> for more information.
+    /// </para>
     /// </remarks>
 
     private string ExpandAttribute => Expand ? "true" : "false";
 
     /// <summary>
-    /// Gets or sets a value indicating whether the columns should expand to fill available horizontal space.
+    /// Whether columns should expand to fill available horizontal space. Default is <c>false</c>.
     /// </summary>
-    /// <remarks>
-    /// Default is <c>false</c>, which means columns will only use the space their content requires.
-    /// </remarks>
     [Parameter]
     public bool Expand { get; set; } = false;
 
     /// <summary>
-    /// Gets or sets the child content to be arranged in columns.
+    /// Content to arrange in columns.
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

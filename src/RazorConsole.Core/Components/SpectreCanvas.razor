@@ -15,63 +15,57 @@
 
 @code {
     /// <summary>
-    /// Renders a pixel-based canvas for drawing graphics in the console.
+    /// Renders a pixel-based canvas for drawing graphics in the console using Spectre.Console's <see cref="global::Spectre.Console.Canvas"/> renderable.
     /// </summary>
     /// <remarks>
-    /// This component allows you to draw pixel art, charts, or other graphics by specifying
-    /// individual pixel positions and colors. Pixels are rendered using console characters.
-    /// The component implements <see cref="IDisposable"/> to clean up canvas data.
+    /// <para>
+    /// This component wraps Spectre.Console's Canvas to enable pixel-based drawing of graphics, charts, and pixel art.
+    /// Pixels are rendered using console characters with specified colors at (x, y) coordinates.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/widgets/canvas">Spectre.Console Canvas documentation</see> for more information.
+    /// </para>
     /// </remarks>
 
     /// <summary>
-    /// Gets or sets the array of pixels to render on the canvas.
+    /// The array of pixels to render. Each pixel is defined by (x, y) coordinates and color.
     /// </summary>
     /// <remarks>
-    /// Each pixel is defined by its (x, y) coordinates and color. The total number of pixels
-    /// must not exceed <c>CanvasWidth * CanvasHeight</c>.
+    /// Total pixel count must not exceed <c>CanvasWidth * CanvasHeight</c>.
     /// </remarks>
     [Parameter]
     [EditorRequired]
     public (int x, int y, Color color)[] Pixels { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the width of the canvas in pixels.
+    /// Width of the canvas in pixels.
     /// </summary>
     [Parameter]
     [EditorRequired]
     public int CanvasWidth { get; set; }
 
     /// <summary>
-    /// Gets or sets the height of the canvas in pixels.
+    /// Height of the canvas in pixels.
     /// </summary>
     [Parameter]
     [EditorRequired]
     public int CanvasHeight { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum width of the rendered canvas in console characters.
+    /// Maximum width of the rendered canvas in console characters. If <c>null</c>, no constraint is applied.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c>, no maximum width constraint is applied.
-    /// </remarks>
     [Parameter]
     public int? MaxWidth { get; set; }
 
     /// <summary>
-    /// Gets or sets the width of each pixel when rendered in the console.
+    /// Width of each pixel when rendered. Default is 2 characters, creating more square-looking pixels.
     /// </summary>
-    /// <remarks>
-    /// Default is 2 characters per pixel, which helps create more square-looking pixels in the console.
-    /// </remarks>
     [Parameter]
     public int PixelWidth { get; set; } = 2;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the canvas should automatically scale to fit the console.
+    /// Whether the canvas should automatically scale to fit the console. Default is <c>false</c>.
     /// </summary>
-    /// <remarks>
-    /// Default is <c>false</c>.
-    /// </remarks>
     [Parameter]
     public bool Scale { get; set; }
 

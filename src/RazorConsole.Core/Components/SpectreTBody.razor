@@ -9,21 +9,20 @@
 
 @code {
     /// <summary>
-    /// Represents the body section of a table containing the main data rows.
+    /// Table body section for <see cref="SpectreTable"/> containing main data rows.
     /// </summary>
     /// <remarks>
-    /// Use this component within a <see cref="SpectreTable"/> to define the table body.
     /// Contains <see cref="SpectreTR"/> rows with <see cref="SpectreTD"/> data cells.
     /// </remarks>
 
     /// <summary>
-    /// Gets or sets the child content containing body rows.
+    /// Content containing body rows.
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Gets or sets additional HTML attributes to apply to the tbody element.
+    /// Additional HTML attributes for the tbody element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

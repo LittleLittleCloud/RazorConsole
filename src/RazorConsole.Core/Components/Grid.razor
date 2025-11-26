@@ -14,43 +14,38 @@
 
 @code {
     /// <summary>
-    /// Arranges child elements in a multi-column grid layout.
+    /// Arranges content in a multi-column grid using Spectre.Console's <see cref="global::Spectre.Console.Grid"/> renderable.
     /// </summary>
     /// <remarks>
-    /// Child elements are automatically arranged into the specified number of columns,
-    /// wrapping to new rows as needed. This is similar to CSS grid layouts.
+    /// <para>
+    /// Automatically arranges children into the specified number of columns, wrapping to new rows as needed (similar to CSS grid).
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/widgets/grid">Spectre.Console Grid documentation</see> for more information.
+    /// </para>
     /// </remarks>
 
     /// <summary>
-    /// Gets or sets the child content to be arranged in the grid.
+    /// Content to arrange in the grid.
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Gets or sets the number of columns in the grid.
+    /// Number of columns in the grid. Default is 2. Must be positive.
     /// </summary>
-    /// <remarks>
-    /// Default is 2 columns. Must be a positive integer.
-    /// </remarks>
     [Parameter]
     public int Columns { get; set; } = 2;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the grid should expand to fill available space.
+    /// Whether the grid should expand to fill available space. Default is <c>false</c>.
     /// </summary>
-    /// <remarks>
-    /// Default is <c>false</c>, which means the grid will only use the space required by its content.
-    /// </remarks>
     [Parameter]
     public bool Expand { get; set; }
 
     /// <summary>
-    /// Gets or sets the width of the grid in characters.
+    /// Width of the grid in characters. If <c>null</c>, automatically determined by content.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c>, the width is automatically determined by the content and available space.
-    /// </remarks>
     [Parameter]
     public int? Width { get; set; }
 

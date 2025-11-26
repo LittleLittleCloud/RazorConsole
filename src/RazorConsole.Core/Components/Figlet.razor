@@ -10,37 +10,35 @@
 
 @code {
     /// <summary>
-    /// Renders text in large ASCII art letters using the FIGlet format.
+    /// Renders text in large ASCII art letters using Spectre.Console's <see cref="global::Spectre.Console.FigletText"/> renderable.
     /// </summary>
     /// <remarks>
-    /// FIGlet text is useful for creating eye-catching headers and titles in console applications.
+    /// <para>
+    /// Creates eye-catching headers and titles using FIGlet ASCII art format.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/widgets/figlet">Spectre.Console FigletText documentation</see> for more information.
+    /// </para>
     /// </remarks>
 
     private string justifyAttribute => Justify.ToString();
     private string styleAttributes => new Style(Color).ToMarkup();
 
     /// <summary>
-    /// Gets or sets the text content to render as FIGlet ASCII art.
+    /// Text content to render as FIGlet ASCII art.
     /// </summary>
     [Parameter]
     public string Content { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the horizontal alignment of the FIGlet text.
+    /// Horizontal alignment of the FIGlet text. Default is <see cref="Justify.Center"/>.
     /// </summary>
-    /// <remarks>
-    /// Default is <see cref="Justify.Center"/>. Options include <see cref="Justify.Left"/>,
-    /// <see cref="Justify.Center"/>, and <see cref="Justify.Right"/>.
-    /// </remarks>
     [Parameter]
     public Justify Justify { get; set; } = Justify.Center;
 
     /// <summary>
-    /// Gets or sets the color of the FIGlet text.
+    /// Color of the FIGlet text. Default is <see cref="Color.Default"/> (console's default color).
     /// </summary>
-    /// <remarks>
-    /// Default is <see cref="Color.Default"/>, which uses the console's default color.
-    /// </remarks>
     [Parameter]
     public Color Color { get; set; } = Color.Default;
 }

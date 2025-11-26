@@ -9,21 +9,20 @@
 
 @code {
     /// <summary>
-    /// Represents a table row containing cells.
+    /// Table row for <see cref="SpectreTable"/>.
     /// </summary>
     /// <remarks>
-    /// Use this component within <see cref="SpectreTHead"/>, <see cref="SpectreTBody"/>, or <see cref="SpectreTFoot"/>
-    /// to define rows of table data. Contains <see cref="SpectreTH"/> (for headers) or <see cref="SpectreTD"/> (for data) cells.
+    /// Use within <see cref="SpectreTHead"/>, <see cref="SpectreTBody"/>, or <see cref="SpectreTFoot"/>. Contains <see cref="SpectreTH"/> or <see cref="SpectreTD"/> cells.
     /// </remarks>
 
     /// <summary>
-    /// Gets or sets the child content containing table cells.
+    /// Content containing table cells.
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Gets or sets additional HTML attributes to apply to the tr element.
+    /// Additional HTML attributes for the tr element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

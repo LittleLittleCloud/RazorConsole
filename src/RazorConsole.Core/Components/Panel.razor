@@ -20,16 +20,20 @@
 
 @code {
     /// <summary>
-    /// Renders a panel with an optional title, border, and padding around child content.
+    /// Renders a panel with optional title, border, and padding using Spectre.Console's <see cref="global::Spectre.Console.Panel"/> renderable.
     /// </summary>
     /// <remarks>
-    /// Panels are useful for creating visual sections in your console application. They support
-    /// customizable borders, titles, dimensions, and padding. For a simple border without a title,
-    /// consider using the <see cref="Border"/> component instead.
+    /// <para>
+    /// Wraps content in a customizable box with borders, titles, and padding for creating visual sections.
+    /// For simple borders without titles, use the <see cref="Border"/> component instead.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/widgets/panel">Spectre.Console Panel documentation</see> for more information.
+    /// </para>
     /// </remarks>
 
     /// <summary>
-    /// Gets or sets the child content to be rendered inside the panel.
+    /// Content to render inside the panel.
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -45,75 +49,50 @@
     };
 
     /// <summary>
-    /// Gets or sets the title text displayed at the top of the panel border.
+    /// Title text displayed at the top of the panel border. If <c>null</c> or empty, no title is shown.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c> or whitespace, no title is displayed.
-    /// </remarks>
     [Parameter]
     public string? Title { get; set; }
 
     /// <summary>
-    /// Gets or sets the color of the panel title.
+    /// Color of the panel title. If <c>null</c>, uses default console color.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c>, the default console color is used.
-    /// </remarks>
     [Parameter]
     public Color? TitleColor { get; set; }
 
     /// <summary>
-    /// Gets or sets the color of the panel border.
+    /// Color of the panel border. If <c>null</c>, uses default console color.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c>, the default console color is used.
-    /// </remarks>
     [Parameter]
     public Color? BorderColor { get; set; }
 
     /// <summary>
-    /// Gets or sets the style of the panel border.
+    /// Style of the panel border. See <see cref="BoxBorder"/> for available styles like <see cref="BoxBorder.Rounded"/>, <see cref="BoxBorder.Square"/>, and <see cref="BoxBorder.Double"/>.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c>, a default border style is used. Common options include <see cref="BoxBorder.Rounded"/>,
-    /// <see cref="BoxBorder.Square"/>, <see cref="BoxBorder.Double"/>, and <see cref="BoxBorder.None"/>.
-    /// </remarks>
     [Parameter]
     public BoxBorder? Border { get; set; }
 
     /// <summary>
-    /// Gets or sets the height of the panel in lines.
+    /// Height of the panel in lines. If <c>null</c> or less than 1, height is automatically determined by content.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c> or less than 1, the height is automatically determined by the content.
-    /// </remarks>
     [Parameter]
     public int? Height { get; set; }
 
     /// <summary>
-    /// Gets or sets the padding inside the panel border.
+    /// Padding inside the panel border as (left, top, right, bottom). If <c>null</c>, no padding is applied.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c>, no padding is applied. Padding is specified as (left, top, right, bottom).
-    /// </remarks>
     [Parameter]
     public Padding? Padding { get; set; }
 
     /// <summary>
-    /// Gets or sets the width of the panel in characters.
+    /// Width of the panel in characters. If <c>null</c> or less than 1, width is automatically determined by content.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c> or less than 1, the width is automatically determined by the content.
-    /// </remarks>
     [Parameter]
     public int? Width { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the panel should expand to fill available space.
+    /// Whether the panel should expand to fill available space. Default is <c>false</c>.
     /// </summary>
-    /// <remarks>
-    /// Default is <c>false</c>.
-    /// </remarks>
     [Parameter]
     public bool Expand { get; set; }
 
