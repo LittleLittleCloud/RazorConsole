@@ -12,6 +12,11 @@ export interface WasmExports {
 			altKey: boolean,
 			shiftKey: boolean
 		) => Promise<void>;
+		HandleResize: (
+			componentName: string,
+			cols: number,
+			rows: number
+		) => void;
 	};
 }
 
