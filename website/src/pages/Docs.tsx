@@ -12,6 +12,7 @@ import vdomDebuggingDoc from "@/docs/vdom-debugging.md?raw";
 import routingDoc from "@/docs/routing.md?raw";
 import componentGalleryDoc from "@/docs/component-gallery.md?raw";
 import v0_1_1ReleaseNotes from "../../../release-notes/v0.1.1.md?raw";
+import v0_2_0ReleaseNotes from "../../../release-notes/v0.2.0.md?raw";
 import { MarkdownRenderer } from "@/components/Markdown";
 
 interface TopicItem {
@@ -96,6 +97,12 @@ export default function Docs() {
 
     const releaseNotes = useMemo(
         () => [
+            {
+                id: "v0.2.0",
+                title: "v0.2.0",
+                content: v0_2_0ReleaseNotes,
+                filePath: "release-notes/v0.2.0.md",
+            },
             {
                 id: "v0.1.1",
                 title: "v0.1.1",
