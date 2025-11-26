@@ -98,6 +98,17 @@ public partial class Registry
         await renderer.HandleKeyboardEventAsync(xtermKey, domKey, ctrlKey, altKey, shiftKey)
             .ConfigureAwait(false);
     }
+
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static void HandleResize(string elementID, int cols, int rows)
+    {
+        if (!_renderers.TryGetValue(elementID, out var renderer))
+        {
+            return;
+        }
+        renderer.HandleResize(cols, rows);
+    }
 }
 
 [SupportedOSPlatform("browser")]

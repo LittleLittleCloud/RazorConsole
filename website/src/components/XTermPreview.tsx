@@ -4,6 +4,7 @@ import {
     registerTerminalInstance,
     registerComponent,
     handleKeyboardEvent,
+    handleResize,
 } from "@/lib/xtermConsole";
 import 'xterm/css/xterm.css';
 import { Terminal } from "xterm";
@@ -155,7 +156,11 @@ export default function XTermPreview({
                     if (!disposed) {
                         try {
                             fitAddon.fit();
-                            console.debug("Terminal resized")
+                            // Notify the C# renderer about the new terminal dimensions
+                            const cols = term.cols;
+                            const rows = term.rows;
+                            console.debug("Terminal resized to", cols, "x", rows);
+                            void handleResize(elementId, cols, rows);
                         } catch (e) {
                             console.warn('Failed to fit terminal:', e);
                         }

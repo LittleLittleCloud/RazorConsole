@@ -16,6 +16,7 @@ namespace RazorConsole.Website;
 internal interface IRazorConsoleRenderer
 {
     Task HandleKeyboardEventAsync(string xtermKey, string domKey, bool ctrlKey, bool altKey, bool shiftKey);
+    void HandleResize(int cols, int rows);
     event Action<string>? SnapshotRendered;
 }
 
@@ -28,6 +29,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
     private IAnsiConsole? _ansiConsole;
     private readonly StringWriter _sw = new StringWriter();
     private KeyboardEventManager? _keyboardEventManager;
+    private LiveDisplayCanvas? _canvas;
     private Task? _initializationTask;
     public event Action<string>? SnapshotRendered;
 
@@ -81,11 +83,11 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
         _consoleRenderer.Subscribe(focusManager);
 
         var initialView = ConsoleViewResult.FromSnapshot(snapshot);
-        var canvas = new LiveDisplayCanvas(_ansiConsole);
-        var consoleLiveDisplayContext = new ConsoleLiveDisplayContext(canvas, _consoleRenderer, initialView);
+        _canvas = new LiveDisplayCanvas(_ansiConsole);
+        var consoleLiveDisplayContext = new ConsoleLiveDisplayContext(_canvas, _consoleRenderer, initialView);
         var focusSession = focusManager.BeginSession(consoleLiveDisplayContext, initialView, CancellationToken.None);
         await focusSession.InitializationTask.ConfigureAwait(false);
-        canvas.Refreshed += () =>
+        _canvas.Refreshed += () =>
         {
             var output = _sw.ToString();
             SnapshotRendered?.Invoke(output);
@@ -290,6 +292,24 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
 
             _ => ConsoleKey.None
         };
+    }
+
+    /// <summary>
+    /// Handles terminal resize events from the browser by updating console dimensions and triggering a re-render.
+    /// </summary>
+    public void HandleResize(int cols, int rows)
+    {
+        if (_ansiConsole is null || _canvas is null)
+        {
+            return;
+        }
+
+        // Update the console profile dimensions
+        _ansiConsole.Profile.Width = cols;
+        _ansiConsole.Profile.Height = rows;
+
+        // Trigger a refresh to re-render with the new dimensions
+        _canvas.Refresh();
     }
 
     public void OnCompleted()

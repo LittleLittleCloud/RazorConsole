@@ -290,4 +290,20 @@ export async function handleKeyboardEvent(
   return exports.Registry.HandleKeyboardEvent(componentName, xtermKey, domKey, ctrlKey, altKey, shiftKey)
 }
 
+/**
+ * Forwards a resize event from xterm.js to the RazorConsole renderer.
+ * Calls into C# WASM: Registry.HandleResize(componentName, cols, rows)
+ * @param componentName - The name of the component receiving the resize event
+ * @param cols - The new number of columns
+ * @param rows - The new number of rows
+ */
+export async function handleResize(
+  componentName: string,
+  cols: number,
+  rows: number
+): Promise<void> {
+  const exports = await getWasmExports()
+  return exports.Registry.HandleResize(componentName, cols, rows)
+}
+
 export type { DotNetHelper, RazorConsoleTerminalApi, TerminalOptions }
