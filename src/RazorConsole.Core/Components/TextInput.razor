@@ -69,18 +69,12 @@
     /// <summary>
     /// Expression identifying the bound value for validation scenarios with EditContext.
     /// </summary>
-    /// <remarks>
-    /// Used for validation scenarios with EditContext.
-    /// </remarks>
     [Parameter]
     public Expression<Func<string?>>? ValueExpression { get; set; }
 
     /// <summary>
     /// Event callback invoked on each character input (fired for every keystroke).
     /// </summary>
-    /// <remarks>
-    /// Fired for every keystroke as the user types.
-    /// </remarks>
     [Parameter]
     public EventCallback<string?> OnInput { get; set; }
 
@@ -105,9 +99,6 @@
     /// <summary>
     /// Label text displayed above the input field. If null or empty, no label is shown.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c> or whitespace, no label is displayed.
-    /// </remarks>
     [Parameter]
     public string? Label { get; set; }
 
@@ -236,20 +227,14 @@
     public bool Disabled { get; set; }
 
     /// <summary>
-    /// Whether input characters should be masked (displayed as bullets). Useful for password fields.
+    /// Whether input characters should be masked (displayed as bullets). Useful for password fields. Default is <c>false</c>.
     /// </summary>
-    /// <remarks>
-    /// Useful for password fields. Default is <c>false</c>.
-    /// </remarks>
     [Parameter]
     public bool MaskInput { get; set; }
 
     /// <summary>
-    /// Tab order for keyboard navigation. Lower values receive focus first.
+    /// Tab order for keyboard navigation. Lower values receive focus first. If <c>null</c>, natural document order is used.
     /// </summary>
-    /// <remarks>
-    /// Lower values receive focus first. If <c>null</c>, natural document order is used.
-    /// </remarks>
     [Parameter]
     public int? FocusOrder { get; set; }
 
