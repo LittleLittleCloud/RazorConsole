@@ -6,41 +6,34 @@
 
 @code {
     /// <summary>
-    /// Renders a clickable button with text content that changes appearance when focused.
+    /// Clickable button with text that changes appearance when focused.
     /// </summary>
     /// <remarks>
-    /// This component provides a simple button implementation with focus and click support.
-    /// The background color changes when the button receives focus, providing visual feedback.
+    /// Simple button implementation with focus and click support. Background color changes on focus for visual feedback.
     /// </remarks>
 
     private bool isFocused = false;
 
     /// <summary>
-    /// Gets or sets the background color when the button is focused.
+    /// Background color when focused. Default is <see cref="Spectre.Console.Color.Yellow"/>.
     /// </summary>
-    /// <remarks>
-    /// Default is <see cref="Spectre.Console.Color.Yellow"/>.
-    /// </remarks>
     [Parameter]
     public Spectre.Console.Color FocusedColor { get; set; } = Spectre.Console.Color.Yellow;
 
     /// <summary>
-    /// Gets or sets the background color when the button is not focused.
+    /// Background color when not focused. Default is <see cref="Spectre.Console.Color.Default"/>.
     /// </summary>
-    /// <remarks>
-    /// Default is <see cref="Spectre.Console.Color.Default"/>.
-    /// </remarks>
     [Parameter]
     public Spectre.Console.Color BackgroundColor { get; set; } = Spectre.Console.Color.Default;
 
     /// <summary>
-    /// Gets or sets the text content displayed on the button.
+    /// Text content displayed on the button.
     /// </summary>
     [Parameter]
     public string Content { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the event callback invoked when the button is clicked.
+    /// Event callback invoked when the button is clicked.
     /// </summary>
     [Parameter]
     public EventCallback OnClick { get; set; }
