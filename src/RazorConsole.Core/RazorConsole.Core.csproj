@@ -21,4 +21,8 @@
     <NoWarn>$(NoWarn);BL0007</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
 </Project>

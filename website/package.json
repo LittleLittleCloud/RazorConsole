@@ -13,9 +13,11 @@
   "dependencies": {
     "@radix-ui/react-tabs": "^1.1.13",
     "@tailwindcss/vite": "^4.1.16",
+    "@xterm/addon-fit": "^0.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.548.0",
+    "razor-console": "file:../artifacts/publish/RazorConsole.Website/release/wwwroot",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-markdown": "^10.1.0",
@@ -25,8 +27,7 @@
     "shiki": "^3.15.0",
     "tailwind-merge": "^3.3.1",
     "xterm": "^5.3.0",
-    "zustand": "^5.0.8",
-    "razor-console": "file:../artifacts/publish/RazorConsole.Website/release/wwwroot"
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

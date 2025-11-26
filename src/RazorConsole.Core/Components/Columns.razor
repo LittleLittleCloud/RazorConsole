@@ -11,11 +11,29 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Arranges content in horizontal columns using Spectre.Console's <see cref="global::Spectre.Console.Columns"/> renderable.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Creates side-by-side layouts where each child is rendered as a column. For vertical layouts, use <see cref="Rows"/>.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/widgets/columns">Spectre.Console Columns documentation</see> for more information.
+    /// </para>
+    /// </remarks>
+
     private string ExpandAttribute => Expand ? "true" : "false";
 
+    /// <summary>
+    /// Whether columns should expand to fill available horizontal space. Default is <c>false</c>.
+    /// </summary>
     [Parameter]
     public bool Expand { get; set; } = false;
 
+    /// <summary>
+    /// Content to arrange in columns.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 }

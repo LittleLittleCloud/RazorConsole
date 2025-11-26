@@ -1,5 +1,5 @@
-using System;
-using System.Linq;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using RazorConsole.Core.Rendering.Syntax;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;

@@ -1,5 +1,5 @@
-using System;
-using System.Collections.Generic;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;

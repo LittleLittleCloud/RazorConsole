@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Spectre.Console;
 
 namespace RazorConsole.Core.Rendering.Syntax;

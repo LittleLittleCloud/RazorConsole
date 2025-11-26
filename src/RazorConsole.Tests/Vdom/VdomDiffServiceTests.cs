@@ -1,6 +1,6 @@
-using System.Linq;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using RazorConsole.Core.Vdom;
-using Xunit;
 
 namespace RazorConsole.Tests.Vdom;
 

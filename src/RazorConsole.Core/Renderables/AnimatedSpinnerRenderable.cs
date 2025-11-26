@@ -1,6 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Spectre.Console;
 using Spectre.Console.Rendering;
 

@@ -8,9 +8,22 @@
 </thead>
 
 @code {
+    /// <summary>
+    /// Table header section for <see cref="SpectreTable"/>.
+    /// </summary>
+    /// <remarks>
+    /// Contains <see cref="SpectreTR"/> rows with <see cref="SpectreTH"/> header cells.
+    /// </remarks>
+
+    /// <summary>
+    /// Content containing header rows.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Additional HTML attributes for the thead element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

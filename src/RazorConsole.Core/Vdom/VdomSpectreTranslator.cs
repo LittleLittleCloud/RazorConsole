@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Rendering.ComponentMarkup;
@@ -126,7 +125,7 @@ public sealed class VdomSpectreTranslator
         return new List<IVdomElementTranslator>
         {
 #if DEBUG
-            new VDomTreePrinterTranslator(),
+            new Core.Vdom.Translators.VDomTreePrinterTranslator(),
 #endif
             new TextElementTranslator(),
             new HtmlInlineTextElementTranslator(),

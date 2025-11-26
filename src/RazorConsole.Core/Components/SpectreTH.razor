@@ -9,12 +9,28 @@
 </th>
 
 @code {
+    /// <summary>
+    /// Table header cell for <see cref="SpectreTable"/>.
+    /// </summary>
+    /// <remarks>
+    /// Use within <see cref="SpectreTR"/> in <see cref="SpectreTHead"/> to define column headers.
+    /// </remarks>
+
+    /// <summary>
+    /// Content of the header cell.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Horizontal alignment of the header cell content. Options: <see cref="Justify.Left"/>, <see cref="Justify.Center"/>, <see cref="Justify.Right"/>. If <c>null</c>, uses default.
+    /// </summary>
     [Parameter]
     public Justify? Align { get; set; }
 
+    /// <summary>
+    /// Additional HTML attributes for the th element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 

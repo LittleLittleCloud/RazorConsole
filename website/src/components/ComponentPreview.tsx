@@ -18,10 +18,10 @@ export function ComponentPreview({ component }: { component: ComponentInfo }) {
 
     return (
         <div className="group relative my-4 flex flex-col space-y-4">
-            <XTermPreview elementId={component.name} className="h-full" />
+            <XTermPreview elementId={component.name} className="h-[300px]" />
 
             <div className="flex flex-col space-y-4">
-                <div className="w-full rounded-md [&_pre]:my-0 [&_pre]:max-h-[350px] [&_pre]:overflow-auto">
+                <div className="w-full [&_pre]:my-0 [&_pre]:max-h-[300px] [&_pre]:overflow-auto">
                     <CodeBlock code={code} language="razor" showCopy={true} />
                 </div>
             </div>

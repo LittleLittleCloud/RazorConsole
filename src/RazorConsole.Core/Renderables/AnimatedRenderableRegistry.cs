@@ -1,6 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
+// Copyright (c) RazorConsole. All rights reserved.
 
 namespace RazorConsole.Core.Rendering.ComponentMarkup;
 
