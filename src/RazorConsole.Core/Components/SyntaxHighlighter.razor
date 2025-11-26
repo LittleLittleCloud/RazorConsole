@@ -14,73 +14,58 @@
     /// Renders source code with syntax highlighting for various programming languages.
     /// </summary>
     /// <remarks>
-    /// This component uses the ColorCode library to provide syntax highlighting.
-    /// Requires the SyntaxHighlightingService to be registered via services.AddSyntaxHighlighting().
-    /// Supports many languages including C#, JavaScript, Python, SQL, and more.
+    /// <para>
+    /// Uses ColorCode library for syntax highlighting. Supports languages including C#, JavaScript, Python, SQL, and more.
+    /// Requires SyntaxHighlightingService registration via services.AddSyntaxHighlighting().
+    /// </para>
     /// </remarks>
 
     private string _payload = string.Empty;
 
     /// <summary>
-    /// Gets or sets the source code to highlight.
+    /// Source code to highlight.
     /// </summary>
     [Parameter]
     public string Code { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the programming language of the code.
+    /// Programming language of the code. If <c>null</c>, attempts automatic detection. Supported: "csharp", "javascript", "python", "sql", etc.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c>, the highlighter will attempt to detect the language automatically.
-    /// Supported languages include "csharp", "javascript", "python", "sql", etc.
-    /// </remarks>
     [Parameter]
     public string? Language { get; set; }
 
     /// <summary>
-    /// Gets or sets the color theme for syntax highlighting.
+    /// Color theme for syntax highlighting. If <c>null</c>, uses default theme.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c>, the default theme is used.
-    /// </remarks>
     [Parameter]
     public string? Theme { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether line numbers should be displayed.
+    /// Whether line numbers should be displayed. Default is <c>false</c>.
     /// </summary>
-    /// <remarks>
-    /// Default is <c>false</c>.
-    /// </remarks>
     [Parameter]
     public bool ShowLineNumbers { get; set; }
 
     /// <summary>
-    /// Gets or sets additional syntax highlighting options.
+    /// Additional syntax highlighting options. If <c>null</c>, uses <see cref="SyntaxOptions.Default"/>.
     /// </summary>
-    /// <remarks>
-    /// If <c>null</c>, <see cref="SyntaxOptions.Default"/> is used.
-    /// </remarks>
     [Parameter]
     public SyntaxOptions? Options { get; set; }
 
     /// <summary>
-    /// Gets or sets the width of tab characters in spaces.
+    /// Width of tab characters in spaces. When specified and greater than 0, overrides tab width in <see cref="Options"/>.
     /// </summary>
-    /// <remarks>
-    /// If specified and greater than 0, overrides the tab width in <see cref="Options"/>.
-    /// </remarks>
     [Parameter]
     public int? TabWidth { get; set; }
 
     /// <summary>
-    /// Gets or sets additional HTML attributes to apply to the syntax highlighter element.
+    /// Additional HTML attributes for the syntax highlighter element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     /// <summary>
-    /// Gets or sets the syntax highlighting service used to process code.
+    /// Syntax highlighting service used to process code (injected).
     /// </summary>
     [Inject]
     internal SyntaxHighlightingService Highlighter { get; set; } = default!;

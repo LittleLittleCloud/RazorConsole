@@ -16,8 +16,19 @@
 
 @code{
     /// <summary>
-    /// Gets or sets the bar chart data items.
-    /// Each item must provide <c>Label</c> and <c>Value</c>, with optional <c>Color</c> (as hex string, e.g. "#ff6600").
+    /// Renders a bar chart using Spectre.Console's <see cref="global::Spectre.Console.BarChart"/> renderable.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Displays data as horizontal bars with optional labels and values. Each bar can have a custom color.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/widgets/barchart">Spectre.Console BarChart documentation</see> for more information.
+    /// </para>
+    /// </remarks>
+
+    /// <summary>
+    /// Bar chart data items. Each item must provide <c>Label</c> and <c>Value</c>, with optional <c>Color</c>.
     /// </summary>
     /// <example>
     /// <code>
@@ -29,69 +40,55 @@
     public required List<IBarChartItem> BarChartItems { get; set; }
 
     /// <summary>
-    /// Gets or sets the width of the bar chart in characters.
-    /// If <c>null</c>, the chart will use the available console width.
+    /// Width of the bar chart in characters. If <c>null</c>, uses available console width.
     /// </summary>
     [Parameter]
     public int? Width { get; set; }
 
     /// <summary>
-    /// Gets or sets the label (title) displayed above the bar chart.
+    /// Label (title) displayed above the bar chart.
     /// </summary>
     [Parameter]
     public string? Label { get; set; }
 
     /// <summary>
-    /// Gets or sets the foreground (text) color of the chart label.
+    /// Foreground (text) color of the chart label. Default is <see cref="Style.Plain"/> foreground.
     /// </summary>
-    /// <remarks>
-    /// Default is <see cref="Style.Plain"/>'s foreground.
-    /// </remarks>
     [Parameter]
     public Color LabelForeground { get; set; } = Style.Plain.Foreground;
 
     /// <summary>
-    /// Gets or sets the background color of the chart label.
+    /// Background color of the chart label. Default is <see cref="Style.Plain"/> background (transparent).
     /// </summary>
-    /// <remarks>
-    /// Default is transparent (<see cref="Style.Plain"/> background).
-    /// </remarks>
     [Parameter]
     public Color LabelBackground { get; set; } = Style.Plain.Background;
 
     /// <summary>
-    /// Gets or sets the text decoration (bold, italic, underline, etc.) for the chart label.
+    /// Text decoration for the chart label (bold, italic, underline, etc.). Default is <see cref="Decoration.None"/>.
     /// </summary>
     [Parameter]
     public Decoration LabelDecoration { get; set; } = Decoration.None;
 
     /// <summary>
-    /// Gets or sets the alignment of the chart label.
+    /// Alignment of the chart label. Options: <see cref="Justify.Left"/>, <see cref="Justify.Center"/>, <see cref="Justify.Right"/>.
     /// </summary>
-    /// <remarks>
-    /// Supported values: <see cref="Justify.Left"/>, <see cref="Justify.Center"/>, <see cref="Justify.Right"/>.
-    /// </remarks>
     [Parameter]
     public Justify? LabelAlignment { get; set; }
 
     /// <summary>
-    /// Gets or sets a fixed maximum value for the chart.
-    /// If set, all bars are scaled relative to this value instead of the largest data point.
+    /// Fixed maximum value for scaling bars. When set, bars scale relative to this value instead of the largest data point. Example: <c>MaxValue = 100</c> creates a progress chart (0–100%).
     /// </summary>
-    /// <example>
-    /// Setting <c>MaxValue = 100</c> makes the chart behave like a progress chart (0–100%).
-    /// </example>
     [Parameter]
     public double? MaxValue { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether numeric values should be displayed next to each bar.
+    /// Whether numeric values should be displayed next to each bar. Default is <c>false</c>.
     /// </summary>
     [Parameter]
     public bool ShowValues { get; set; }
 
     /// <summary>
-    /// Gets or sets the CultureInfo to use when rendering values.
+    /// CultureInfo to use when rendering values. Default is <see cref="CultureInfo.CurrentCulture"/>.
     /// </summary>
     [Parameter]
     public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
