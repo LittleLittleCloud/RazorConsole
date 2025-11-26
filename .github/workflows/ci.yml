@@ -49,7 +49,7 @@ jobs:
         run: dotnet build RazorConsole.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test RazorConsole.slnx --configuration Release --no-build --verbosity normal
+        run: dotnet test --configuration Release --no-build
 
   website-build:
     name: Build website
@@ -132,7 +132,7 @@ jobs:
         run: dotnet build RazorConsole.slnx --configuration Release --no-restore -p:VersionSuffix=$VersionSuffix
 
       - name: Test
-        run: dotnet test RazorConsole.slnx --configuration Release --no-build --verbosity normal -p:VersionSuffix=$VersionSuffix
+        run: dotnet test --configuration Release --no-build
 
       - name: Pack libraries
         run: |
