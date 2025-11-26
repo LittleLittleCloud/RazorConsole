@@ -1,4 +1,4 @@
-using Xunit;
+// Copyright (c) RazorConsole. All rights reserved.
 
 namespace RazorConsole.Tests;
 
@@ -13,7 +13,7 @@ public class ReplComponentTests
     {
         // This test verifies the Counter example component from the REPL
         // The actual component is in RazorConsole.Website/Components/Counter.razor
-        
+
         // Note: Since this is a Blazor WASM component, we test the core functionality
         // that the REPL relies on: RazorConsole component rendering
         Assert.True(true, "Counter component structure is valid");

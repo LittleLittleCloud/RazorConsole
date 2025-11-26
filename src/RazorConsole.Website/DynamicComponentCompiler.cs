@@ -1,14 +1,12 @@
-using System.Reflection;
-using System.Runtime.InteropServices.JavaScript;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Runtime.Loader;
 using System.Runtime.Versioning;
-using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using Microsoft.CodeAnalysis.Razor;
 
 namespace RazorConsole.Website;
 
@@ -66,14 +64,14 @@ public class DynamicComponentCompiler
         // Load assemblies from the /wasm/dlls/ folder where we've placed the original .dll files
         // These are the pre-WASM-compilation DLL files that Roslyn can use
         using var httpClient = new HttpClient();
-        
+
         foreach (var assemblyName in assemblyNames)
         {
             try
             {
                 var assemblyPath = $"/wasm/dlls/{assemblyName}.dll";
                 Console.WriteLine($"Attempting to load: {assemblyPath}");
-                
+
                 var bytes = await httpClient.GetByteArrayAsync(assemblyPath);
                 if (bytes != null && bytes.Length > 0)
                 {
@@ -93,7 +91,7 @@ public class DynamicComponentCompiler
         }
 
         Console.WriteLine($"Successfully loaded {references.Count} assembly references");
-        
+
         s_references = references;
         return references;
     }

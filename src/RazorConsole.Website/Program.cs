@@ -112,7 +112,7 @@ public partial class Registry
         {
             Console.WriteLine($"Compiling component for {elementID}");
             var (componentType, error) = await DynamicComponentCompiler.CompileRazorComponentAsync(razorCode);
-            
+
             if (error != null)
             {
                 Console.WriteLine($"Compilation failed: {error}");
@@ -126,7 +126,7 @@ public partial class Registry
 
             // Store the dynamic component type
             _dynamicComponents[elementID] = componentType;
-            
+
             // Create renderer using reflection
             var rendererType = typeof(RazorConsoleRenderer<>).MakeGenericType(componentType);
             var renderer = (IRazorConsoleRenderer)Activator.CreateInstance(rendererType, elementID)!;

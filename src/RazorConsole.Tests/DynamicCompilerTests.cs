@@ -1,4 +1,5 @@
-using Xunit;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace RazorConsole.Tests;
