@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import XTermPreview from "@/components/XTermPreview";
 import { useTheme } from "@/components/ThemeProvider";
+import { compileAndRegisterComponent } from "@/lib/xtermConsole";
 
 // Sample templates for the REPL
 const sampleTemplates = {
@@ -144,15 +145,12 @@ export default function Repl() {
     setCompilationResult(null);
     
     try {
-      // Import the WASM runtime
-      const razorConsole = await import("razor-console");
-      
       // Generate a unique component ID for this compilation
       const componentId = `dynamic_${Date.now()}`;
       setDynamicComponentId(componentId);
       
-      // Call the WASM compilation method
-      const result = await (razorConsole as any).compileAndRegisterComponent(componentId, code);
+      // Call the WASM compilation method via the proper export
+      const result = await compileAndRegisterComponent(componentId, code);
       
       if (result.startsWith("ERROR:")) {
         setCompilationResult(result);
