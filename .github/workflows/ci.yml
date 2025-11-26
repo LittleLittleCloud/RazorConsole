@@ -49,10 +49,7 @@ jobs:
         run: dotnet build RazorConsole.slnx --configuration Release --no-restore
 
       - name: Test
-        run: |
-          dotnet run --project src/RazorConsole.Tests --configuration Release --no-build --framework net8.0
-          dotnet run --project src/RazorConsole.Tests --configuration Release --no-build --framework net9.0
-          dotnet run --project src/RazorConsole.Tests --configuration Release --no-build --framework net10.0
+        run: dotnet test --configuration Release
 
   website-build:
     name: Build website
