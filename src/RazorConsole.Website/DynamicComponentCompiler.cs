@@ -63,16 +63,80 @@ public class DynamicComponentCompiler
 
         // Load assemblies from the /wasm/dlls/ folder where we've placed the original .dll files
         // These are the pre-WASM-compilation DLL files that Roslyn can use
-        using var httpClient = new HttpClient();
+        // We need to use absolute URLs in WASM environment
+        var baseUri = GetBaseUri();
+        Console.WriteLine($"Base URI: {baseUri}");
 
-        foreach (var assemblyName in assemblyNames)
+        using var httpClient = new HttpClient { BaseAddress = new Uri(baseUri) };
+
+        // Define essential assemblies that must be loaded for compilation
+        var essentialAssemblies = new[]
         {
-            try
-            {
-                var assemblyPath = $"/wasm/dlls/{assemblyName}.dll";
-                Console.WriteLine($"Attempting to load: {assemblyPath}");
+            // Core System assemblies
+            "System.Private.CoreLib",
+            "System.Runtime",
+            "System.Runtime.InteropServices",
+            "System.Collections",
+            "System.Collections.Immutable",
+            "System.Linq",
+            "System.Threading.Tasks",
+            "System.ComponentModel",
+            "System.ComponentModel.Primitives",
+            "System.ObjectModel",
+            "System.Memory",
+            "System.Text.Encodings.Web",
+            "System.Text.Json",
+            "netstandard",
+            "mscorlib",
 
-                var bytes = await httpClient.GetByteArrayAsync(assemblyPath);
+            // ASP.NET Components
+            "Microsoft.AspNetCore.Components",
+            "Microsoft.AspNetCore.Components.Web",
+            "Microsoft.Extensions.DependencyInjection.Abstractions",
+            "Microsoft.Extensions.DependencyInjection",
+
+            // RazorConsole
+            "RazorConsole.Core",
+            "Spectre.Console",
+        };
+
+        // First, try to load essential assemblies
+        foreach (var assemblyName in essentialAssemblies)
+        {
+            await TryLoadAssemblyAsync(httpClient, assemblyName, references);
+        }
+
+        // Then try to load any other loaded assemblies that we might need
+        foreach (var assemblyName in assemblyNames.Where(n => !essentialAssemblies.Contains(n)))
+        {
+            await TryLoadAssemblyAsync(httpClient, assemblyName, references);
+        }
+
+        Console.WriteLine($"Successfully loaded {references.Count} assembly references");
+
+        s_references = references;
+        return references;
+    }
+
+    private static string GetBaseUri()
+    {
+        // In WASM environment, we need to determine the base URI
+        // This is typically done via JavaScript interop, but we can also use a fallback
+        // For now, we'll use a relative path approach that works with the HttpClient in WASM
+        return "./";
+    }
+
+    private static async Task TryLoadAssemblyAsync(HttpClient httpClient, string assemblyName, List<MetadataReference> references)
+    {
+        try
+        {
+            var assemblyPath = $"wasm/dlls/{assemblyName}.dll";
+            Console.WriteLine($"Attempting to load: {assemblyPath}");
+
+            var response = await httpClient.GetAsync(assemblyPath);
+            if (response.IsSuccessStatusCode)
+            {
+                var bytes = await response.Content.ReadAsByteArrayAsync();
                 if (bytes != null && bytes.Length > 0)
                 {
                     var reference = MetadataReference.CreateFromImage(bytes);
@@ -80,20 +144,19 @@ public class DynamicComponentCompiler
                     Console.WriteLine($"✓ Loaded: {assemblyName} ({bytes.Length} bytes)");
                 }
             }
-            catch (HttpRequestException ex)
+            else
             {
-                Console.WriteLine($"⚠ HTTP error loading {assemblyName}: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"✗ Failed to load {assemblyName}: {ex.Message}");
+                Console.WriteLine($"⚠ HTTP {(int)response.StatusCode} loading {assemblyName}");
             }
         }
-
-        Console.WriteLine($"Successfully loaded {references.Count} assembly references");
-
-        s_references = references;
-        return references;
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"⚠ HTTP error loading {assemblyName}: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"✗ Failed to load {assemblyName}: {ex.Message}");
+        }
     }
 
     [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Dynamic compilation requires runtime type loading")]
@@ -109,8 +172,10 @@ public class DynamicComponentCompiler
             var references = await GetReferencesAsync();
             if (references.Count == 0)
             {
-                return (null, "Dynamic compilation in WASM is currently limited. The Razor-to-C# generation works perfectly, but loading assembly references in the browser environment requires additional infrastructure. For now, please use the pre-compiled template examples to see RazorConsole in action.");
+                return (null, "Failed to load assembly references from /wasm/dlls/. Please ensure the DLL files are available for dynamic compilation.");
             }
+
+            Console.WriteLine($"Loaded {references.Count} assembly references for compilation");
 
             // Step 1: Generate C# code from Razor
             var componentName = $"DynamicComponent_{Interlocked.Increment(ref s_assemblyCounter)}";
