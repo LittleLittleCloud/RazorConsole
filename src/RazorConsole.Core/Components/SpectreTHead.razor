@@ -8,9 +8,23 @@
 </thead>
 
 @code {
+    /// <summary>
+    /// Represents the header section of a table.
+    /// </summary>
+    /// <remarks>
+    /// Use this component within a <see cref="SpectreTable"/> to define table headers.
+    /// Contains <see cref="SpectreTR"/> rows with <see cref="SpectreTH"/> header cells.
+    /// </remarks>
+
+    /// <summary>
+    /// Gets or sets the child content containing header rows.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Gets or sets additional HTML attributes to apply to the thead element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

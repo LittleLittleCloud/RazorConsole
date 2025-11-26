@@ -9,12 +9,33 @@
 </td>
 
 @code {
+    /// <summary>
+    /// Represents a table data cell.
+    /// </summary>
+    /// <remarks>
+    /// Use this component within a <see cref="SpectreTR"/> in the <see cref="SpectreTBody"/> or
+    /// <see cref="SpectreTFoot"/> sections to define data cells containing table content.
+    /// </remarks>
+
+    /// <summary>
+    /// Gets or sets the child content of the data cell.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Gets or sets the horizontal alignment of the cell content.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, default alignment is used. Options include <see cref="Justify.Left"/>,
+    /// <see cref="Justify.Center"/>, and <see cref="Justify.Right"/>.
+    /// </remarks>
     [Parameter]
     public Justify? Align { get; set; }
 
+    /// <summary>
+    /// Gets or sets additional HTML attributes to apply to the td element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 

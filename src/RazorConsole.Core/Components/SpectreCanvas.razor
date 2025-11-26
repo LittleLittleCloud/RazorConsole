@@ -14,24 +14,64 @@
      data-update-token="@_updateToken"/>
 
 @code {
+    /// <summary>
+    /// Renders a pixel-based canvas for drawing graphics in the console.
+    /// </summary>
+    /// <remarks>
+    /// This component allows you to draw pixel art, charts, or other graphics by specifying
+    /// individual pixel positions and colors. Pixels are rendered using console characters.
+    /// The component implements <see cref="IDisposable"/> to clean up canvas data.
+    /// </remarks>
+
+    /// <summary>
+    /// Gets or sets the array of pixels to render on the canvas.
+    /// </summary>
+    /// <remarks>
+    /// Each pixel is defined by its (x, y) coordinates and color. The total number of pixels
+    /// must not exceed <c>CanvasWidth * CanvasHeight</c>.
+    /// </remarks>
     [Parameter]
     [EditorRequired]
     public (int x, int y, Color color)[] Pixels { get; set; } = [];
 
+    /// <summary>
+    /// Gets or sets the width of the canvas in pixels.
+    /// </summary>
     [Parameter]
     [EditorRequired]
     public int CanvasWidth { get; set; }
 
+    /// <summary>
+    /// Gets or sets the height of the canvas in pixels.
+    /// </summary>
     [Parameter]
     [EditorRequired]
     public int CanvasHeight { get; set; }
 
+    /// <summary>
+    /// Gets or sets the maximum width of the rendered canvas in console characters.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, no maximum width constraint is applied.
+    /// </remarks>
     [Parameter]
     public int? MaxWidth { get; set; }
 
+    /// <summary>
+    /// Gets or sets the width of each pixel when rendered in the console.
+    /// </summary>
+    /// <remarks>
+    /// Default is 2 characters per pixel, which helps create more square-looking pixels in the console.
+    /// </remarks>
     [Parameter]
     public int PixelWidth { get; set; } = 2;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the canvas should automatically scale to fit the console.
+    /// </summary>
+    /// <remarks>
+    /// Default is <c>false</c>.
+    /// </remarks>
     [Parameter]
     public bool Scale { get; set; }
 

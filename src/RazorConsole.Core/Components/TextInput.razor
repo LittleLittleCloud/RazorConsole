@@ -39,83 +39,225 @@
     </Panel>
 </div>
 @code {
+    /// <summary>
+    /// Provides a text input field with label, placeholder, validation, and styling support.
+    /// </summary>
+    /// <remarks>
+    /// This component supports two-way binding, focus management, input masking (for passwords),
+    /// and customizable appearance. The border color changes based on focus and disabled states.
+    /// Supports both input events (fired on every keystroke) and submit events (fired on Enter key).
+    /// </remarks>
+
     private readonly string _generatedFocusKey = Guid.NewGuid().ToString("N");
     private bool _isFocused;
     private string _currentValue = string.Empty;
     private string _lastIncomingValue = string.Empty;
 
+    /// <summary>
+    /// Gets or sets the current value of the text input.
+    /// </summary>
+    /// <remarks>
+    /// Supports two-way binding with @bind-Value syntax.
+    /// </remarks>
     [Parameter]
     public string? Value { get; set; }
 
+    /// <summary>
+    /// Gets or sets the event callback invoked when the value changes.
+    /// </summary>
     [Parameter]
     public EventCallback<string?> ValueChanged { get; set; }
 
+    /// <summary>
+    /// Gets or sets the expression identifying the bound value.
+    /// </summary>
+    /// <remarks>
+    /// Used for validation scenarios with EditContext.
+    /// </remarks>
     [Parameter]
     public Expression<Func<string?>>? ValueExpression { get; set; }
 
+    /// <summary>
+    /// Gets or sets the event callback invoked on each character input.
+    /// </summary>
+    /// <remarks>
+    /// Fired for every keystroke as the user types.
+    /// </remarks>
     [Parameter]
     public EventCallback<string?> OnInput { get; set; }
 
+    /// <summary>
+    /// Gets or sets the event callback invoked when the user submits the input (typically by pressing Enter).
+    /// </summary>
     [Parameter]
     public EventCallback<string?> OnSubmit { get; set; }
 
+    /// <summary>
+    /// Gets or sets the event callback invoked when the input receives focus.
+    /// </summary>
     [Parameter]
     public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
+    /// <summary>
+    /// Gets or sets the event callback invoked when the input loses focus.
+    /// </summary>
     [Parameter]
     public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
+    /// <summary>
+    /// Gets or sets the label text displayed above the input field.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c> or whitespace, no label is displayed.
+    /// </remarks>
     [Parameter]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// Gets or sets the color of the label text.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Color.White"/>.
+    /// </remarks>
     [Parameter]
     public Color LabelColor { get; set; } = Color.White;
 
+    /// <summary>
+    /// Gets or sets the decoration style of the label text.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Decoration.None"/>.
+    /// </remarks>
     [Parameter]
     public Decoration LabelDecoration { get; set; } = Decoration.None;
 
+    /// <summary>
+    /// Gets or sets the placeholder text shown when the input is empty.
+    /// </summary>
     [Parameter]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// Gets or sets the color of the input value text.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Color.White"/>.
+    /// </remarks>
     [Parameter]
     public Color ValueColor { get; set; } = Color.White;
 
+    /// <summary>
+    /// Gets or sets the color of the placeholder text.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Color.Grey"/>.
+    /// </remarks>
     [Parameter]
     public Color PlaceholderColor { get; set; } = Color.Grey;
 
+    /// <summary>
+    /// Gets or sets the decoration style of the placeholder text.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Decoration.Dim"/> | <see cref="Decoration.Italic"/>.
+    /// </remarks>
     [Parameter]
     public Decoration PlaceholderDecoration { get; set; } = Decoration.Dim | Decoration.Italic;
 
+    /// <summary>
+    /// Gets or sets the border color when the input is not focused and not disabled.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Color.Grey37"/>.
+    /// </remarks>
     [Parameter]
     public Color BorderColor { get; set; } = Color.Grey37;
 
+    /// <summary>
+    /// Gets or sets the border color when the input has focus.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Color.Yellow"/>.
+    /// </remarks>
     [Parameter]
     public Color FocusedBorderColor { get; set; } = Color.Yellow;
 
+    /// <summary>
+    /// Gets or sets the border color when the input is disabled.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Color.Grey19"/>.
+    /// </remarks>
     [Parameter]
     public Color DisabledBorderColor { get; set; } = Color.Grey19;
 
+    /// <summary>
+    /// Gets or sets the style of the input border.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="BoxBorder.Rounded"/>.
+    /// </remarks>
     [Parameter]
     public BoxBorder BorderStyle { get; set; } = BoxBorder.Rounded;
 
+    /// <summary>
+    /// Gets or sets the padding between the border and the content.
+    /// </summary>
+    /// <remarks>
+    /// Default is no padding (0, 0, 0, 0).
+    /// </remarks>
     [Parameter]
     public Padding BorderPadding { get; set; } = new Padding(0, 0, 0, 0);
 
+    /// <summary>
+    /// Gets or sets the padding around the input content.
+    /// </summary>
+    /// <remarks>
+    /// Default is (1, 0, 1, 0), providing 1 character of horizontal padding.
+    /// </remarks>
     [Parameter]
     public Padding ContentPadding { get; set; } = new Padding(1, 0, 1, 0);
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the input should expand to fill available horizontal space.
+    /// </summary>
+    /// <remarks>
+    /// Default is <c>false</c>.
+    /// </remarks>
     [Parameter]
     public bool Expand { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the input is disabled.
+    /// </summary>
+    /// <remarks>
+    /// When disabled, the input cannot receive focus or accept input, and uses the <see cref="DisabledBorderColor"/>.
+    /// Default is <c>false</c>.
+    /// </remarks>
     [Parameter]
     public bool Disabled { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether input characters should be masked (displayed as bullets).
+    /// </summary>
+    /// <remarks>
+    /// Useful for password fields. Default is <c>false</c>.
+    /// </remarks>
     [Parameter]
     public bool MaskInput { get; set; }
 
+    /// <summary>
+    /// Gets or sets the tab order for keyboard navigation.
+    /// </summary>
+    /// <remarks>
+    /// Lower values receive focus first. If <c>null</c>, natural document order is used.
+    /// </remarks>
     [Parameter]
     public int? FocusOrder { get; set; }
 
+    /// <summary>
+    /// Gets or sets additional HTML attributes to apply to the input element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 

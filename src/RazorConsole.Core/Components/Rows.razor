@@ -8,9 +8,26 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Arranges child elements in a vertical row layout.
+    /// </summary>
+    /// <remarks>
+    /// Use this component to create stacked layouts where elements are arranged vertically.
+    /// For horizontal layouts, use <see cref="Columns"/> instead.
+    /// </remarks>
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the rows should expand to fill available vertical space.
+    /// </summary>
+    /// <remarks>
+    /// Default is <c>false</c>, which means rows will only use the space their content requires.
+    /// </remarks>
     [Parameter]
     public bool Expand { get; set; } = false;
 
+    /// <summary>
+    /// Gets or sets the child content to be arranged in rows.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 

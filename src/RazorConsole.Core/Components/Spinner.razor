@@ -15,20 +15,59 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Displays an animated spinner with an optional message to indicate ongoing operations.
+    /// </summary>
+    /// <remarks>
+    /// Spinners are useful for showing progress during long-running tasks. Multiple spinner styles
+    /// are available from <see cref="global::Spectre.Console.Spinner.Known"/>.
+    /// </remarks>
+
     private static readonly IReadOnlyDictionary<global::Spectre.Console.Spinner, string> SpinnerNames = BuildSpinnerNameMap();
 
+    /// <summary>
+    /// Gets or sets the type of spinner animation to display.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="global::Spectre.Console.Spinner.Known.Dots"/>. Other options include
+    /// Dots2, Dots3, Line, Star, and many more from <see cref="global::Spectre.Console.Spinner.Known"/>.
+    /// </remarks>
     [Parameter]
     public global::Spectre.Console.Spinner SpinnerType { get; set; } = global::Spectre.Console.Spinner.Known.Dots;
 
+    /// <summary>
+    /// Gets or sets the name of the spinner to use (alternative to <see cref="SpinnerType"/>).
+    /// </summary>
+    /// <remarks>
+    /// If specified, this takes precedence over <see cref="SpinnerType"/>.
+    /// </remarks>
     [Parameter]
     public string? SpinnerName { get; set; }
 
+    /// <summary>
+    /// Gets or sets the message displayed next to the spinner.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c> or whitespace, no message is shown.
+    /// </remarks>
     [Parameter]
     public string? Message { get; set; }
 
+    /// <summary>
+    /// Gets or sets the Spectre.Console style markup to apply to the spinner.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, the default style is used.
+    /// </remarks>
     [Parameter]
     public string? Style { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the spinner should automatically dismiss when complete.
+    /// </summary>
+    /// <remarks>
+    /// Default is <c>false</c>.
+    /// </remarks>
     [Parameter]
     public bool AutoDismiss { get; set; }
 

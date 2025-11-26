@@ -9,12 +9,33 @@
 </th>
 
 @code {
+    /// <summary>
+    /// Represents a table header cell.
+    /// </summary>
+    /// <remarks>
+    /// Use this component within a <see cref="SpectreTR"/> in the <see cref="SpectreTHead"/> section
+    /// to define column headers. Header cells typically contain column titles or labels.
+    /// </remarks>
+
+    /// <summary>
+    /// Gets or sets the child content of the header cell.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Gets or sets the horizontal alignment of the header cell content.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, default alignment is used. Options include <see cref="Justify.Left"/>,
+    /// <see cref="Justify.Center"/>, and <see cref="Justify.Right"/>.
+    /// </remarks>
     [Parameter]
     public Justify? Align { get; set; }
 
+    /// <summary>
+    /// Gets or sets additional HTML attributes to apply to the th element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 

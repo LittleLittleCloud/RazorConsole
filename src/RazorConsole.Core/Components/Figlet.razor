@@ -9,13 +9,38 @@
 />
 
 @code {
+    /// <summary>
+    /// Renders text in large ASCII art letters using the FIGlet format.
+    /// </summary>
+    /// <remarks>
+    /// FIGlet text is useful for creating eye-catching headers and titles in console applications.
+    /// </remarks>
+
     private string justifyAttribute => Justify.ToString();
     private string styleAttributes => new Style(Color).ToMarkup();
 
+    /// <summary>
+    /// Gets or sets the text content to render as FIGlet ASCII art.
+    /// </summary>
     [Parameter]
     public string Content { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the horizontal alignment of the FIGlet text.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Justify.Center"/>. Options include <see cref="Justify.Left"/>,
+    /// <see cref="Justify.Center"/>, and <see cref="Justify.Right"/>.
+    /// </remarks>
     [Parameter]
     public Justify Justify { get; set; } = Justify.Center;
+
+    /// <summary>
+    /// Gets or sets the color of the FIGlet text.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Color.Default"/>, which uses the console's default color.
+    /// </remarks>
     [Parameter]
     public Color Color { get; set; } = Color.Default;
 }

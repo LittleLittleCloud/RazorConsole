@@ -9,15 +9,48 @@
 
 
 @code {
+    /// <summary>
+    /// Provides scrollable navigation through a list of items with keyboard support.
+    /// </summary>
+    /// <remarks>
+    /// This component manages pagination and keyboard navigation (arrow keys, page up/down, home/end)
+    /// for large lists. It exposes only the currently visible items to the render fragment.
+    /// The component is generic and works with any item type specified via the TItem type parameter.
+    /// </remarks>
+
+    /// <summary>
+    /// Gets or sets the complete list of items to make scrollable.
+    /// </summary>
     [Parameter]
     public IReadOnlyList<TItem> Items { get; set; } = Array.Empty<TItem>();
+
+    /// <summary>
+    /// Gets or sets the number of items visible at one time (page size).
+    /// </summary>
+    /// <remarks>
+    /// Default is 1. This determines how many items are shown before requiring scrolling.
+    /// </remarks>
     [Parameter]
     public int PageSize { get; set; } = 1;
+
+    /// <summary>
+    /// Gets or sets the child content template that receives the visible items and scroll context.
+    /// </summary>
+    /// <remarks>
+    /// The render fragment receives a <see cref="ScrollContext{TItem}"/> containing the currently
+    /// visible items and keyboard event handlers.
+    /// </remarks>
     [Parameter]
     public required RenderFragment<ScrollContext<TItem>> ChildContent { get; set; }
 
     private int _offset;
 
+    /// <summary>
+    /// Gets or sets the current scroll offset (the index of the first visible item).
+    /// </summary>
+    /// <remarks>
+    /// The value is automatically clamped to valid range [0, Items.Count - PageSize].
+    /// </remarks>
     [Parameter]
     public int ScrollOffset
     {
@@ -25,6 +58,9 @@
         set => _offset = Math.Clamp(value, 0, Math.Max(0, Items.Count - PageSize));
     }
 
+    /// <summary>
+    /// Gets or sets the event callback invoked when the scroll offset changes.
+    /// </summary>
     [Parameter]
     public EventCallback<int> ScrollOffsetChanged { get; set; }
 

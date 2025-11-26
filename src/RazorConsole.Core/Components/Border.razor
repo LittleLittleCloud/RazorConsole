@@ -9,15 +9,45 @@
 </Panel>
 
 @code {
+    /// <summary>
+    /// Renders a simple border around child content without a title.
+    /// </summary>
+    /// <remarks>
+    /// This is a simplified wrapper around the <see cref="Panel"/> component for creating basic borders.
+    /// Use <see cref="Panel"/> directly if you need additional features like titles or custom dimensions.
+    /// </remarks>
+
+    /// <summary>
+    /// Gets or sets the child content to be rendered within the border.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Gets or sets the color of the border.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, the default console color is used.
+    /// </remarks>
     [Parameter]
     public Color? BorderColor { get; set; }
 
+    /// <summary>
+    /// Gets or sets the style of the border.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="BoxBorder.Rounded"/>. Common options include <see cref="BoxBorder.Square"/>,
+    /// <see cref="BoxBorder.Double"/>, <see cref="BoxBorder.Heavy"/>, and <see cref="BoxBorder.Ascii"/>.
+    /// </remarks>
     [Parameter]
     public BoxBorder BoxBorder { get; set; } = BoxBorder.Rounded;
 
+    /// <summary>
+    /// Gets or sets the padding inside the border.
+    /// </summary>
+    /// <remarks>
+    /// Default is no padding (0, 0, 0, 0). Padding is specified as (left, top, right, bottom).
+    /// </remarks>
     [Parameter]
     public Padding Padding { get; set; } = new(0, 0, 0, 0);
 }

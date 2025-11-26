@@ -10,32 +10,82 @@
     @attributes="AdditionalAttributes" />
 
 @code {
+    /// <summary>
+    /// Renders source code with syntax highlighting for various programming languages.
+    /// </summary>
+    /// <remarks>
+    /// This component uses the ColorCode library to provide syntax highlighting.
+    /// Requires the SyntaxHighlightingService to be registered via services.AddSyntaxHighlighting().
+    /// Supports many languages including C#, JavaScript, Python, SQL, and more.
+    /// </remarks>
+
     private string _payload = string.Empty;
 
+    /// <summary>
+    /// Gets or sets the source code to highlight.
+    /// </summary>
     [Parameter]
     public string Code { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Gets or sets the programming language of the code.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, the highlighter will attempt to detect the language automatically.
+    /// Supported languages include "csharp", "javascript", "python", "sql", etc.
+    /// </remarks>
     [Parameter]
     public string? Language { get; set; }
 
+    /// <summary>
+    /// Gets or sets the color theme for syntax highlighting.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, the default theme is used.
+    /// </remarks>
     [Parameter]
     public string? Theme { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether line numbers should be displayed.
+    /// </summary>
+    /// <remarks>
+    /// Default is <c>false</c>.
+    /// </remarks>
     [Parameter]
     public bool ShowLineNumbers { get; set; }
 
+    /// <summary>
+    /// Gets or sets additional syntax highlighting options.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, <see cref="SyntaxOptions.Default"/> is used.
+    /// </remarks>
     [Parameter]
     public SyntaxOptions? Options { get; set; }
 
+    /// <summary>
+    /// Gets or sets the width of tab characters in spaces.
+    /// </summary>
+    /// <remarks>
+    /// If specified and greater than 0, overrides the tab width in <see cref="Options"/>.
+    /// </remarks>
     [Parameter]
     public int? TabWidth { get; set; }
 
+    /// <summary>
+    /// Gets or sets additional HTML attributes to apply to the syntax highlighter element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
+    /// <summary>
+    /// Gets or sets the syntax highlighting service used to process code.
+    /// </summary>
     [Inject]
     internal SyntaxHighlightingService Highlighter { get; set; } = default!;
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         if (Highlighter is null)

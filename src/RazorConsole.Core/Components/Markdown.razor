@@ -7,15 +7,33 @@
 @((MarkupString)_html)
 
 @code {
+    /// <summary>
+    /// Renders Markdown-formatted text as styled console output.
+    /// </summary>
+    /// <remarks>
+    /// This component converts Markdown syntax into appropriate console formatting.
+    /// Requires the MarkdownRenderingService to be registered in the dependency injection container.
+    /// </remarks>
+
     private string _html = string.Empty;
 
+    /// <summary>
+    /// Gets or sets the Markdown content to render.
+    /// </summary>
+    /// <remarks>
+    /// Supports standard Markdown syntax including headers, lists, bold, italic, code blocks, and links.
+    /// </remarks>
     [Parameter]
     [EditorRequired]
     public string Content { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Gets or sets the Markdown rendering service used to convert Markdown to HTML.
+    /// </summary>
     [Inject]
     internal MarkdownRenderingService MarkdownService { get; set; } = default!;
 
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         if (MarkdownService is null)

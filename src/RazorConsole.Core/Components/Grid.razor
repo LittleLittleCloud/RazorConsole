@@ -13,15 +13,44 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Arranges child elements in a multi-column grid layout.
+    /// </summary>
+    /// <remarks>
+    /// Child elements are automatically arranged into the specified number of columns,
+    /// wrapping to new rows as needed. This is similar to CSS grid layouts.
+    /// </remarks>
+
+    /// <summary>
+    /// Gets or sets the child content to be arranged in the grid.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Gets or sets the number of columns in the grid.
+    /// </summary>
+    /// <remarks>
+    /// Default is 2 columns. Must be a positive integer.
+    /// </remarks>
     [Parameter]
     public int Columns { get; set; } = 2;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the grid should expand to fill available space.
+    /// </summary>
+    /// <remarks>
+    /// Default is <c>false</c>, which means the grid will only use the space required by its content.
+    /// </remarks>
     [Parameter]
     public bool Expand { get; set; }
 
+    /// <summary>
+    /// Gets or sets the width of the grid in characters.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, the width is automatically determined by the content and available space.
+    /// </remarks>
     [Parameter]
     public int? Width { get; set; }
 

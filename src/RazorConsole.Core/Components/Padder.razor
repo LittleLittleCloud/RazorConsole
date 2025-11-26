@@ -11,11 +11,29 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Adds padding (whitespace) around child content.
+    /// </summary>
+    /// <remarks>
+    /// Use this component to add spacing around elements without creating borders.
+    /// Padding is specified in characters for each side (left, top, right, bottom).
+    /// </remarks>
+
     private static readonly Padding NoPadding = new(0, 0, 0, 0);
 
+    /// <summary>
+    /// Gets or sets the child content to which padding will be applied.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Gets or sets the padding to apply around the content.
+    /// </summary>
+    /// <remarks>
+    /// Default is no padding (0, 0, 0, 0). Padding is specified as (left, top, right, bottom) in characters.
+    /// Example: <c>new Padding(2, 1, 2, 1)</c> adds 2 characters on left/right and 1 line on top/bottom.
+    /// </remarks>
     [Parameter]
     public Padding Padding { get; set; } = NoPadding;
 

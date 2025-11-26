@@ -10,8 +10,23 @@
       data-content="@_escapedContent" />
 
 @code {
+    /// <summary>
+    /// Renders plain text with optional styling (color, background, and decorations).
+    /// </summary>
+    /// <remarks>
+    /// This is the fundamental text rendering component. The content is automatically escaped to prevent
+    /// interpretation of special characters. For advanced text formatting, see the Spectre.Console markup syntax.
+    /// </remarks>
+
     private string StyleAttributes => new Style(Foreground, Background, Decoration, link).ToMarkup();
     private string _escapedContent = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the text content to render.
+    /// </summary>
+    /// <remarks>
+    /// The content is automatically escaped to prevent interpretation of special markup characters.
+    /// </remarks>
     [Parameter]
     [EditorRequired]
     public string Content
@@ -26,15 +41,39 @@
         }
     }
 
+    /// <summary>
+    /// Gets or sets the foreground (text) color.
+    /// </summary>
+    /// <remarks>
+    /// Default is the plain text foreground from <see cref="Style.Plain"/>.
+    /// </remarks>
     [Parameter]
     public Color Foreground { get; set; } = Spectre.Console.Style.Plain.Foreground;
 
+    /// <summary>
+    /// Gets or sets the background color.
+    /// </summary>
+    /// <remarks>
+    /// Default is the plain text background from <see cref="Style.Plain"/>.
+    /// </remarks>
     [Parameter]
     public Color Background { get; set; } = Spectre.Console.Style.Plain.Background;
 
+    /// <summary>
+    /// Gets or sets the text decoration (bold, italic, underline, etc.).
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="Decoration.None"/>. Decorations can be combined using the bitwise OR operator.
+    /// </remarks>
     [Parameter]
     public Decoration Decoration { get; set; } = Spectre.Console.Decoration.None;
 
+    /// <summary>
+    /// Gets or sets an optional hyperlink URL.
+    /// </summary>
+    /// <remarks>
+    /// If specified, the text will be rendered as a clickable link in supported terminals.
+    /// </remarks>
     [Parameter]
     public string? link
     {

@@ -17,18 +17,53 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Aligns child content horizontally and vertically within a specified area.
+    /// </summary>
+    /// <remarks>
+    /// This component provides alignment control similar to CSS flexbox alignment,
+    /// allowing content to be positioned within a container using horizontal and vertical alignment options.
+    /// </remarks>
+
+    /// <summary>
+    /// Gets or sets the child content to be aligned.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Gets or sets the horizontal alignment of the content.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="HorizontalAlignment.Left"/>.
+    /// </remarks>
     [Parameter]
     public HorizontalAlignment Horizontal { get; set; } = HorizontalAlignment.Left;
 
+    /// <summary>
+    /// Gets or sets the vertical alignment of the content.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see cref="VerticalAlignment.Top"/>.
+    /// </remarks>
     [Parameter]
     public VerticalAlignment Vertical { get; set; } = VerticalAlignment.Top;
 
+    /// <summary>
+    /// Gets or sets the width of the alignment container in characters.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, the width is automatically determined by the content.
+    /// </remarks>
     [Parameter]
     public int? Width { get; set; }
 
+    /// <summary>
+    /// Gets or sets the height of the alignment container in characters.
+    /// </summary>
+    /// <remarks>
+    /// If <c>null</c>, the height is automatically determined by the content.
+    /// </remarks>
     [Parameter]
     public int? Height { get; set; }
 

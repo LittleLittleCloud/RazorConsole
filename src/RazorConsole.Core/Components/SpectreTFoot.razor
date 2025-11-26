@@ -8,9 +8,23 @@
 </tfoot>
 
 @code {
+    /// <summary>
+    /// Represents the footer section of a table.
+    /// </summary>
+    /// <remarks>
+    /// Use this component within a <see cref="SpectreTable"/> to define table footers.
+    /// Contains <see cref="SpectreTR"/> rows with <see cref="SpectreTD"/> or <see cref="SpectreTH"/> cells.
+    /// </remarks>
+
+    /// <summary>
+    /// Gets or sets the child content containing footer rows.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Gets or sets additional HTML attributes to apply to the tfoot element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }
