@@ -15,20 +15,47 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Displays an animated spinner with optional message using Spectre.Console's <see cref="global::Spectre.Console.Spinner"/> renderable.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Shows visual feedback during long-running operations with various animation styles available from <see cref="global::Spectre.Console.Spinner.Known"/>.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/live/status">Spectre.Console Status documentation</see> for more information.
+    /// </para>
+    /// </remarks>
+
     private static readonly IReadOnlyDictionary<global::Spectre.Console.Spinner, string> SpinnerNames = BuildSpinnerNameMap();
 
+    /// <summary>
+    /// Type of spinner animation. Default is <see cref="global::Spectre.Console.Spinner.Known.Dots"/>. See <see cref="global::Spectre.Console.Spinner.Known"/> for all available styles.
+    /// </summary>
     [Parameter]
     public global::Spectre.Console.Spinner SpinnerType { get; set; } = global::Spectre.Console.Spinner.Known.Dots;
 
+    /// <summary>
+    /// Name of the spinner to use (alternative to <see cref="SpinnerType"/>). Takes precedence when specified.
+    /// </summary>
     [Parameter]
     public string? SpinnerName { get; set; }
 
+    /// <summary>
+    /// Message displayed next to the spinner. If <c>null</c> or empty, no message is shown.
+    /// </summary>
     [Parameter]
     public string? Message { get; set; }
 
+    /// <summary>
+    /// Spectre.Console style markup to apply. If <c>null</c>, uses default style.
+    /// </summary>
     [Parameter]
     public string? Style { get; set; }
 
+    /// <summary>
+    /// Whether the spinner should automatically dismiss when complete. Default is <c>false</c>.
+    /// </summary>
     [Parameter]
     public bool AutoDismiss { get; set; }
 

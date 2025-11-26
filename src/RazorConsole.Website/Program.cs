@@ -1,8 +1,7 @@
-// Create a Main method to make tool chain happy.
-using System.Collections.Generic;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
-using RazorConsole.Components;
 using RazorConsole.Website;
 using RazorConsole.Website.Components;
 [assembly: System.Runtime.Versioning.SupportedOSPlatform("browser")]
@@ -154,6 +153,17 @@ public partial class Registry
         }
         await renderer.HandleKeyboardEventAsync(xtermKey, domKey, ctrlKey, altKey, shiftKey)
             .ConfigureAwait(false);
+    }
+
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static void HandleResize(string elementID, int cols, int rows)
+    {
+        if (!_renderers.TryGetValue(elementID, out var renderer))
+        {
+            return;
+        }
+        renderer.HandleResize(cols, rows);
     }
 }
 

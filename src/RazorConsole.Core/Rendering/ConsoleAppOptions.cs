@@ -1,3 +1,5 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Rendering;
 

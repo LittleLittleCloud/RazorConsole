@@ -17,29 +17,67 @@
 </table>
 
 @code {
-	[Parameter]
-	public RenderFragment? ChildContent { get; set; }
+    /// <summary>
+    /// Renders a formatted table using Spectre.Console's <see cref="global::Spectre.Console.Table"/> renderable.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Creates structured tabular data displays with rows, columns, headers, and borders.
+    /// Use with nested <see cref="SpectreTHead"/>, <see cref="SpectreTBody"/>, <see cref="SpectreTFoot"/>,
+    /// <see cref="SpectreTR"/>, <see cref="SpectreTH"/>, and <see cref="SpectreTD"/> components.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/widgets/table">Spectre.Console Table documentation</see> for more information.
+    /// </para>
+    /// </remarks>
 
-	[Parameter]
-	public bool Expand { get; set; }
+    /// <summary>
+    /// Content containing table rows and cells.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
 
-	[Parameter]
-	public int? Width { get; set; }
+    /// <summary>
+    /// Whether the table should expand to fill available space. Default is <c>false</c>.
+    /// </summary>
+    [Parameter]
+    public bool Expand { get; set; }
 
-	[Parameter]
-	public string? Title { get; set; }
+    /// <summary>
+    /// Width of the table in characters. If <c>null</c> or less than 1, automatically determined by content.
+    /// </summary>
+    [Parameter]
+    public int? Width { get; set; }
 
-	[Parameter]
-	public TableBorder? Border { get; set; }
+    /// <summary>
+    /// Title displayed above the table. If <c>null</c> or empty, no title is shown.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
 
+    /// <summary>
+    /// Style of the table border. See <see cref="TableBorder"/> for available styles like <see cref="TableBorder.Rounded"/>, <see cref="TableBorder.Square"/>, and <see cref="TableBorder.Minimal"/>.
+    /// </summary>
+    [Parameter]
+    public TableBorder? Border { get; set; }
+
+    /// <summary>
+    /// Color of the table border. Default is <see cref="Color.White"/>.
+    /// </summary>
     [Parameter]
     public Color BorderColor { get; set; } = Color.White;
 
-	[Parameter]
-	public bool ShowHeaders { get; set; } = true;
+    /// <summary>
+    /// Whether table headers should be displayed. Default is <c>true</c>.
+    /// </summary>
+    [Parameter]
+    public bool ShowHeaders { get; set; } = true;
 
-	[Parameter(CaptureUnmatchedValues = true)]
-	public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+    /// <summary>
+    /// Additional HTML attributes to apply to the table element.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
 	private string ExpandAttribute => Expand ? "true" : "false";
 

@@ -1,9 +1,7 @@
-using System;
-using System.Net.Http;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Reflection;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 

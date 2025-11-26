@@ -1,21 +1,13 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using RazorConsole.Core;
 using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Focus;
 using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
-using RazorConsole.Core.Rendering.Markdown;
-using RazorConsole.Core.Rendering.Syntax;
-using RazorConsole.Core.Rendering.Vdom;
-using RazorConsole.Core.Utilities;
-using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -24,6 +16,7 @@ namespace RazorConsole.Website;
 internal interface IRazorConsoleRenderer
 {
     Task HandleKeyboardEventAsync(string xtermKey, string domKey, bool ctrlKey, bool altKey, bool shiftKey);
+    void HandleResize(int cols, int rows);
     event Action<string>? SnapshotRendered;
 }
 
@@ -36,6 +29,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
     private IAnsiConsole? _ansiConsole;
     private readonly StringWriter _sw = new StringWriter();
     private KeyboardEventManager? _keyboardEventManager;
+    private LiveDisplayCanvas? _canvas;
     private Task? _initializationTask;
     public event Action<string>? SnapshotRendered;
 
@@ -66,41 +60,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
 
         var services = new ServiceCollection();
         services.Configure<ConsoleAppOptions>(_ => { });
-
-        services.TryAddSingleton<IComponentActivator>(sp => new ComponentActivator(sp));
-        services.TryAddSingleton<ConsoleNavigationManager>();
-        services.TryAddSingleton<NavigationManager>(sp => sp.GetRequiredService<ConsoleNavigationManager>());
-        services.AddSingleton<INavigationInterception, NoopNavigationInterception>();
-        services.AddSingleton<IScrollToLocationHash, NoopScrollToLocationHash>();
-
-        services.TryAddSingleton<ILoggerFactory>(_ => NullLoggerFactory.Instance);
-        services.TryAddSingleton<VdomDiffService>();
-
-        services.TryAddSingleton<RendererKeyboardEventDispatcher>();
-        services.TryAddSingleton<IKeyboardEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
-        services.TryAddSingleton<IFocusEventDispatcher>(sp => sp.GetRequiredService<RendererKeyboardEventDispatcher>());
-        services.TryAddSingleton<FocusManager>(sp => new FocusManager(sp.GetService<IFocusEventDispatcher>()));
-        services.TryAddSingleton<KeyboardEventManager>();
-
-        services.TryAddSingleton<ISyntaxLanguageRegistry, ColorCodeLanguageRegistry>();
-        services.TryAddSingleton<ISyntaxThemeRegistry, SyntaxThemeRegistry>();
-        services.TryAddSingleton<SpectreMarkupFormatter>();
-        services.TryAddSingleton<SyntaxHighlightingService>();
-        services.TryAddSingleton<MarkdownRenderingService>();
-
-        services.AddDefaultVdomTranslators();
-        services.AddSingleton<IVdomElementTranslator>(sp =>
-            new HtmlCodeBlockElementTranslator(sp.GetRequiredService<SyntaxHighlightingService>()));
-        services.TryAddSingleton(sp =>
-        {
-            var translators = sp.GetServices<IVdomElementTranslator>()
-                .OrderBy(t => t.Priority)
-                .ToList();
-            return new VdomSpectreTranslator(translators);
-        });
-
-        services.TryAddSingleton<ConsoleRenderer>();
-        services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<ConsoleAppOptions>>().Value);
+        services.AddRazorConsoleServices();
 
         _serviceProvider = services.BuildServiceProvider();
         _consoleRenderer = _serviceProvider.GetRequiredService<ConsoleRenderer>();
@@ -123,11 +83,11 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
         _consoleRenderer.Subscribe(focusManager);
 
         var initialView = ConsoleViewResult.FromSnapshot(snapshot);
-        var canvas = new LiveDisplayCanvas(_ansiConsole);
-        var consoleLiveDisplayContext = new ConsoleLiveDisplayContext(canvas, _consoleRenderer, initialView);
+        _canvas = new LiveDisplayCanvas(_ansiConsole);
+        var consoleLiveDisplayContext = new ConsoleLiveDisplayContext(_canvas, _consoleRenderer, initialView);
         var focusSession = focusManager.BeginSession(consoleLiveDisplayContext, initialView, CancellationToken.None);
         await focusSession.InitializationTask.ConfigureAwait(false);
-        canvas.Refreshed += () =>
+        _canvas.Refreshed += () =>
         {
             var output = _sw.ToString();
             SnapshotRendered?.Invoke(output);
@@ -213,6 +173,7 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
         // Use domKey for key identification (cleaner names like "Enter", "Tab", etc.)
         var consoleKey = domKey switch
         {
+            // Navigation keys
             "Enter" => ConsoleKey.Enter,
             "Tab" => ConsoleKey.Tab,
             "Backspace" => ConsoleKey.Backspace,
@@ -221,6 +182,49 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
             "ArrowDown" => ConsoleKey.DownArrow,
             "ArrowLeft" => ConsoleKey.LeftArrow,
             "ArrowRight" => ConsoleKey.RightArrow,
+
+            // Additional navigation and editing keys
+            "Home" => ConsoleKey.Home,
+            "End" => ConsoleKey.End,
+            "PageUp" => ConsoleKey.PageUp,
+            "PageDown" => ConsoleKey.PageDown,
+            "Insert" => ConsoleKey.Insert,
+            "Delete" => ConsoleKey.Delete,
+
+            // Function keys (F1-F12)
+            "F1" => ConsoleKey.F1,
+            "F2" => ConsoleKey.F2,
+            "F3" => ConsoleKey.F3,
+            "F4" => ConsoleKey.F4,
+            "F5" => ConsoleKey.F5,
+            "F6" => ConsoleKey.F6,
+            "F7" => ConsoleKey.F7,
+            "F8" => ConsoleKey.F8,
+            "F9" => ConsoleKey.F9,
+            "F10" => ConsoleKey.F10,
+            "F11" => ConsoleKey.F11,
+            "F12" => ConsoleKey.F12,
+
+            // Modifier keys (standalone)
+            "Shift" => ConsoleKey.None,
+            "Control" => ConsoleKey.None,
+            "Alt" => ConsoleKey.None,
+            "Meta" => ConsoleKey.None,
+
+            // Lock keys
+            "CapsLock" => ConsoleKey.None,
+            "NumLock" => ConsoleKey.None,
+            "ScrollLock" => ConsoleKey.None,
+
+            // Other special keys
+            // "ContextMenu" maps to Applications key (right-click menu key on Windows keyboards)
+            "ContextMenu" => ConsoleKey.Applications,
+            "Pause" => ConsoleKey.Pause,
+            "PrintScreen" => ConsoleKey.PrintScreen,
+
+            // Clear key (Numpad 5 when NumLock is off)
+            "Clear" => ConsoleKey.Clear,
+
             _ when domKey.Length == 1 => ParseSingleChar(domKey[0]),
             _ => ConsoleKey.None
         };
@@ -232,9 +236,26 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
             "Enter" => '\r',
             "Tab" => '\t',
             "Backspace" => '\b',
+            "Escape" => '\x1b',
+            "Delete" => '\x7f',
             _ when xtermKey.Length == 1 => xtermKey[0],
             _ => '\0'
         };
+
+        // Handle control key combinations for letters (Ctrl+A through Ctrl+Z)
+        // When Ctrl is pressed with a letter, xterm sends the corresponding control character
+        // (ASCII 1-26). We override the consoleKey and keyChar here because the switch above
+        // cannot properly identify the letter from a control character.
+        if (ctrlKey && !altKey && xtermKey.Length == 1)
+        {
+            var c = xtermKey[0];
+            if (c >= '\x01' && c <= '\x1a')
+            {
+                // Control character: Ctrl+A = 0x01, ..., Ctrl+Z = 0x1A
+                consoleKey = ConsoleKey.A + (c - '\x01');
+                keyChar = c;
+            }
+        }
 
         return new ConsoleKeyInfo(keyChar, consoleKey, shiftKey, altKey, ctrlKey);
     }
@@ -243,12 +264,52 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         return c switch
         {
+            // Letters
             >= 'a' and <= 'z' => ConsoleKey.A + (c - 'a'),
             >= 'A' and <= 'Z' => ConsoleKey.A + (c - 'A'),
+
+            // Digit row keys
             >= '0' and <= '9' => ConsoleKey.D0 + (c - '0'),
+
+            // Spacebar
             ' ' => ConsoleKey.Spacebar,
+
+            // Punctuation and symbol keys (common US keyboard layout)
+            '-' or '_' => ConsoleKey.OemMinus,
+            '=' or '+' => ConsoleKey.OemPlus,
+            '[' or '{' => ConsoleKey.Oem4,
+            ']' or '}' => ConsoleKey.Oem6,
+            '\\' or '|' => ConsoleKey.Oem5,
+            ';' or ':' => ConsoleKey.Oem1,
+            '\'' or '"' => ConsoleKey.Oem7,
+            ',' or '<' => ConsoleKey.OemComma,
+            '.' or '>' => ConsoleKey.OemPeriod,
+            '/' or '?' => ConsoleKey.Oem2,
+            '`' or '~' => ConsoleKey.Oem3,
+
+            // Math operators (from numpad or Shift combinations)
+            '*' => ConsoleKey.Multiply,
+
             _ => ConsoleKey.None
         };
+    }
+
+    /// <summary>
+    /// Handles terminal resize events from the browser by updating console dimensions and triggering a re-render.
+    /// </summary>
+    public void HandleResize(int cols, int rows)
+    {
+        if (_ansiConsole is null || _canvas is null)
+        {
+            return;
+        }
+
+        // Update the console profile dimensions
+        _ansiConsole.Profile.Width = cols;
+        _ansiConsole.Profile.Height = rows;
+
+        // Trigger a refresh to re-render with the new dimensions
+        _canvas.Refresh();
     }
 
     public void OnCompleted()

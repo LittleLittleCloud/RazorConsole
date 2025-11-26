@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+// Copyright (c) RazorConsole. All rights reserved.
 
 namespace RazorConsole.Core.Vdom;
 

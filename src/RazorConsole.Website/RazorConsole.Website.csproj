@@ -16,6 +16,7 @@
     <WasmFingerprintAssets>false</WasmFingerprintAssets>
     <CompressionEnabled>false</CompressionEnabled>
     <ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -9,15 +9,34 @@
 </Panel>
 
 @code {
+    /// <summary>
+    /// Renders a simple border around content without a title (simplified wrapper for <see cref="Panel"/>).
+    /// </summary>
+    /// <remarks>
+    /// For borders with titles or advanced features, use <see cref="Panel"/> directly.
+    /// </remarks>
+
+    /// <summary>
+    /// Content to render within the border.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Color of the border. If <c>null</c>, uses default console color.
+    /// </summary>
     [Parameter]
     public Color? BorderColor { get; set; }
 
+    /// <summary>
+    /// Style of the border. Default is <see cref="BoxBorder.Rounded"/>. See <see cref="BoxBorder"/> for available styles.
+    /// </summary>
     [Parameter]
     public BoxBorder BoxBorder { get; set; } = BoxBorder.Rounded;
 
+    /// <summary>
+    /// Padding inside the border as (left, top, right, bottom). Default is (0, 0, 0, 0).
+    /// </summary>
     [Parameter]
     public Padding Padding { get; set; } = new(0, 0, 0, 0);
 }

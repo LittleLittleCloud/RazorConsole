@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Collections.ObjectModel;
-using System.Linq;
 using ColorCode.Common;
 using Spectre.Console;
 

@@ -1,6 +1,6 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
 using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Core.Controllers;
@@ -20,7 +20,7 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
     private readonly VdomDiffService _diffService;
     private bool _disposed;
     private ConsoleViewResult? _currentView;
-    private IDisposable? _snapshotSubscription;
+    private readonly IDisposable? _snapshotSubscription;
     private List<AnimationSubscription>? _animationSubscriptions;
 
     internal ConsoleLiveDisplayContext(

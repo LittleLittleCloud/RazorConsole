@@ -8,9 +8,27 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Arranges content in vertical rows using Spectre.Console's <see cref="global::Spectre.Console.Rows"/> renderable.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Creates stacked layouts where elements are arranged vertically. For horizontal layouts, use <see cref="Columns"/>.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/widgets/rows">Spectre.Console Rows documentation</see> for more information.
+    /// </para>
+    /// </remarks>
+
+    /// <summary>
+    /// Whether rows should expand to fill available vertical space. Default is <c>false</c>.
+    /// </summary>
     [Parameter]
     public bool Expand { get; set; } = false;
 
+    /// <summary>
+    /// Content to arrange in rows.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 

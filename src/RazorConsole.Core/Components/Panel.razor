@@ -19,6 +19,22 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Renders a panel with optional title, border, and padding using Spectre.Console's <see cref="global::Spectre.Console.Panel"/> renderable.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Wraps content in a customizable box with borders, titles, and padding for creating visual sections.
+    /// For simple borders without titles, use the <see cref="Border"/> component instead.
+    /// </para>
+    /// <para>
+    /// See the <see href="https://spectreconsole.net/widgets/panel">Spectre.Console Panel documentation</see> for more information.
+    /// </para>
+    /// </remarks>
+
+    /// <summary>
+    /// Content to render inside the panel.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -32,27 +48,51 @@
         { BoxBorder.None, "none" },
     };
 
+    /// <summary>
+    /// Title text displayed at the top of the panel border. If <c>null</c> or empty, no title is shown.
+    /// </summary>
     [Parameter]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// Color of the panel title. If <c>null</c>, uses default console color.
+    /// </summary>
     [Parameter]
     public Color? TitleColor { get; set; }
 
+    /// <summary>
+    /// Color of the panel border. If <c>null</c>, uses default console color.
+    /// </summary>
     [Parameter]
     public Color? BorderColor { get; set; }
 
+    /// <summary>
+    /// Style of the panel border. See <see cref="BoxBorder"/> for available styles like <see cref="BoxBorder.Rounded"/>, <see cref="BoxBorder.Square"/>, and <see cref="BoxBorder.Double"/>.
+    /// </summary>
     [Parameter]
     public BoxBorder? Border { get; set; }
 
+    /// <summary>
+    /// Height of the panel in lines. If <c>null</c> or less than 1, height is automatically determined by content.
+    /// </summary>
     [Parameter]
     public int? Height { get; set; }
 
+    /// <summary>
+    /// Padding inside the panel border as (left, top, right, bottom). If <c>null</c>, no padding is applied.
+    /// </summary>
     [Parameter]
     public Padding? Padding { get; set; }
 
+    /// <summary>
+    /// Width of the panel in characters. If <c>null</c> or less than 1, width is automatically determined by content.
+    /// </summary>
     [Parameter]
     public int? Width { get; set; }
 
+    /// <summary>
+    /// Whether the panel should expand to fill available space. Default is <c>false</c>.
+    /// </summary>
     [Parameter]
     public bool Expand { get; set; }
 

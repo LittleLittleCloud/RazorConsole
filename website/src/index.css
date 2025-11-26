@@ -7,3 +7,8 @@
     @apply min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-slate-50;
   }
 }
+html, body, #root {
+  overflow-x: hidden;
+  max-width: 100vw;
+  position: relative;
+}

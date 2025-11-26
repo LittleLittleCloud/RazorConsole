@@ -10,32 +10,70 @@
     @attributes="AdditionalAttributes" />
 
 @code {
+    /// <summary>
+    /// Renders source code with syntax highlighting for various programming languages.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Uses ColorCode library for syntax highlighting. Supports languages including C#, JavaScript, Python, SQL, and more.
+    /// Requires SyntaxHighlightingService registration via services.AddSyntaxHighlighting().
+    /// </para>
+    /// </remarks>
+
     private string _payload = string.Empty;
 
+    /// <summary>
+    /// Source code to highlight.
+    /// </summary>
     [Parameter]
     public string Code { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Programming language of the code. If <c>null</c>, attempts automatic detection. Supported: "csharp", "javascript", "python", "sql", etc.
+    /// </summary>
     [Parameter]
     public string? Language { get; set; }
 
+    /// <summary>
+    /// Color theme for syntax highlighting. If <c>null</c>, uses default theme.
+    /// </summary>
     [Parameter]
     public string? Theme { get; set; }
 
+    /// <summary>
+    /// Whether line numbers should be displayed. Default is <c>false</c>.
+    /// </summary>
     [Parameter]
     public bool ShowLineNumbers { get; set; }
 
+    /// <summary>
+    /// Additional syntax highlighting options. If <c>null</c>, uses <see cref="SyntaxOptions.Default"/>.
+    /// </summary>
     [Parameter]
     public SyntaxOptions? Options { get; set; }
 
+    /// <summary>
+    /// Width of tab characters in spaces. When specified and greater than 0, overrides tab width in <see cref="Options"/>.
+    /// </summary>
     [Parameter]
     public int? TabWidth { get; set; }
 
+    /// <summary>
+    /// Additional HTML attributes for the syntax highlighter element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
+    /// <summary>
+    /// Syntax highlighting service used to process code (injected).
+    /// </summary>
     [Inject]
     internal SyntaxHighlightingService Highlighter { get; set; } = default!;
 
+    /// <summary>
+    /// Called when component parameters are set. Processes the code through syntax highlighting and encodes the result.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when SyntaxHighlightingService has not been registered.</exception>
     protected override void OnParametersSet()
     {
         if (Highlighter is null)

@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// Copyright (c) RazorConsole. All rights reserved.
 
 namespace RazorConsole.Core.Utilities;
 
