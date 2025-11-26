@@ -33,7 +33,10 @@
     [Inject]
     internal MarkdownRenderingService MarkdownService { get; set; } = default!;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Called when component parameters are set. Converts the Markdown content to HTML for rendering.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when MarkdownRenderingService has not been registered.</exception>
     protected override void OnParametersSet()
     {
         if (MarkdownService is null)

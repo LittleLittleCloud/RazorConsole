@@ -85,7 +85,10 @@
     [Inject]
     internal SyntaxHighlightingService Highlighter { get; set; } = default!;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Called when component parameters are set. Processes the code through syntax highlighting and encodes the result.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when SyntaxHighlightingService has not been registered.</exception>
     protected override void OnParametersSet()
     {
         if (Highlighter is null)
