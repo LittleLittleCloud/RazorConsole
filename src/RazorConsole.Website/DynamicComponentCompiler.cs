@@ -16,7 +16,7 @@ namespace RazorConsole.Website;
 public class DynamicComponentCompiler
 {
     private static readonly RazorProjectEngine s_razorEngine = CreateRazorEngine();
-    private static readonly List<MetadataReference> s_references = GetReferences();
+    private static List<MetadataReference>? s_references = null;
     private static int s_assemblyCounter = 0;
 
     private static RazorProjectEngine CreateRazorEngine()
@@ -34,28 +34,67 @@ public class DynamicComponentCompiler
         return projectEngine;
     }
 
-    private static List<MetadataReference> GetReferences()
+    private static async Task<List<MetadataReference>> GetReferencesAsync()
     {
+        if (s_references != null)
+        {
+            return s_references;
+        }
+
         var references = new List<MetadataReference>();
 
-        // Get all loaded assemblies that are relevant
+        Console.WriteLine("Loading assembly references for compilation...");
+
+        // Get all currently loaded assemblies
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
-            .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
+            .Where(a => !a.IsDynamic)
             .ToList();
 
+        Console.WriteLine($"Found {assemblies.Count} loaded assemblies");
+
+        // Collect assembly names to load
+        var assemblyNames = new List<string>();
         foreach (var assembly in assemblies)
         {
-            try
+            var name = assembly.GetName().Name;
+            if (!string.IsNullOrEmpty(name))
             {
-                references.Add(MetadataReference.CreateFromFile(assembly.Location));
-            }
-            catch
-            {
-                // Some assemblies may not be accessible
-                Console.WriteLine($"Could not create reference for assembly: {assembly.FullName}");
+                assemblyNames.Add(name);
             }
         }
 
+        // Load assemblies from the /wasm/dlls/ folder where we've placed the original .dll files
+        // These are the pre-WASM-compilation DLL files that Roslyn can use
+        using var httpClient = new HttpClient();
+        
+        foreach (var assemblyName in assemblyNames)
+        {
+            try
+            {
+                var assemblyPath = $"/wasm/dlls/{assemblyName}.dll";
+                Console.WriteLine($"Attempting to load: {assemblyPath}");
+                
+                var bytes = await httpClient.GetByteArrayAsync(assemblyPath);
+                if (bytes != null && bytes.Length > 0)
+                {
+                    var reference = MetadataReference.CreateFromImage(bytes);
+                    references.Add(reference);
+                    Console.WriteLine($"✓ Loaded: {assemblyName} ({bytes.Length} bytes)");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"⚠ HTTP error loading {assemblyName}: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"✗ Failed to load {assemblyName}: {ex.Message}");
+            }
+        }
+
+        Console.WriteLine($"Successfully loaded {references.Count} assembly references");
+        
+        s_references = references;
         return references;
     }
 
@@ -67,6 +106,13 @@ public class DynamicComponentCompiler
         try
         {
             Console.WriteLine("Starting Razor compilation...");
+
+            // Step 0: Load assembly references (lazy initialization)
+            var references = await GetReferencesAsync();
+            if (references.Count == 0)
+            {
+                return (null, "Dynamic compilation in WASM is currently limited. The Razor-to-C# generation works perfectly, but loading assembly references in the browser environment requires additional infrastructure. For now, please use the pre-compiled template examples to see RazorConsole in action.");
+            }
 
             // Step 1: Generate C# code from Razor
             var componentName = $"DynamicComponent_{Interlocked.Increment(ref s_assemblyCounter)}";
@@ -94,7 +140,7 @@ public class DynamicComponentCompiler
             var compilation = CSharpCompilation.Create(
                 $"DynamicAssembly_{s_assemblyCounter}",
                 new[] { syntaxTree },
-                s_references,
+                references,
                 new CSharpCompilationOptions(
                     OutputKind.DynamicallyLinkedLibrary,
                     optimizationLevel: OptimizationLevel.Debug,

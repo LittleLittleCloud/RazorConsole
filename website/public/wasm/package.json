@@ -1,0 +1,13 @@
+{
+    "name": "razor-console",
+    "type": "module",
+    "main": "./main.js",
+    "module": "./main.js",
+    "types": "./main.d.ts",
+    "exports": {
+        ".": {
+            "import": "./main.js",
+            "require": "./main.js"
+        }
+    }
+}
