@@ -83,10 +83,27 @@ public sealed class VdomSpectreTranslator
             case VNodeKind.Element:
                 return TryTranslateElement(node, context, out renderable);
             case VNodeKind.Component:
-            case VNodeKind.Region:
+                // If Component has ComponentType, try element translators first
+                if (node.ComponentType is not null)
+                {
+                    if (TryTranslateElement(node, context, out renderable))
+                    {
+                        return true;
+                    }
+                }
+                // Otherwise, treat as container
                 if (TryConvertChildrenToBlockInlineRenderable(node.Children, context, out var children))
                 {
                     renderable = children;
+                    return true;
+                }
+
+                renderable = null;
+                return false;
+            case VNodeKind.Region:
+                if (TryConvertChildrenToBlockInlineRenderable(node.Children, context, out var regionChildren))
+                {
+                    renderable = regionChildren;
                     return true;
                 }
 

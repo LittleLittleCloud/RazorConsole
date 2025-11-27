@@ -16,7 +16,7 @@ public sealed class AlignElementTranslator : IVdomElementTranslator
     {
         renderable = null;
 
-        if (node.Kind != VNodeKind.Element)
+        if (node.Kind != VNodeKind.Component)
         {
             return false;
         }

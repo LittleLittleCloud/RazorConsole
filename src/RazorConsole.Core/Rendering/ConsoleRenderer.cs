@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 
+using RazorConsole.Core.Abstarctions.Components;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Vdom;
 using RazorConsole.Core.Vdom;
@@ -360,8 +361,12 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 component.SetAttribute("component-id", componentId.ToString(CultureInfo.InvariantCulture));
                 if (frame.ComponentType is not null)
                 {
-                    component.ComponentType = frame.ComponentType;
                     component.SetAttribute("component-type", frame.ComponentType.FullName);
+                    // Check if the component type implements IVirtualComponent
+                    if (typeof(IVirtualComponent).IsAssignableFrom(frame.ComponentType))
+                    {
+                        component.ComponentType = frame.ComponentType;
+                    }
                 }
 
                 var end = index + frame.ComponentSubtreeLength;
@@ -496,7 +501,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
             // If component has ComponentType, wrap children in an element with that ComponentType
             if (node.ComponentType is not null && children.Count > 0)
             {
-                var wrapper = VNode.CreateElement("div");
+                var wrapper = VNode.CreateComponent();
                 wrapper.ComponentType = node.ComponentType;
                 // Copy component attributes to wrapper
                 foreach (var attr in node.Attributes)
