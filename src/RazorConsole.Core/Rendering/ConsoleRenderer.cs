@@ -4,12 +4,15 @@
 #pragma warning disable BL0006 // RenderTree types are "internal-ish"; acceptable for console renderer.
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
+
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Vdom;
 using RazorConsole.Core.Vdom;
+
 using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering;
@@ -488,9 +491,38 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         if (childId.HasValue && !visitedComponents.Contains(childId.Value) && _componentRoots.TryGetValue(childId.Value, out var componentRoot))
         {
             visitedComponents.Add(childId.Value);
-            foreach (var descendant in CollectRenderableChildren(componentRoot, visitedComponents))
+            var children = CollectRenderableChildren(componentRoot, visitedComponents);
+
+            // If component has ComponentType, wrap children in an element with that ComponentType
+            if (node.ComponentType is not null && children.Count > 0)
             {
-                yield return descendant;
+                var wrapper = VNode.CreateElement("div");
+                wrapper.ComponentType = node.ComponentType;
+                // Copy component attributes to wrapper
+                foreach (var attr in node.Attributes)
+                {
+                    if (!string.Equals(attr.Key, "component-id", StringComparison.Ordinal))
+                    {
+                        wrapper.SetAttribute(attr.Key, attr.Value);
+                    }
+                }
+                // Copy component Attrs (parameter values) to wrapper Attrs so translators can access them
+                foreach (var attr in node.Attrs)
+                {
+                    wrapper.Attrs[attr.Key] = attr.Value;
+                }
+                foreach (var child in children)
+                {
+                    wrapper.AddChild(child);
+                }
+                yield return wrapper;
+            }
+            else
+            {
+                foreach (var descendant in children)
+                {
+                    yield return descendant;
+                }
             }
 
             visitedComponents.Remove(childId.Value);
@@ -518,6 +550,12 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         if (!string.IsNullOrWhiteSpace(element.Key))
         {
             clone.SetKey(element.Key);
+        }
+
+        // Copy ComponentType if it exists
+        if (element.ComponentType is not null)
+        {
+            clone.ComponentType = element.ComponentType;
         }
 
         foreach (var attribute in element.Attributes)
