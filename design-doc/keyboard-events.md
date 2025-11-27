@@ -3,6 +3,128 @@
 ## Overview
 RazorConsole surfaces console keyboard input to Razor components so you can respond to key presses just like you would in a browser. This guide outlines the event order, how focus influences dispatch, and what payloads to expect when wiring handlers such as `onkeydown`, `onkeypress`, `onkeyup`, and `oninput`.
 
+## Keyboard Event Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Console as Console Input
+    participant KbdMgr as KeyboardEventManager
+    participant Focus as FocusManager
+    participant Snapshot as Focus Snapshot
+    participant EventDesc as VNodeEventDescriptor
+    participant Renderer as ConsoleRenderer
+    participant Callback as EventCallback
+    participant Component as Razor Component
+    participant State
+
+    User->>Console: Press key
+    Console->>KbdMgr: HandleKeyAsync(ConsoleKeyInfo)
+
+    KbdMgr->>Focus: GetCurrentFocus()
+    Focus->>Snapshot: Get focus snapshot
+    Snapshot->>KbdMgr: Focus target + event handlers
+
+    alt Tab navigation
+        KbdMgr->>Focus: MoveFocus(Tab/Shift+Tab)
+        Focus->>Component: focusout event
+        Focus->>Component: focusin event
+        Focus->>Component: focus event
+    end
+
+    KbdMgr->>KbdMgr: Process key event
+
+    Note over KbdMgr,Component: Event Sequence
+
+    KbdMgr->>EventDesc: Find handler (onkeydown)
+    EventDesc->>Renderer: DispatchEventAsync(handlerId, KeyboardEventArgs)
+    Renderer->>Callback: Invoke onkeydown handler
+    Callback->>Component: onkeydown event
+
+    alt Printable character
+        KbdMgr->>KbdMgr: Update text buffer
+        KbdMgr->>EventDesc: Find handler (onkeypress)
+        EventDesc->>Renderer: DispatchEventAsync(handlerId, KeyboardEventArgs)
+        Renderer->>Callback: Invoke onkeypress handler
+        Callback->>Component: onkeypress event
+        
+        KbdMgr->>EventDesc: Find handler (oninput)
+        EventDesc->>Renderer: DispatchEventAsync(handlerId, ChangeEventArgs)
+        Renderer->>Callback: Invoke oninput handler
+        Callback->>Component: oninput event
+    end
+
+    alt Enter key
+        KbdMgr->>EventDesc: Find handler (onclick)
+        EventDesc->>Renderer: DispatchEventAsync(handlerId, MouseEventArgs)
+        Renderer->>Callback: Invoke onclick handler
+        Callback->>Component: onclick event
+        
+        KbdMgr->>EventDesc: Find handler (onchange)
+        EventDesc->>Renderer: DispatchEventAsync(handlerId, ChangeEventArgs)
+        Renderer->>Callback: Invoke onchange handler
+        Callback->>Component: onchange event
+    end
+
+    KbdMgr->>EventDesc: Find handler (onkeyup)
+    EventDesc->>Renderer: DispatchEventAsync(handlerId, KeyboardEventArgs)
+    Renderer->>Callback: Invoke onkeyup handler
+    Callback->>Component: onkeyup event
+
+    Note over Callback,Component: State Update & Re-render
+    Callback->>Component: Update state
+    Component->>State: StateHasChanged()
+    State->>Renderer: Trigger re-render
+    Renderer->>Component: Re-render component
+
+    Note right of KbdMgr: Event order:<br/>1. onkeydown (always)<br/>2. onkeypress (printable only)<br/>3. oninput (text elements)<br/>4. onclick (Enter key)<br/>5. onchange (Enter key)<br/>6. onkeyup (always)
+
+    Note right of Focus: Focus management:<br/>- Tab/Shift+Tab moves focus<br/>- Focus change triggers focusout/focusin<br/>- Text buffer resets on focus change<br/>- Focus snapshot contains handlers
+```
+
+## Text Buffer Management
+
+```mermaid
+sequenceDiagram
+    participant KbdMgr as KeyboardEventManager
+    participant BufferMap as Text Buffer Map
+    participant FocusKey as Focus Key
+    participant Buffer as StringBuilder
+    participant Component
+
+    KbdMgr->>FocusKey: Get current focus key
+    FocusKey->>BufferMap: Lookup buffer
+
+    alt Buffer exists
+        BufferMap->>Buffer: Get existing buffer
+    else New focus
+        BufferMap->>Buffer: Create new buffer
+        Buffer->>Component: Get value attribute
+        Component->>Buffer: Initialize from value
+    end
+
+    alt Printable character
+        KbdMgr->>Buffer: Append character
+        Buffer->>KbdMgr: Updated buffer
+        KbdMgr->>Component: oninput(buffer.ToString())
+    else Backspace
+        KbdMgr->>Buffer: Remove last character
+        Buffer->>KbdMgr: Updated buffer
+        KbdMgr->>Component: oninput(buffer.ToString())
+    else Control key
+        KbdMgr->>KbdMgr: Skip buffer update
+    end
+
+    alt Focus change
+        KbdMgr->>BufferMap: Clear buffer for old focus
+        BufferMap->>Buffer: Reset buffer
+        Buffer->>Component: Get new value attribute
+        Component->>Buffer: Initialize new buffer
+    end
+
+    Note right of BufferMap: Buffer lifecycle:<br/>- One buffer per focusable element<br/>- Keyed by element focus key<br/>- Initialized from value attribute<br/>- Cleared on focus change<br/>- Used for oninput/onchange events
+```
+
 ## Supported events and dispatch order
 Each keystroke can emit multiple events. When the focused element defines the corresponding handlers, they arrive in this order:
 

@@ -13,6 +13,130 @@ RazorConsole uses a bi-directional JavaScript interop pattern where:
 3. **.NET WASM Runtime**: Handles component rendering and keyboard events
 4. **Rendering Pipeline**: Converts Razor components to ANSI escape sequences
 
+## Complete Interop Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant React as React Component
+    participant XTerm as xterm.js Terminal
+    participant Interop as xterm-interop.js
+    participant MainJS as main.js
+    participant Bridge as JSImport/JSExport
+    participant Program as Program.cs
+    participant Renderer as RazorConsoleRenderer
+    participant ConsoleRenderer
+    participant Component as Razor Component
+    participant Pipeline as Rendering Pipeline
+    participant ANSI as ANSI Sequences
+    participant Display as Terminal Display
+
+    Note over React,Display: Initialization Flow
+    React->>XTerm: Create terminal instance
+    XTerm->>Interop: registerTerminalInstance(elementId, terminal)
+    Interop->>React: Terminal registered
+    React->>MainJS: registerComponent(elementID)
+    MainJS->>Bridge: Call WASM export
+    Bridge->>Program: RegisterComponent(elementID)
+    Program->>Renderer: Create RazorConsoleRenderer<T>()
+    Renderer->>ConsoleRenderer: Initialize renderer
+    ConsoleRenderer->>Component: Mount component
+    Component->>Pipeline: Render to VNode
+    Pipeline->>ConsoleRenderer: Create RenderSnapshot
+    ConsoleRenderer->>Renderer: Initial render complete
+
+    Note over User,Display: Keyboard Event Flow
+    User->>XTerm: Press key
+    XTerm->>Interop: onKey event
+    Interop->>MainJS: handleKeyboardEvent(...)
+    MainJS->>Bridge: Call WASM export
+    Bridge->>Program: HandleKeyboardEvent(...)
+    Program->>Renderer: HandleKeyboardEventAsync(...)
+    Renderer->>ConsoleRenderer: Process keyboard event
+    ConsoleRenderer->>Component: Dispatch event
+    Component->>Component: State change
+    Component->>Pipeline: Re-render
+    Pipeline->>ConsoleRenderer: New RenderSnapshot
+    ConsoleRenderer->>Renderer: OnNext(snapshot)
+
+    Note over Renderer,Display: Rendering Flow
+    Renderer->>Pipeline: Translate VNode to IRenderable
+    Pipeline->>Renderer: IRenderable + ANSI
+    Renderer->>Bridge: WriteToTerminal(componentId, ansiOutput)
+    Bridge->>MainJS: writeToTerminal(componentName, data)
+    MainJS->>Interop: forwardToTerminal(elementId, text)
+    Interop->>XTerm: terminal.write(text)
+    XTerm->>Display: Render ANSI sequences
+
+    Note right of Bridge: Bi-directional communication:<br/>- JS → WASM: Keyboard events, registration<br/>- WASM → JS: ANSI output, terminal commands
+
+    Note right of Pipeline: Rendering pipeline:<br/>1. VNode tree from component<br/>2. VdomSpectreTranslator converts to IRenderable<br/>3. Spectre.Console renders to ANSI<br/>4. ANSI sent back to browser
+```
+
+## Component Registration Sequence
+
+```mermaid
+sequenceDiagram
+    participant React as XTermPreview.tsx
+    participant Interop as xterm-interop.js
+    participant MainJS as main.js
+    participant WASM as .NET WASM
+    participant Renderer as RazorConsoleRenderer
+    participant ConsoleRenderer
+    participant Services as ServiceProvider
+    participant Component as Razor Component
+    participant XTerm as xterm.js
+
+    React->>React: Create xterm.js terminal
+    React->>Interop: registerTerminalInstance(elementId, term)
+    Interop->>Interop: Store terminal instance
+
+    React->>MainJS: await registerComponent(elementID)
+    MainJS->>MainJS: Ensure runtime initialized
+    MainJS->>WASM: exports.Registry.RegisterComponent(elementID)
+
+    WASM->>Renderer: new RazorConsoleRenderer<T>(elementID)
+    Renderer->>Services: Create ServiceCollection
+    Services->>Services: Add ConsoleRenderer
+    Services->>Services: Add KeyboardEventManager
+    Services->>Services: Add FocusManager
+    Services->>Services: Add VdomSpectreTranslator
+    Services->>Renderer: Build ServiceProvider
+
+    Renderer->>ConsoleRenderer: Get service
+    ConsoleRenderer->>Component: MountComponentAsync<T>()
+    Component->>ConsoleRenderer: Render component
+    ConsoleRenderer->>Renderer: Return RenderSnapshot
+
+    Renderer->>ConsoleRenderer: Subscribe(this)
+    ConsoleRenderer->>Renderer: OnNext(initial snapshot)
+    Renderer->>Renderer: Render to ANSI
+    Renderer->>Interop: WriteToTerminal(elementId, ansi)
+
+    React->>Interop: attachKeyListener(elementId, helper)
+    Interop->>XTerm: terminal.onKey(...)
+    Interop->>Interop: Store key handler
+
+    Note right of Renderer: Each component gets:<br/>- Own renderer instance<br/>- Own service provider<br/>- Own keyboard event manager<br/>- Own focus manager
+```
+
+## Event Loop Cycle
+
+```mermaid
+flowchart LR
+    A[User presses key in terminal] --> B[XTerm.js captures keyboard event]
+    B --> C[JavaScript interop forwards to WASM]
+    C --> D[.NET processes event and updates component state]
+    D --> E[Component re-renders to new ANSI output]
+    E --> F[ANSI sent back through interop to terminal]
+    F --> G[xterm.js displays updated content]
+    G --> A
+
+    style A fill:#e1f5ff
+    style G fill:#d4edda
+    Note1[This cycle repeats for each<br/>user interaction, creating<br/>a reactive UI experience]
+```
+
 ## Component Lifecycle Flow
 
 ### 1. Terminal Creation and Registration

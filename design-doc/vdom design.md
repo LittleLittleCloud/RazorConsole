@@ -1,5 +1,81 @@
 ## Virtual DOM renderer redesign
 
+### Architecture Overview
+
+```mermaid
+flowchart TD
+    subgraph Blazor["Blazor Rendering"]
+        Component[Razor Component]
+        Batch[RenderBatch]
+        Frames[ReferenceFrames]
+        Updates[UpdatedComponents]
+    end
+    
+    subgraph ConsoleRenderer["ConsoleRenderer"]
+        Renderer[ConsoleRenderer : Renderer]
+        Update[UpdateDisplayAsync]
+        Apply[ApplyComponentEdits]
+        Build[BuildSubtree]
+        Roots[Component Roots Map]
+    end
+    
+    subgraph VNodeTree["VNode Tree"]
+        VNode[(VNode)]
+        Element[VElementNode<br/>+ Properties: Dictionary<br/>+ Events: List<br/>+ Key: string<br/>+ Children: List]
+        Text[VTextNode<br/>+ Text: string]
+        Comp[VComponentNode<br/>+ ComponentId: int<br/>+ Attributes: Dictionary]
+        Region[VRegionNode<br/>+ Children: List]
+    end
+    
+    subgraph EventSystem["Event System"]
+        EventDesc[VNodeEventDescriptor<br/>+ Name: string<br/>+ HandlerId: ulong<br/>+ Options: EventOptions]
+        Dispatch[ConsoleRenderer.DispatchEventAsync]
+    end
+    
+    subgraph Translation["Translation"]
+        Translator[VdomSpectreTranslator]
+        ElementTranslator[IVdomElementTranslator]
+        Renderable[IRenderable]
+    end
+    
+    subgraph DiffUpdate["Diff & Update"]
+        DiffService[VdomDiffService]
+        DiffResult[VdomDiffResult]
+        LiveDisplay[ConsoleLiveDisplayContext]
+    end
+    
+    Component -->|Render| Batch
+    Batch -->|UpdateDisplayAsync| Renderer
+    Renderer --> Update
+    Update --> Apply
+    Apply --> Build
+    Build -->|Create| Element
+    Build -->|Create| Text
+    Build -->|Create| Comp
+    Build -->|Create| Region
+    
+    Element -->|Capture events| EventDesc
+    EventDesc -->|Event dispatch| Dispatch
+    Dispatch -->|Trigger re-render| Component
+    
+    VNode -->|Store component roots| Roots
+    Roots -->|Component lookup| Renderer
+    
+    VNode -->|Translate to IRenderable| Translator
+    Translator -->|Try translate| ElementTranslator
+    ElementTranslator -->|Create Spectre component| Renderable
+    
+    VNode -->|Diff trees| DiffService
+    DiffService -->|Compute mutations| DiffResult
+    DiffResult -->|Apply updates| LiveDisplay
+    
+    note1[VNode tree structure:<br/>- Immutable nodes<br/>- Component roots stored separately<br/>- Events captured in descriptors<br/>- Keys for efficient diffing]
+    VNode -.-> note1
+    
+    note2[Event flow:<br/>1. RenderBatch contains EventCallbackWorkItem<br/>2. BuildSubtree creates VNodeEventDescriptor<br/>3. KeyboardEventManager dispatches via HandlerId<br/>4. ConsoleRenderer.DispatchEventAsync invokes callback<br/>5. Component state changes trigger re-render]
+    EventDesc -.-> note2
+```
+
 ### Goals
 - Render `.razor` components straight into a virtual console tree without taking a dependency on `HtmlRenderer`.
 - Preserve the Blazor event callback pipeline by deriving from `Microsoft.AspNetCore.Components.Renderer`.

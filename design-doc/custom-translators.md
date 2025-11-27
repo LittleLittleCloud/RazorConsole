@@ -57,14 +57,37 @@ The main orchestrator that:
 
 ### Translation Pipeline
 
-```
-Razor Component → ConsoleRenderer → VNode Tree → VdomSpectreTranslator
-                                                         ↓
-                                    Iterate translators by priority
-                                                         ↓
-                                    First successful translator wins
-                                                         ↓
-                                    Spectre.Console IRenderable
+```mermaid
+flowchart TD
+    Component[Razor Component] --> Renderer[ConsoleRenderer]
+    Renderer --> VNode[VNode Tree]
+    VNode --> Translator[VdomSpectreTranslator]
+    
+    Translator --> P10[Priority 10]
+    Translator --> P20[Priority 20]
+    Translator --> P50[Priority 50]
+    Translator --> P85[Priority 85]
+    Translator --> P100[Priority 100]
+    Translator --> P1000[Priority 1000<br/>Fallback]
+    
+    P10 -->|Success| Renderable[IRenderable]
+    P10 -->|Fail| P20
+    P20 -->|Success| Renderable
+    P20 -->|Fail| P50
+    P50 -->|Success| Renderable
+    P50 -->|Fail| P85
+    P85 -->|Success| Renderable
+    P85 -->|Fail| P100
+    P100 -->|Success| Renderable
+    P100 -->|Fail| P1000
+    P1000 --> Renderable
+    
+    style Translator fill:#e1f5ff
+    style Renderable fill:#d4edda
+    style P1000 fill:#fff3cd
+    
+    Note1[Translation process:<br/>1. Iterate translators by Priority ascending<br/>2. First translator that returns true wins<br/>3. If all fail, fallback translator handles it<br/>4. Each translator can use TranslationContext<br/>   for recursive child translation]
+    Translator -.-> Note1
 ```
 
 ## Built-in Translators
