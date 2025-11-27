@@ -1,6 +1,8 @@
 @namespace RazorConsole.Gallery.Components
 @inject NavigationManager Nav
 
+@* <Align Vertical="VerticalAlignment.Middle" Horizontal="HorizontalAlignment.Center">x</Align> *@
+
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="RouteContext">
         <RouteView RouteData="RouteContext" DefaultLayout="typeof(MainLayout)"/>

@@ -357,6 +357,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 component.SetAttribute("component-id", componentId.ToString(CultureInfo.InvariantCulture));
                 if (frame.ComponentType is not null)
                 {
+                    component.ComponentType = frame.ComponentType;
                     component.SetAttribute("component-type", frame.ComponentType.FullName);
                 }
 
@@ -368,6 +369,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                     var attribute = frames.Array[index];
                     if (attribute.AttributeEventHandlerId == 0)
                     {
+                        component.Attrs[attribute.AttributeName!] = attribute.AttributeValue;
                         var value = FormatAttributeValue(attribute.AttributeValue);
                         component.SetAttribute(attribute.AttributeName!, value);
                     }

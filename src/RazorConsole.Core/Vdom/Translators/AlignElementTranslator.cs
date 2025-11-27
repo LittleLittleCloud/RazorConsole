@@ -1,5 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Components;
 using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Vdom;
 using Spectre.Console.Rendering;
@@ -19,7 +20,7 @@ public sealed class AlignElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        if (!node.Attributes.TryGetValue("class", out var value) || !string.Equals(value, "align", StringComparison.OrdinalIgnoreCase))
+        if (node.ComponentType != typeof(Align))
         {
             return false;
         }

@@ -15,6 +15,8 @@ public sealed class VNode : IEquatable<VNode>
     private readonly List<VNode> _children;
     private readonly Dictionary<string, string?> _attributes;
     private readonly Dictionary<string, VNodeEvent> _events;
+    public Type? ComponentType { get; set; }
+    public Dictionary<string, object?> Attrs { get; set; } = new(StringComparer.Ordinal);
 
     private VNode(VNodeKind kind, string? tagName = null, string? text = null, string? key = null)
     {
