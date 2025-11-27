@@ -7,6 +7,7 @@ import ComponentsLayout from "@/pages/components/Layout"
 import ComponentsOverview from "@/pages/components/Overview"
 import ComponentDetail from "@/pages/components/Detail"
 import Advanced from "@/pages/Advanced"
+import Repl from "@/pages/Repl"
 import { useThemeEffect } from "@/components/ThemeProvider"
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           </Route>
           <Route path="advanced" element={<Advanced />} />
         </Route>
+        <Route path="/repl" element={<Repl />} />
       </Routes>
     </BrowserRouter>
   )

@@ -306,4 +306,19 @@ export async function handleResize(
   return exports.Registry.HandleResize(componentName, cols, rows)
 }
 
+/**
+ * Compiles and registers a dynamic Razor component.
+ * Calls into C# WASM: Registry.CompileAndRegisterComponent(elementId, razorCode)
+ * @param elementId - The ID to register the compiled component under
+ * @param razorCode - The Razor source code to compile
+ * @returns A promise that resolves to "SUCCESS" or an error message
+ */
+export async function compileAndRegisterComponent(
+  elementId: string,
+  razorCode: string
+): Promise<string> {
+  const exports = await getWasmExports()
+  return exports.Registry.CompileAndRegisterComponent(elementId, razorCode)
+}
+
 export type { DotNetHelper, RazorConsoleTerminalApi, TerminalOptions }

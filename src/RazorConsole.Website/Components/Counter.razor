@@ -1,0 +1,20 @@
+@using Spectre.Console
+@using RazorConsole.Components
+
+<Panel Title="Counter" Border="BoxBorder.Rounded">
+    <Rows>
+        <Columns>
+            <Markup Content="Count:" Foreground="Color.Grey70" />
+            <Markup Content="@count.ToString()" Foreground="Color.Green" />
+        </Columns>
+        <TextButton Content="Click me" 
+                    OnClick="Increment" 
+                    BackgroundColor="Color.Grey" 
+                    FocusedColor="Color.Blue" />
+    </Rows>
+</Panel>
+
+@code {
+    private int count = 0;
+    private void Increment() => count++;
+}

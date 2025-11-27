@@ -1,0 +1,18 @@
+@using Spectre.Console
+@using RazorConsole.Components
+
+<Panel Title="Select Example">
+    <Rows>
+        <Markup Content="Choose a color:" />
+        <Select Options="@options" 
+                SelectedOption="@selected" 
+                OnSelectionChanged="OnSelectionChanged" />
+        <Markup Content="@($"Selected: {selected}")" Foreground="Color.Blue" />
+    </Rows>
+</Panel>
+
+@code {
+    private string[] options = { "Red", "Green", "Blue", "Yellow" };
+    private string selected = "Red";
+    private void OnSelectionChanged(string value) => selected = value;
+}

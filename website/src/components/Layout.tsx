@@ -41,6 +41,12 @@ export default function Layout() {
                 >
                   Components
                 </Link>
+                <Link 
+                  to="/repl" 
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 transition-colors"
+                >
+                  REPL
+                </Link>
               </nav>
             </div>
 
@@ -103,6 +109,13 @@ export default function Layout() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Components
+              </Link>
+              <Link 
+                to="/repl" 
+                className="block py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                REPL
               </Link>
               <a 
                 href="https://github.com/LittleLittleCloud/RazorConsole" 

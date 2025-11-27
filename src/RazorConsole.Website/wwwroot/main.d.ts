@@ -17,6 +17,10 @@ export interface WasmExports {
 			cols: number,
 			rows: number
 		) => void;
+		CompileAndRegisterComponent: (
+			elementId: string,
+			razorCode: string
+		) => Promise<string>;
 	};
 }
 

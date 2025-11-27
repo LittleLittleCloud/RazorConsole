@@ -23,6 +23,11 @@
     <!-- use .net10 ASP.NET  -->
     <!-- <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" VersionOverride="10.0.0" /> -->
     <!-- <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" VersionOverride="10.0.0" PrivateAssets="all" /> -->
+    
+    <!-- Dynamic Razor compilation support -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor" />
   </ItemGroup>
 
   <ItemGroup>

@@ -52,8 +52,14 @@ export default function Home() {
             Build rich, interactive console applications using familiar Razor syntax and the power of Spectre.Console
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Link to="/docs#quick-start">
+            <Link to="/repl">
               <Button size="lg" className="gap-2">
+                <Code className="w-4 h-4" />
+                Try REPL
+              </Button>
+            </Link>
+            <Link to="/docs#quick-start">
+              <Button size="lg" variant="outline" className="gap-2">
                 <Terminal className="w-4 h-4" />
                 Quick Start
               </Button>

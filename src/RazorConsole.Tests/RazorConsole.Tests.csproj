@@ -13,6 +13,8 @@
     <ProjectReference Include="..\RazorConsole.Gallery\RazorConsole.Gallery.csproj" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <!-- Dependencies for REPL/Dynamic Compiler tests -->
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" />
   </ItemGroup>
 
   <ItemGroup>
