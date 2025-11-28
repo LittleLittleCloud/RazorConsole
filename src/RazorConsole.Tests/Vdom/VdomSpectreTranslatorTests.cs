@@ -158,17 +158,15 @@ public class VdomSpectreTranslatorTests
     {
         var child = Element("span", span =>
         {
-            span.SetAttribute("class", "row");
+            span.SetAttribute("data-text", "true");
             span.AddChild(Text("Row content"));
         });
 
-        var node = Element("div", rows =>
-        {
-            rows.SetAttribute("class", "rows");
-            rows.SetAttribute("data-expand", "true");
-            rows.AddChild(child);
-            rows.AddChild(child);
-        });
+        var node = VNode.CreateComponent();
+        node.ComponentType = typeof(RazorConsole.Components.Rows);
+        node.Attrs[nameof(RazorConsole.Components.Rows.Expand)] = true;
+        node.AddChild(child);
+        node.AddChild(child);
 
         var translator = new VdomSpectreTranslator();
 
@@ -247,12 +245,10 @@ public class VdomSpectreTranslatorTests
             span.AddChild(Text("Padded"));
         });
 
-        var node = Element("div", padder =>
-        {
-            padder.SetAttribute("class", "padder");
-            padder.SetAttribute("data-padding", "1");
-            padder.AddChild(child);
-        });
+        var node = VNode.CreateComponent();
+        node.ComponentType = typeof(RazorConsole.Components.Padder);
+        node.Attrs[nameof(RazorConsole.Components.Padder.Padding)] = new Padding(1, 1, 1, 1);
+        node.AddChild(child);
 
         var translator = new VdomSpectreTranslator();
 
