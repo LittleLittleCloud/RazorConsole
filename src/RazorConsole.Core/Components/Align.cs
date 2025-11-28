@@ -19,7 +19,7 @@ namespace RazorConsole.Components;
 /// See the <see href="https://spectreconsole.net/widgets/align">Spectre.Console Align documentation</see> for more information.
 /// </para>
 /// </remarks>
-public sealed class Align : ComponentBase, IVirtualComponent
+public sealed class Align : ComponentBase, ISyntheticComponent
 {
     /// <summary>
     /// Content to be aligned.

@@ -362,8 +362,9 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 if (frame.ComponentType is not null)
                 {
                     component.SetAttribute("component-type", frame.ComponentType.FullName);
-                    // Check if the component type implements IVirtualComponent
-                    if (typeof(IVirtualComponent).IsAssignableFrom(frame.ComponentType))
+                    // Check if the component type implements ISyntheticComponent
+                    // Synthetic components are identified by their Type rather than HTML attributes
+                    if (typeof(ISyntheticComponent).IsAssignableFrom(frame.ComponentType))
                     {
                         component.ComponentType = frame.ComponentType;
                     }

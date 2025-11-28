@@ -1,8 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
 using System.Globalization;
-using System.Text.Json;
-using RazorConsole.Components;
 using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -22,19 +20,8 @@ public class BarChartTranslator : IVdomElementTranslator
             return false;
         }
 
-        var itemsAttribute = VdomSpectreTranslator.GetAttribute(node, "data-items");
-        if (string.IsNullOrEmpty(itemsAttribute))
-        {
-            return false;
-        }
-
-        List<JsonElement> rawItems;
-        try
-        {
-            rawItems = JsonSerializer.Deserialize(itemsAttribute, ChartJsonContext.Default.ListJsonElement) ??
-                       throw new InvalidOperationException();
-        }
-        catch
+        if (!node.Attrs.TryGetValue(nameof(Components.BarChart.BarChartItems), out var itemsObj) ||
+            itemsObj is not List<IBarChartItem> barChartItems)
         {
             return false;
         }
@@ -42,66 +29,56 @@ public class BarChartTranslator : IVdomElementTranslator
         var barChart = new Spectre.Console.BarChart();
         try
         {
-            AddBarChartItems(barChart, rawItems);
+            AddBarChartItems(barChart, barChartItems);
         }
         catch
         {
             return false;
         }
 
-        if (VdomSpectreTranslator.TryParsePositiveInt(VdomSpectreTranslator.GetAttribute(node, "data-width"),
-                out var width))
+        if (node.Attrs.TryGetValue(nameof(Components.BarChart.Width), out var widthObj) && widthObj is int width)
         {
             barChart.Width = width;
         }
 
-        var label = VdomSpectreTranslator.GetAttribute(node, "data-label");
-        if (!string.IsNullOrEmpty(label))
+        if (node.Attrs.TryGetValue(nameof(Components.BarChart.Label), out var labelObj) && labelObj is string label && !string.IsNullOrEmpty(label))
         {
             barChart.Label = label;
-            var labelStyleAttributes = VdomSpectreTranslator.GetAttribute(node, "data-label-style");
-            if (!string.IsNullOrEmpty(labelStyleAttributes) && Style.TryParse(labelStyleAttributes, out var labelStyle))
+
+            if (node.Attrs.TryGetValue(nameof(Components.BarChart.LabelForeground), out var fgObj) &&
+                node.Attrs.TryGetValue(nameof(Components.BarChart.LabelBackground), out var bgObj) &&
+                node.Attrs.TryGetValue(nameof(Components.BarChart.LabelDecoration), out var decObj) &&
+                fgObj is Color fg && bgObj is Color bg && decObj is Decoration dec)
             {
-                barChart.Label = $"[{labelStyle!.ToMarkup()}]{label}[/]";
+                var labelStyle = new Style(fg, bg, dec);
+                barChart.Label = $"[{labelStyle.ToMarkup()}]{label}[/]";
             }
         }
 
-        var labelAlignmentAttribute = VdomSpectreTranslator.GetAttribute(node, "data-label-alignment");
-        if (!string.IsNullOrEmpty(labelAlignmentAttribute) &&
-            Enum.TryParse<Justify>(labelAlignmentAttribute, true, out var labelAlignment))
+        if (node.Attrs.TryGetValue(nameof(Components.BarChart.LabelAlignment), out var labelAlignmentObj) &&
+            labelAlignmentObj is Justify labelAlignment)
         {
             barChart.LabelAlignment = labelAlignment;
         }
 
-        if (VdomSpectreTranslator.TryParsePositiveDouble(VdomSpectreTranslator.GetAttribute(node, "data-max-value"),
-                out var maxValue))
+        if (node.Attrs.TryGetValue(nameof(Components.BarChart.MaxValue), out var maxValueObj) && maxValueObj is double maxValue)
         {
             barChart.MaxValue = maxValue;
         }
 
-        if (VdomSpectreTranslator.TryGetBoolAttribute(node, "data-show-values", out var showValues))
+        if (node.Attrs.TryGetValue(nameof(Components.BarChart.ShowValues), out var showValuesObj) && showValuesObj is bool showValues)
         {
             barChart.ShowValues = showValues;
         }
 
-        var cultureInfoAttribute = VdomSpectreTranslator.GetAttribute(node, "data-culture");
-        CultureInfo cultureInfo;
-        if (cultureInfoAttribute != null)
+        if (node.Attrs.TryGetValue(nameof(Components.BarChart.Culture), out var cultureObj) && cultureObj is CultureInfo cultureInfo)
         {
-            try
-            {
-                cultureInfo = CultureInfo.GetCultureInfo(cultureInfoAttribute);
-            }
-            catch
-            {
-                return false;
-            }
+            barChart.Culture = cultureInfo;
         }
         else
         {
-            return false;
+            barChart.Culture = CultureInfo.CurrentCulture;
         }
-        barChart.Culture = cultureInfo;
 
         renderable = barChart;
 
@@ -110,12 +87,12 @@ public class BarChartTranslator : IVdomElementTranslator
 
     private static bool IsBarChart(VNode node)
     {
-        if (node.Kind != VNodeKind.Element)
+        if (node.Kind != VNodeKind.Component)
         {
             return false;
         }
 
-        if (!string.Equals(node.TagName, "barchart", StringComparison.OrdinalIgnoreCase))
+        if (node.ComponentType != typeof(Components.BarChart))
         {
             return false;
         }
@@ -123,50 +100,11 @@ public class BarChartTranslator : IVdomElementTranslator
         return true;
     }
 
-    private void AddBarChartItems(Spectre.Console.BarChart barChart, List<JsonElement> rawItems)
+    private void AddBarChartItems(Spectre.Console.BarChart barChart, List<IBarChartItem> items)
     {
-        foreach (var el in rawItems)
+        foreach (var item in items)
         {
-            if (el.ValueKind != JsonValueKind.Object)
-            {
-                throw new InvalidCastException("Only objects are supported");
-            }
-
-            string itemLabel;
-            if (el.TryGetProperty(nameof(IBarChartItem.Label), out var l))
-            {
-                var labelValue = l.GetString();
-                itemLabel = labelValue ?? throw new InvalidOperationException("Label cannot be null");
-            }
-            else
-            {
-                throw new InvalidCastException("Not found label property");
-            }
-
-            double itemValue;
-            if (el.TryGetProperty(nameof(IBarChartItem.Value), out var v))
-            {
-                itemValue = v.TryGetDouble(out var value) ? value : throw new InvalidOperationException($"Unable to parse `{itemLabel}` value as a double");
-            }
-            else
-            {
-                throw new InvalidCastException("Not found value property");
-            }
-
-            Color? color = null;
-            if (el.TryGetProperty(nameof(IBarChartItem.Color), out var cProp) &&
-                cProp.ValueKind == JsonValueKind.String &&
-                !string.IsNullOrWhiteSpace(cProp.GetString()))
-            {
-                var hex = cProp.GetString();
-                if (hex != null && Color.TryFromHex(hex, out var parsed))
-                {
-                    color = parsed;
-                }
-
-            }
-
-            barChart.AddItem(itemLabel, itemValue, color);
+            barChart.AddItem(item.Label, item.Value, item.Color);
         }
     }
 }

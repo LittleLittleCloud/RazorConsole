@@ -324,15 +324,13 @@ public class VdomSpectreTranslatorTests
             span.AddChild(Text("Aligned"));
         });
 
-        var node = Element("div", align =>
-        {
-            align.SetAttribute("class", "align");
-            align.SetAttribute("data-horizontal", "center");
-            align.SetAttribute("data-vertical", "middle");
-            align.SetAttribute("data-width", "40");
-            align.SetAttribute("data-height", "5");
-            align.AddChild(child);
-        });
+        var node = VNode.CreateComponent();
+        node.ComponentType = typeof(RazorConsole.Components.Align);
+        node.Attrs[nameof(RazorConsole.Components.Align.Horizontal)] = HorizontalAlignment.Center;
+        node.Attrs[nameof(RazorConsole.Components.Align.Vertical)] = VerticalAlignment.Middle;
+        node.Attrs[nameof(RazorConsole.Components.Align.Width)] = 40;
+        node.Attrs[nameof(RazorConsole.Components.Align.Height)] = 5;
+        node.AddChild(child);
 
         var translator = new VdomSpectreTranslator();
 
