@@ -1,5 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Vdom;
 
@@ -31,14 +32,10 @@ public sealed class AlignElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        node.Attrs.TryGetValue(nameof(Components.Align.Horizontal), out var ha);
-        var horizontal = (HorizontalAlignment?)ha ?? HorizontalAlignment.Left;
-        node.Attrs.TryGetValue(nameof(Components.Align.Vertical), out var va);
-        var vertical = (VerticalAlignment?)va;
-        node.Attrs.TryGetValue(nameof(Components.Align.Width), out var w);
-        var width = (int?)w;
-        node.Attrs.TryGetValue(nameof(Components.Align.Height), out var h);
-        var height = (int?)h;
+        var horizontal = node.GetAttributeValue(nameof(Components.Align.Horizontal), HorizontalAlignment.Left);
+        var vertical = node.GetAttributeValue<VerticalAlignment?>(nameof(Components.Align.Vertical));
+        var width = node.GetAttributeValue<int?>(nameof(Components.Align.Width));
+        var height = node.GetAttributeValue<int?>(nameof(Components.Align.Height));
 
         var align = new MeasuredAlign(children, horizontal, vertical)
         {

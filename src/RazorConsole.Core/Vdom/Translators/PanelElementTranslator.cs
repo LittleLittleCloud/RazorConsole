@@ -1,5 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
@@ -31,41 +32,19 @@ public sealed class PanelElementTranslator : IVdomElementTranslator
         }
 
         var content = VdomSpectreTranslator.ComposeChildContent(children);
-        var panel = new Spectre.Console.Panel(content);
+        var panel = new Panel(content);
 
-        node.Attrs.TryGetValue(nameof(Components.Panel.Expand), out var expandObj);
-        if (expandObj is bool expand && expand)
+        if (node.GetAttributeValue(nameof(Components.Panel.Expand), false))
         {
             panel = panel.Expand();
         }
 
-        node.Attrs.TryGetValue(nameof(Components.Panel.Border), out var borderObj);
-        if (borderObj is BoxBorder border)
-        {
-            panel.Border = border;
-        }
-        else
-        {
-            panel.Border = BoxBorder.Square;
-        }
+        panel.Border = node.GetAttributeValue(nameof(Components.Panel.Border), BoxBorder.Square);
 
-        node.Attrs.TryGetValue(nameof(Components.Panel.Padding), out var paddingObj);
-        if (paddingObj is Padding padding)
-        {
-            panel.Padding = padding;
-        }
+        panel.Padding = node.GetAttributeValue<Padding?>(nameof(Components.Panel.Padding));
+        panel.Height = node.GetAttributeValue<int?>(nameof(Components.Panel.Height));
 
-        node.Attrs.TryGetValue(nameof(Components.Panel.Height), out var heightObj);
-        if (heightObj is int height && height > 0)
-        {
-            panel.Height = height;
-        }
-
-        node.Attrs.TryGetValue(nameof(Components.Panel.Width), out var widthObj);
-        if (widthObj is int width && width > 0)
-        {
-            panel.Width = width;
-        }
+        panel.Width = node.GetAttributeValue<int?>(nameof(Components.Panel.Width));
 
         ApplyHeader(node, panel);
         ApplyBorderColor(node, panel);
@@ -76,13 +55,12 @@ public sealed class PanelElementTranslator : IVdomElementTranslator
 
     private static void ApplyHeader(VNode node, Spectre.Console.Panel panel)
     {
-        if (!node.Attrs.TryGetValue(nameof(Components.Panel.Title), out var titleObj) || titleObj is not string title || string.IsNullOrWhiteSpace(title))
+        if (!node.TryGetAttributeValue<string>(nameof(Components.Panel.Title), out var title) || string.IsNullOrWhiteSpace(title))
         {
             return;
         }
 
-        node.Attrs.TryGetValue(nameof(Components.Panel.TitleColor), out var titleColorObj);
-        if (titleColorObj is Color titleColor)
+        if (node.TryGetAttributeValue<Color>(nameof(Components.Panel.TitleColor), out var titleColor))
         {
             var markup = ComponentMarkupUtilities.CreateStyledMarkup(titleColor.ToMarkup(), title, requiresEscape: true);
             panel.Header = new PanelHeader(markup);
@@ -95,7 +73,7 @@ public sealed class PanelElementTranslator : IVdomElementTranslator
 
     private static void ApplyBorderColor(VNode node, Spectre.Console.Panel panel)
     {
-        if (!node.Attrs.TryGetValue(nameof(Components.Panel.BorderColor), out var borderColorObj) || borderColorObj is not Color borderColor)
+        if (!node.TryGetAttributeValue<Color>(nameof(Components.Panel.BorderColor), out var borderColor))
         {
             return;
         }

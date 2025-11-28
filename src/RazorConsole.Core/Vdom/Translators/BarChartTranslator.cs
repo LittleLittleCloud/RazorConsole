@@ -1,6 +1,7 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
 using System.Globalization;
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -20,13 +21,13 @@ public class BarChartTranslator : IVdomElementTranslator
             return false;
         }
 
-        if (!node.Attrs.TryGetValue(nameof(Components.BarChart.BarChartItems), out var itemsObj) ||
-            itemsObj is not List<IBarChartItem> barChartItems)
+        if (!node.TryGetAttributeValue<List<IBarChartItem>>(nameof(Components.BarChart.BarChartItems), out var barChartItems)
+            || barChartItems is null)
         {
             return false;
         }
 
-        var barChart = new Spectre.Console.BarChart();
+        var barChart = new BarChart();
         try
         {
             AddBarChartItems(barChart, barChartItems);
@@ -36,49 +37,24 @@ public class BarChartTranslator : IVdomElementTranslator
             return false;
         }
 
-        if (node.Attrs.TryGetValue(nameof(Components.BarChart.Width), out var widthObj) && widthObj is int width)
-        {
-            barChart.Width = width;
-        }
+        barChart.Width = node.GetAttributeValue<int?>(nameof(Components.BarChart.Width));
 
-        if (node.Attrs.TryGetValue(nameof(Components.BarChart.Label), out var labelObj) && labelObj is string label && !string.IsNullOrEmpty(label))
+
+        if (node.TryGetAttributeValue<string>(nameof(Components.BarChart.Label), out var label) && !string.IsNullOrWhiteSpace(label))
         {
             barChart.Label = label;
 
-            if (node.Attrs.TryGetValue(nameof(Components.BarChart.LabelForeground), out var fgObj) &&
-                node.Attrs.TryGetValue(nameof(Components.BarChart.LabelBackground), out var bgObj) &&
-                node.Attrs.TryGetValue(nameof(Components.BarChart.LabelDecoration), out var decObj) &&
-                fgObj is Color fg && bgObj is Color bg && decObj is Decoration dec)
-            {
-                var labelStyle = new Style(fg, bg, dec);
-                barChart.Label = $"[{labelStyle.ToMarkup()}]{label}[/]";
-            }
+            var fg = node.GetAttributeValue(nameof(Components.BarChart.LabelForeground), Style.Plain.Foreground);
+            var bg = node.GetAttributeValue(nameof(Components.BarChart.LabelBackground), Style.Plain.Background);
+            var dec = node.GetAttributeValue(nameof(Components.BarChart.LabelDecoration), Decoration.None);
+            var labelStyle = new Style(fg, bg, dec);
+            barChart.Label = $"[{labelStyle.ToMarkup()}]{label}[/]";
         }
 
-        if (node.Attrs.TryGetValue(nameof(Components.BarChart.LabelAlignment), out var labelAlignmentObj) &&
-            labelAlignmentObj is Justify labelAlignment)
-        {
-            barChart.LabelAlignment = labelAlignment;
-        }
-
-        if (node.Attrs.TryGetValue(nameof(Components.BarChart.MaxValue), out var maxValueObj) && maxValueObj is double maxValue)
-        {
-            barChart.MaxValue = maxValue;
-        }
-
-        if (node.Attrs.TryGetValue(nameof(Components.BarChart.ShowValues), out var showValuesObj) && showValuesObj is bool showValues)
-        {
-            barChart.ShowValues = showValues;
-        }
-
-        if (node.Attrs.TryGetValue(nameof(Components.BarChart.Culture), out var cultureObj) && cultureObj is CultureInfo cultureInfo)
-        {
-            barChart.Culture = cultureInfo;
-        }
-        else
-        {
-            barChart.Culture = CultureInfo.CurrentCulture;
-        }
+        barChart.LabelAlignment = node.GetAttributeValue<Justify?>(nameof(Components.BarChart.LabelAlignment));
+        barChart.MaxValue = node.GetAttributeValue<double?>(nameof(Components.BarChart.MaxValue));
+        barChart.ShowValues = node.GetAttributeValue(nameof(Components.BarChart.ShowValues), false);
+        barChart.Culture = node.GetAttributeValue(nameof(Components.BarChart.Culture), CultureInfo.CurrentCulture);
 
         renderable = barChart;
 
