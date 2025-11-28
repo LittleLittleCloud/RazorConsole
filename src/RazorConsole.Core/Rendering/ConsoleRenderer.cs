@@ -500,7 +500,8 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
             var children = CollectRenderableChildren(componentRoot, visitedComponents);
 
             // If component has ComponentType, wrap children in an element with that ComponentType
-            if (node.ComponentType is not null && children.Count > 0)
+            // Synthetic components need ComponentType even if they have no children (e.g., Figlet)
+            if (node.ComponentType is not null)
             {
                 var wrapper = VNode.CreateComponent();
                 wrapper.ComponentType = node.ComponentType;

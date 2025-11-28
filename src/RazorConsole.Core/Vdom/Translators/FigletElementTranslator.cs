@@ -1,11 +1,11 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.Vdom;
-
 
 public sealed class FigletElementTranslator : IVdomElementTranslator
 {
@@ -15,47 +15,28 @@ public sealed class FigletElementTranslator : IVdomElementTranslator
     {
         renderable = null;
 
-        if (node.Kind != VNodeKind.Element)
+        if (node.Kind != VNodeKind.Component)
         {
             return false;
         }
 
-        if (!node.Attributes.TryGetValue("class", out var value) || !string.Equals(value, "figlet", StringComparison.OrdinalIgnoreCase))
+        if (node.ComponentType != typeof(RazorConsole.Components.Figlet))
         {
             return false;
         }
 
-        if (node.Children is not { Count: 0 })
+        if (!node.TryGetAttributeValue<string>(nameof(RazorConsole.Components.Figlet.Content), out var content) || string.IsNullOrWhiteSpace(content))
         {
             return false;
         }
 
-        var content = VdomSpectreTranslator.GetAttribute(node, "data-content");
+        var justify = node.GetAttributeValue(nameof(RazorConsole.Components.Figlet.Justify), Justify.Center);
+        var color = node.GetAttributeValue(nameof(RazorConsole.Components.Figlet.Color), Color.Default);
 
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return false;
-        }
-
-        var styleAttribute = VdomSpectreTranslator.GetAttribute(node, "data-style");
-        var style = new Style(Color.Default);
-        if (!string.IsNullOrWhiteSpace(styleAttribute))
-        {
-            style = Style.Parse(styleAttribute);
-        }
-
-        var justifyAttribute = VdomSpectreTranslator.GetAttribute(node, "data-justify");
-        var justify = (justifyAttribute?.ToLowerInvariant()) switch
-        {
-            "left" => Justify.Left,
-            "right" => Justify.Right,
-            "center" => Justify.Center,
-            _ => Justify.Left,
-        };
         var figlet = new FigletText(content)
         {
             Justification = justify,
-            Color = style.Foreground
+            Color = color
         };
 
         renderable = figlet;
