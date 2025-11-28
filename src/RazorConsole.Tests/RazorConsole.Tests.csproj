@@ -13,10 +13,14 @@
     <ProjectReference Include="..\RazorConsole.Gallery\RazorConsole.Gallery.csproj" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Shouldly" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="Shouldly" />
+    <Using Include="NSubstitute" />
   </ItemGroup>
 
 </Project>

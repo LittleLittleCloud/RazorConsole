@@ -55,8 +55,8 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
     private readonly Dictionary<int, VNode> _componentRoots = new();
     private readonly Stack<VNode> _cursor = new();
     private readonly VdomSpectreTranslator _translator;
+    private readonly ILogger<ConsoleRenderer> _logger;
     private readonly object _observersSync = new();
-    private readonly object _renderSync = new();
     private readonly List<IObserver<RenderSnapshot>> _observers = new();
 
     private TaskCompletionSource<RenderSnapshot>? _pendingRender;
@@ -68,7 +68,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         : base(services, loggerFactory)
     {
         _translator = translator ?? throw new ArgumentNullException(nameof(translator));
-        // _logger = loggerFactory.CreateLogger<ConsoleRenderer>();
+        _logger = loggerFactory?.CreateLogger<ConsoleRenderer>() ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 
     public override Dispatcher Dispatcher => DispatcherInstance;
@@ -76,6 +76,13 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
     public async Task<RenderSnapshot> MountComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(ParameterView parameters, CancellationToken cancellationToken)
         where TComponent : IComponent
     {
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(ConsoleRenderer));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
         var component = InstantiateComponent(typeof(TComponent));
         var componentId = AssignRootComponentId(component);
         _rootComponentId = componentId;
@@ -84,10 +91,27 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         using var registration = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
         _pendingRender = tcs;
 
-        await RenderRootComponentAsync(componentId, parameters).ConfigureAwait(false);
-        _lastSnapshot = await tcs.Task.ConfigureAwait(false);
-
-        return _lastSnapshot;
+        try
+        {
+            await RenderRootComponentAsync(componentId, parameters).ConfigureAwait(false);
+            _lastSnapshot = await tcs.Task.ConfigureAwait(false);
+            return _lastSnapshot;
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Component mounting was cancelled");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error mounting component {ComponentType}", typeof(TComponent).Name);
+            _pendingRender?.TrySetException(ex);
+            throw;
+        }
+        finally
+        {
+            _pendingRender = null;
+        }
     }
 
     public IDisposable Subscribe(IObserver<RenderSnapshot> observer)
@@ -126,30 +150,57 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
     protected override Task UpdateDisplayAsync(in RenderBatch batch)
     {
-        for (var i = 0; i < batch.UpdatedComponents.Count; i++)
+        try
         {
-            var diff = batch.UpdatedComponents.Array[i];
-            ApplyComponentEdits(batch, diff);
-        }
+            // Process updated components
+            var updatedComponents = batch.UpdatedComponents;
+            var updatedComponentsArray = updatedComponents.Array;
+            var updatedComponentsCount = updatedComponents.Count;
+            for (var i = 0; i < updatedComponentsCount; i++)
+            {
+                var diff = updatedComponentsArray[i];
+                try
+                {
+                    ApplyComponentEdits(batch, diff);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error applying component edits for component {ComponentId}", diff.ComponentId);
+                    throw;
+                }
+            }
 
-        for (var i = 0; i < batch.DisposedComponentIDs.Count; i++)
+            // Process disposed components
+            var disposedComponentIds = batch.DisposedComponentIDs;
+            var disposedComponentIdsArray = disposedComponentIds.Array;
+            var disposedComponentIdsCount = disposedComponentIds.Count;
+            for (var i = 0; i < disposedComponentIdsCount; i++)
+            {
+                var componentId = disposedComponentIdsArray[i];
+                _componentRoots.Remove(componentId);
+            }
+
+            var snapshot = CreateSnapshot();
+            _lastSnapshot = snapshot;
+            _pendingRender?.TrySetResult(snapshot);
+            _pendingRender = null;
+
+            _ = Task.Run(() => NotifyObservers(snapshot));
+
+            return Task.CompletedTask;
+        }
+        catch (Exception ex)
         {
-            var componentId = batch.DisposedComponentIDs.Array[i];
-            _componentRoots.Remove(componentId);
+            _logger.LogError(ex, "Error in UpdateDisplayAsync");
+            _pendingRender?.TrySetException(ex);
+            _pendingRender = null;
+            throw;
         }
-
-        var snapshot = CreateSnapshot();
-        _lastSnapshot = snapshot;
-        _pendingRender?.TrySetResult(snapshot);
-        _pendingRender = null;
-
-        _ = Task.Run(() => NotifyObservers(snapshot));
-
-        return Task.CompletedTask;
     }
 
     protected override void HandleException(Exception exception)
     {
+        _logger.LogError(exception, "Error occurred during rendering");
         NotifyError(exception);
         System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception).Throw();
     }
@@ -157,8 +208,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
     private void ApplyComponentEdits(in RenderBatch batch, RenderTreeDiff diff)
     {
         var slot = GetOrCreateComponentSlot(diff.ComponentId);
-        _cursor.Clear();
-        _cursor.Push(slot);
+        ResetCursor(slot);
         var edits = diff.Edits;
         var offset = edits.Offset;
         for (var i = 0; i < edits.Count; i++)
@@ -167,118 +217,124 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
             switch (edit.Type)
             {
                 case RenderTreeEditType.PrependFrame:
-                {
-                    var parent = _cursor.Peek();
-                    var referenceFrame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-                    if (referenceFrame.FrameType == RenderTreeFrameType.Attribute)
-                    {
-                        ApplyAttributeFrame(parent, referenceFrame);
-                        break;
-                    }
-
-                    var (child, _) = BuildSubtree(batch.ReferenceFrames, edit.ReferenceFrameIndex);
-                    parent.InsertChild(edit.SiblingIndex, child);
+                    ApplyPrependFrameEdit(batch, edit);
                     break;
-                }
-
                 case RenderTreeEditType.RemoveFrame:
-                {
-                    var parent = _cursor.Peek();
-                    parent.RemoveChildAt(edit.SiblingIndex);
+                    ApplyRemoveFrameEdit(edit);
                     break;
-                }
-
                 case RenderTreeEditType.SetAttribute:
-                {
-                    var parent = _cursor.Peek();
-                    RenderTreeFrame frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-                    if (frame.FrameType == RenderTreeFrameType.Attribute)
-                    {
-                        if ((uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
-                        {
-                            var child = parent.Children[edit.SiblingIndex];
-                            ApplyAttributeFrame(child, frame);
-                        }
-
-                        break;
-                    }
+                    ApplySetAttributeEdit(batch, edit);
                     break;
-                }
-
                 case RenderTreeEditType.RemoveAttribute:
-                {
-                    var parent = _cursor.Peek();
-                    var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-                    if (frame.FrameType == RenderTreeFrameType.Attribute && (uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
-                    {
-                        var child = parent.Children[edit.SiblingIndex];
-                        if (frame.AttributeEventHandlerId != 0)
-                        {
-                            child.RemoveEvent(frame.AttributeName!);
-                        }
-                        else
-                        {
-                            child.RemoveAttribute(frame.AttributeName!);
-                            if (IsKeyAttribute(frame.AttributeName!))
-                            {
-                                parent.SetKey(null);
-                            }
-                        }
-                    }
-
+                    ApplyRemoveAttributeEdit(batch, edit);
                     break;
-                }
-
                 case RenderTreeEditType.UpdateText:
-                {
-                    var parent = _cursor.Peek();
-                    if ((uint)edit.SiblingIndex < (uint)parent.Children.Count)
-                    {
-                        var child = parent.Children[edit.SiblingIndex];
-                        var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-                        var textContent = frame.FrameType == RenderTreeFrameType.Text
-                            ? frame.TextContent
-                            : frame.MarkupContent;
-                        child.SetText(textContent);
-                    }
-
+                    ApplyUpdateTextEdit(batch, edit);
                     break;
-                }
-
                 case RenderTreeEditType.StepIn:
-                {
-                    var parent = _cursor.Peek();
-
-                    // process region
-                    if (parent.Children is { Count: 1 } && parent.Children[0].Kind == VNodeKind.Region)
-                    {
-                        _cursor.Push(parent.Children[0]);
-                        parent = _cursor.Peek();
-                    }
-
-                    if ((uint)edit.SiblingIndex < (uint)parent.Children.Count)
-                    {
-                        _cursor.Push(parent.Children[edit.SiblingIndex]);
-                    }
-
+                    ApplyStepInEdit(edit);
                     break;
-                }
-
                 case RenderTreeEditType.StepOut:
-                {
-                    if (_cursor.Count > 0)
-                    {
-                        var parent = _cursor.Pop();
-
-                        // process region
-                        if (parent.Kind == VNodeKind.Region && _cursor.Count > 0)
-                        {
-                            _cursor.Pop();
-                        }
-                    }
-
+                    ApplyStepOutEdit();
                     break;
+            }
+        }
+    }
+
+    private void ApplyPrependFrameEdit(in RenderBatch batch, RenderTreeEdit edit)
+    {
+        var parent = _cursor.Peek();
+        var referenceFrame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
+        if (referenceFrame.FrameType == RenderTreeFrameType.Attribute)
+        {
+            ApplyAttributeFrame(parent, referenceFrame);
+            return;
+        }
+
+        var (child, _) = BuildSubtree(batch.ReferenceFrames, edit.ReferenceFrameIndex);
+        parent.InsertChild(edit.SiblingIndex, child);
+    }
+
+    private void ApplyRemoveFrameEdit(RenderTreeEdit edit)
+    {
+        var parent = _cursor.Peek();
+        parent.RemoveChildAt(edit.SiblingIndex);
+    }
+
+    private void ApplySetAttributeEdit(in RenderBatch batch, RenderTreeEdit edit)
+    {
+        var parent = _cursor.Peek();
+        var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
+        if (frame.FrameType == RenderTreeFrameType.Attribute && (uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
+        {
+            var child = parent.Children[edit.SiblingIndex];
+            ApplyAttributeFrame(child, frame);
+        }
+    }
+
+    private void ApplyRemoveAttributeEdit(in RenderBatch batch, RenderTreeEdit edit)
+    {
+        var parent = _cursor.Peek();
+        var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
+        if (frame.FrameType == RenderTreeFrameType.Attribute && (uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
+        {
+            var child = parent.Children[edit.SiblingIndex];
+            if (frame.AttributeEventHandlerId != 0)
+            {
+                child.RemoveEvent(frame.AttributeName!);
+            }
+            else
+            {
+                child.RemoveAttribute(frame.AttributeName!);
+                if (IsKeyAttribute(frame.AttributeName!))
+                {
+                    parent.SetKey(null);
                 }
+            }
+        }
+    }
+
+    private void ApplyUpdateTextEdit(in RenderBatch batch, RenderTreeEdit edit)
+    {
+        var parent = _cursor.Peek();
+        if ((uint)edit.SiblingIndex < (uint)parent.Children.Count)
+        {
+            var child = parent.Children[edit.SiblingIndex];
+            var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
+            var textContent = frame.FrameType == RenderTreeFrameType.Text
+                ? frame.TextContent
+                : frame.MarkupContent;
+            child.SetText(textContent);
+        }
+    }
+
+    private void ApplyStepInEdit(RenderTreeEdit edit)
+    {
+        var parent = _cursor.Peek();
+
+        // Process region wrapper
+        if (parent.Children is { Count: 1 } && parent.Children[0].Kind == VNodeKind.Region)
+        {
+            _cursor.Push(parent.Children[0]);
+            parent = _cursor.Peek();
+        }
+
+        if ((uint)edit.SiblingIndex < (uint)parent.Children.Count)
+        {
+            _cursor.Push(parent.Children[edit.SiblingIndex]);
+        }
+    }
+
+    private void ApplyStepOutEdit()
+    {
+        if (_cursor.Count > 0)
+        {
+            var parent = _cursor.Pop();
+
+            // Process region wrapper
+            if (parent.Kind == VNodeKind.Region && _cursor.Count > 0)
+            {
+                _cursor.Pop();
             }
         }
     }
@@ -384,6 +440,12 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         }
     }
 
+    private void ResetCursor(VNode root)
+    {
+        _cursor.Clear();
+        _cursor.Push(root);
+    }
+
     private VNode GetOrCreateComponentSlot(int componentId)
     {
         if (_componentRoots.TryGetValue(componentId, out var node))
@@ -399,23 +461,32 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
     private RenderSnapshot CreateSnapshot()
     {
-        if (_rootComponentId == -1 || !_componentRoots.TryGetValue(_rootComponentId, out var componentNode))
+        try
         {
+            if (_rootComponentId == -1 || !_componentRoots.TryGetValue(_rootComponentId, out var componentNode))
+            {
+                return RenderSnapshot.Empty;
+            }
+
+            var vnode = CreateRenderableRoot(componentNode);
+            if (vnode is null)
+            {
+                return RenderSnapshot.Empty;
+            }
+
+            if (!_translator.TryTranslate(vnode, out var renderable, out var animatedRenderables) || renderable is null)
+            {
+                _logger.LogWarning("Failed to translate VNode to renderable");
+                return RenderSnapshot.Empty;
+            }
+
+            return new RenderSnapshot(vnode, renderable, animatedRenderables);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating render snapshot");
             return RenderSnapshot.Empty;
         }
-
-        var vnode = CreateRenderableRoot(componentNode);
-        if (vnode is null)
-        {
-            return RenderSnapshot.Empty;
-        }
-
-        if (!_translator.TryTranslate(vnode, out var renderable, out var animatedRenderables) || renderable is null)
-        {
-            return RenderSnapshot.Empty;
-        }
-
-        return new RenderSnapshot(vnode, renderable, animatedRenderables);
     }
 
     private VNode? CreateRenderableRoot(VNode node)
@@ -441,66 +512,49 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         var result = new List<VNode>();
         foreach (var child in node.Children)
         {
-            foreach (var expanded in EnumerateRenderableSubtree(child, visitedComponents))
-            {
-                result.Add(expanded);
-            }
+            EnumerateRenderableSubtree(child, visitedComponents, result);
         }
 
         return result;
     }
 
-    private IEnumerable<VNode> EnumerateRenderableSubtree(VNode node, HashSet<int> visitedComponents)
+    private void EnumerateRenderableSubtree(VNode node, HashSet<int> visitedComponents, List<VNode> result)
     {
         switch (node.Kind)
         {
             case VNodeKind.Element:
-                yield return CloneElementWithRenderableChildren(node, visitedComponents);
-                yield break;
+                result.Add(CloneElementWithRenderableChildren(node, visitedComponents));
+                break;
             case VNodeKind.Text:
-                yield return VNode.CreateText(node.Text);
-                yield break;
+                result.Add(VNode.CreateText(node.Text));
+                break;
             case VNodeKind.Component:
-                foreach (var expanded in EnumerateComponentRenderableChildren(node, visitedComponents))
-                {
-                    yield return expanded;
-                }
-
-                yield break;
+                EnumerateComponentRenderableChildren(node, visitedComponents, result);
+                break;
             default:
                 foreach (var child in node.Children)
                 {
-                    foreach (var expanded in EnumerateRenderableSubtree(child, visitedComponents))
-                    {
-                        yield return expanded;
-                    }
+                    EnumerateRenderableSubtree(child, visitedComponents, result);
                 }
-
-                yield break;
+                break;
         }
     }
 
-    private IEnumerable<VNode> EnumerateComponentRenderableChildren(VNode node, HashSet<int> visitedComponents)
+    private void EnumerateComponentRenderableChildren(VNode node, HashSet<int> visitedComponents, List<VNode> result)
     {
         var childId = TryGetComponentId(node);
         if (childId.HasValue && !visitedComponents.Contains(childId.Value) && _componentRoots.TryGetValue(childId.Value, out var componentRoot))
         {
             visitedComponents.Add(childId.Value);
-            foreach (var descendant in CollectRenderableChildren(componentRoot, visitedComponents))
-            {
-                yield return descendant;
-            }
-
+            var descendants = CollectRenderableChildren(componentRoot, visitedComponents);
+            result.AddRange(descendants);
             visitedComponents.Remove(childId.Value);
-            yield break;
+            return;
         }
 
         foreach (var child in node.Children)
         {
-            foreach (var expanded in EnumerateRenderableSubtree(child, visitedComponents))
-            {
-                yield return expanded;
-            }
+            EnumerateRenderableSubtree(child, visitedComponents, result);
         }
     }
 
@@ -509,6 +563,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         var tagName = element.TagName;
         if (string.IsNullOrWhiteSpace(tagName))
         {
+            _logger.LogError("Element VNode does not have a tag name");
             throw new InvalidOperationException("Element VNodes must define a tag name.");
         }
 
@@ -528,12 +583,15 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
             clone.SetEvent(@event.Name, @event.HandlerId, @event.Options);
         }
 
+        var nestedChildren = new List<VNode>();
         foreach (var child in element.Children)
         {
-            foreach (var nested in EnumerateRenderableSubtree(child, visitedComponents))
-            {
-                clone.AddChild(nested);
-            }
+            EnumerateRenderableSubtree(child, visitedComponents, nestedChildren);
+        }
+
+        foreach (var nested in nestedChildren)
+        {
+            clone.AddChild(nested);
         }
 
         return clone;
@@ -581,15 +639,33 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         => string.Equals(name, "key", StringComparison.OrdinalIgnoreCase)
             || string.Equals(name, "data-key", StringComparison.OrdinalIgnoreCase);
 
+    private static readonly string TrueString = "true";
+    private static readonly string FalseString = "false";
+
     private static string? FormatAttributeValue(object? value)
-        => value switch
+    {
+        if (value is null)
         {
-            null => null,
-            string s => s,
-            bool b => b ? "true" : "false",
-            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
-            _ => value.ToString() ?? string.Empty,
-        };
+            return null;
+        }
+
+        if (value is string s)
+        {
+            return s;
+        }
+
+        if (value is bool b)
+        {
+            return b ? TrueString : FalseString;
+        }
+
+        if (value is IFormattable formattable)
+        {
+            return formattable.ToString(null, CultureInfo.InvariantCulture);
+        }
+
+        return value.ToString() ?? string.Empty;
+    }
 
     public readonly record struct RenderSnapshot(VNode? Root, IRenderable? Renderable, IReadOnlyCollection<IAnimatedConsoleRenderable> AnimatedRenderables)
     {
@@ -598,7 +674,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
     private void NotifyObservers(RenderSnapshot snapshot)
     {
-        List<IObserver<RenderSnapshot>> observers;
+        IObserver<RenderSnapshot>[] observers;
         lock (_observersSync)
         {
             if (_observers.Count == 0)
@@ -606,18 +682,25 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 return;
             }
 
-            observers = new List<IObserver<RenderSnapshot>>(_observers);
+            observers = _observers.ToArray();
         }
 
         foreach (var observer in observers)
         {
-            observer.OnNext(snapshot);
+            try
+            {
+                observer.OnNext(snapshot);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error notifying observer of render snapshot");
+            }
         }
     }
 
     private void NotifyError(Exception exception)
     {
-        List<IObserver<RenderSnapshot>> observers;
+        IObserver<RenderSnapshot>[] observers;
         lock (_observersSync)
         {
             if (_observers.Count == 0)
@@ -625,12 +708,19 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 return;
             }
 
-            observers = new List<IObserver<RenderSnapshot>>(_observers);
+            observers = _observers.ToArray();
         }
 
         foreach (var observer in observers)
         {
-            observer.OnError(exception);
+            try
+            {
+                observer.OnError(exception);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error notifying observer of error");
+            }
         }
     }
 
@@ -638,20 +728,30 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
     {
         if (handlerId == 0)
         {
+            _logger.LogError("Attempted to dispatch event with invalid handler ID");
             throw new ArgumentOutOfRangeException(nameof(handlerId));
         }
 
         if (eventArgs is null)
         {
+            _logger.LogError("Attempted to dispatch event with null eventArgs");
             throw new ArgumentNullException(nameof(eventArgs));
         }
 
-        return base.DispatchEventAsync(handlerId, default, eventArgs);
+        try
+        {
+            return base.DispatchEventAsync(handlerId, default, eventArgs);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error dispatching event with handler ID {HandlerId}", handlerId);
+            throw;
+        }
     }
 
     private void CompleteObservers()
     {
-        List<IObserver<RenderSnapshot>> observers;
+        IObserver<RenderSnapshot>[] observers;
         lock (_observersSync)
         {
             if (_observers.Count == 0)
@@ -659,13 +759,20 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 return;
             }
 
-            observers = new List<IObserver<RenderSnapshot>>(_observers);
+            observers = _observers.ToArray();
             _observers.Clear();
         }
 
         foreach (var observer in observers)
         {
-            observer.OnCompleted();
+            try
+            {
+                observer.OnCompleted();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error completing observer");
+            }
         }
     }
 
@@ -685,14 +792,25 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
             {
                 if (_disposed)
                 {
-                    base.Dispose(disposing);
                     return;
                 }
 
                 _disposed = true;
             }
 
-            CompleteObservers();
+            try
+            {
+                CompleteObservers();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error completing observers during dispose");
+            }
+
+            _componentRoots.Clear();
+            _cursor.Clear();
+            _pendingRender?.TrySetCanceled();
+            _pendingRender = null;
         }
 
         base.Dispose(disposing);
