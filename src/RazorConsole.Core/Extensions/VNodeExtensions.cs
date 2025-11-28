@@ -18,12 +18,10 @@ public static class VNodeExtensions
     /// <returns><c>true</c> if the attribute exists and was successfully converted; otherwise, <c>false</c>.</returns>
     /// <remarks>
     /// <para>
-    /// For component nodes (VNodeKind.Component), this method searches in the <c>Attrs</c> dictionary which contains <c>object?</c> values.
-    /// For element nodes (VNodeKind.Element), this method searches in the <c>Attributes</c> dictionary which contains <c>string?</c> values.
+    /// This method searches in the <c>Attributes</c> dictionary which contains <c>object?</c> values.
     /// </para>
     /// <para>
     /// Type conversion is performed using pattern matching. If the value is already of type <typeparamref name="TValue"/>, it is returned directly.
-    /// For element nodes, if <typeparamref name="TValue"/> is <c>string</c> or <c>string?</c>, the string value is returned directly.
     /// </para>
     /// </remarks>
     public static bool TryGetAttributeValue<TValue>(
@@ -36,7 +34,7 @@ public static class VNodeExtensions
         ArgumentNullException.ThrowIfNull(node);
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
-        if (!node.Attrs.TryGetValue(key, out var objValue))
+        if (!node.Attributes.TryGetValue(key, out var objValue))
         {
             return false;
         }

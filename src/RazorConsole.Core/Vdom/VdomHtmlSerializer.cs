@@ -40,9 +40,15 @@ internal static class VdomHtmlSerializer
                         continue;
                     }
 
+                    var valueStr = pair.Value switch
+                    {
+                        null => string.Empty,
+                        string s => s,
+                        _ => pair.Value.ToString() ?? string.Empty
+                    };
                     builder.Append(' ').Append(pair.Key).Append('=')
                         .Append('"')
-                        .Append(System.Net.WebUtility.HtmlEncode(pair.Value))
+                        .Append(System.Net.WebUtility.HtmlEncode(valueStr))
                         .Append('"');
                 }
 

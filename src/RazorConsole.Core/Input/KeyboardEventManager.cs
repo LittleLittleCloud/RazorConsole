@@ -295,7 +295,7 @@ internal sealed class KeyboardEventManager
 
     private static string ResolveInitialValue(FocusManager.FocusTarget target)
     {
-        if (target.Attributes.TryGetValue("value", out var value) && value is not null)
+        if (target.Attributes.TryGetValue("value", out var valueObj) && valueObj is string value && value is not null)
         {
             return value;
         }

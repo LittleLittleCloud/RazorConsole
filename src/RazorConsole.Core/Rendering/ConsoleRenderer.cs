@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 
 using RazorConsole.Core.Abstarctions.Components;
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Vdom;
 using RazorConsole.Core.Vdom;
@@ -308,8 +309,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                     }
                     else
                     {
-                        var value = FormatAttributeValue(attribute.AttributeValue);
-                        element.SetAttribute(attribute.AttributeName!, value);
+                        element.SetAttribute(attribute.AttributeName!, attribute.AttributeValue);
                     }
 
                     index++;
@@ -378,9 +378,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                     var attribute = frames.Array[index];
                     if (attribute.AttributeEventHandlerId == 0)
                     {
-                        component.Attrs[attribute.AttributeName!] = attribute.AttributeValue;
-                        var value = FormatAttributeValue(attribute.AttributeValue);
-                        component.SetAttribute(attribute.AttributeName!, value);
+                        component.SetAttribute(attribute.AttributeName!, attribute.AttributeValue);
                     }
 
                     index++;
@@ -513,11 +511,6 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                         wrapper.SetAttribute(attr.Key, attr.Value);
                     }
                 }
-                // Copy component Attrs (parameter values) to wrapper Attrs so translators can access them
-                foreach (var attr in node.Attrs)
-                {
-                    wrapper.Attrs[attr.Key] = attr.Value;
-                }
                 foreach (var child in children)
                 {
                     wrapper.AddChild(child);
@@ -599,7 +592,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
     private static int? TryGetComponentId(VNode node)
     {
-        if (node.Attributes.TryGetValue("component-id", out var value)
+        if (node.TryGetAttributeValue<string>("component-id", out var value)
             && int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var componentId))
         {
             return componentId;
@@ -616,10 +609,10 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
             return;
         }
 
-        var value = FormatAttributeValue(frame.AttributeValue);
-        parent.SetAttribute(frame.AttributeName!, value);
+        parent.SetAttribute(frame.AttributeName!, frame.AttributeValue);
         if (IsKeyAttribute(frame.AttributeName!))
         {
+            var value = FormatAttributeValue(frame.AttributeValue);
             parent.SetKey(string.IsNullOrWhiteSpace(value) ? null : value);
         }
     }

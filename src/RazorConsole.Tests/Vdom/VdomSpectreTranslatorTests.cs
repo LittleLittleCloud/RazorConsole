@@ -138,9 +138,9 @@ public class VdomSpectreTranslatorTests
 
         var node = VNode.CreateComponent();
         node.ComponentType = typeof(RazorConsole.Components.Panel);
-        node.Attrs[nameof(RazorConsole.Components.Panel.Border)] = BoxBorder.Rounded;
-        node.Attrs[nameof(RazorConsole.Components.Panel.Padding)] = new Padding(1, 1, 1, 1);
-        node.Attrs[nameof(RazorConsole.Components.Panel.Title)] = "Title";
+        node.SetAttribute(nameof(RazorConsole.Components.Panel.Border), BoxBorder.Rounded);
+        node.SetAttribute(nameof(RazorConsole.Components.Panel.Padding), new Padding(1, 1, 1, 1));
+        node.SetAttribute(nameof(RazorConsole.Components.Panel.Title), "Title");
         node.AddChild(child);
 
         var translator = new VdomSpectreTranslator();
@@ -164,7 +164,7 @@ public class VdomSpectreTranslatorTests
 
         var node = VNode.CreateComponent();
         node.ComponentType = typeof(RazorConsole.Components.Rows);
-        node.Attrs[nameof(RazorConsole.Components.Rows.Expand)] = true;
+        node.SetAttribute(nameof(RazorConsole.Components.Rows.Expand), true);
         node.AddChild(child);
         node.AddChild(child);
 
@@ -205,7 +205,7 @@ public class VdomSpectreTranslatorTests
 
         var node = VNode.CreateComponent();
         node.ComponentType = typeof(RazorConsole.Components.Grid);
-        node.Attrs[nameof(RazorConsole.Components.Grid.Columns)] = 2;
+        node.SetAttribute(nameof(RazorConsole.Components.Grid.Columns), 2);
         node.AddChild(child);
         node.AddChild(child);
 
@@ -247,7 +247,7 @@ public class VdomSpectreTranslatorTests
 
         var node = VNode.CreateComponent();
         node.ComponentType = typeof(RazorConsole.Components.Padder);
-        node.Attrs[nameof(RazorConsole.Components.Padder.Padding)] = new Padding(1, 1, 1, 1);
+        node.SetAttribute(nameof(RazorConsole.Components.Padder.Padding), new Padding(1, 1, 1, 1));
         node.AddChild(child);
 
         var translator = new VdomSpectreTranslator();
@@ -310,10 +310,10 @@ public class VdomSpectreTranslatorTests
 
         var node = VNode.CreateComponent();
         node.ComponentType = typeof(RazorConsole.Components.Align);
-        node.Attrs[nameof(RazorConsole.Components.Align.Horizontal)] = HorizontalAlignment.Center;
-        node.Attrs[nameof(RazorConsole.Components.Align.Vertical)] = VerticalAlignment.Middle;
-        node.Attrs[nameof(RazorConsole.Components.Align.Width)] = 40;
-        node.Attrs[nameof(RazorConsole.Components.Align.Height)] = 5;
+        node.SetAttribute(nameof(RazorConsole.Components.Align.Horizontal), HorizontalAlignment.Center);
+        node.SetAttribute(nameof(RazorConsole.Components.Align.Vertical), VerticalAlignment.Middle);
+        node.SetAttribute(nameof(RazorConsole.Components.Align.Width), 40);
+        node.SetAttribute(nameof(RazorConsole.Components.Align.Height), 5);
         node.AddChild(child);
 
         var translator = new VdomSpectreTranslator();

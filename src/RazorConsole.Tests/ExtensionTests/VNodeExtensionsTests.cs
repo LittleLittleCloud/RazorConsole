@@ -21,7 +21,7 @@ public sealed class VNodeExtensionsTests
         // Arrange
         const string key = "key";
         var node = VNode.CreateComponent();
-        node.Attrs[key] = expectedValue;
+        node.SetAttribute(key, expectedValue);
 
         // Act
         var result = node.TryGetAttributeValue<TValue>(key, out var actualValue);

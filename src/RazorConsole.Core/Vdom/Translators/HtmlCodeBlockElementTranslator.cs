@@ -1,5 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering.Syntax;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
@@ -56,7 +57,7 @@ public sealed class HtmlCodeBlockElementTranslator : IVdomElementTranslator
 
         // Try to detect language from class attribute (e.g., "language-csharp")
         string? language = null;
-        if (codeNode.Attributes.TryGetValue("class", out var classAttr) && !string.IsNullOrEmpty(classAttr))
+        if (codeNode.TryGetAttributeValue<string>("class", out var classAttr) && !string.IsNullOrEmpty(classAttr))
         {
             var classes = classAttr.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var langClass = classes.FirstOrDefault(c => c.StartsWith("language-", StringComparison.OrdinalIgnoreCase));

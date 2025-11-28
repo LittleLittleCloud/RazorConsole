@@ -1,6 +1,5 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using RazorConsole.Core.Controllers;
@@ -239,8 +238,8 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
         return new ConsoleRenderer(serviceProvider, NullLoggerFactory.Instance, translator);
     }
 
-    private static readonly IReadOnlyDictionary<string, string?> EmptyAttributes =
-        new ReadOnlyDictionary<string, string?>(new Dictionary<string, string?>(0, StringComparer.Ordinal));
+    private static readonly IReadOnlyDictionary<string, object?> EmptyAttributes =
+        new Dictionary<string, object?>(0, StringComparer.Ordinal);
 
     internal interface ILiveDisplayCanvas
     {
@@ -250,7 +249,7 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
 
         bool TryUpdateText(IReadOnlyList<int> path, string? text);
 
-        bool TryUpdateAttributes(IReadOnlyList<int> path, IReadOnlyDictionary<string, string?> attributes);
+        bool TryUpdateAttributes(IReadOnlyList<int> path, IReadOnlyDictionary<string, object?> attributes);
 
         void Refresh();
 
@@ -300,7 +299,7 @@ public sealed class ConsoleLiveDisplayContext : IDisposable, IObserver<ConsoleRe
         public bool TryUpdateText(IReadOnlyList<int> path, string? text)
             => false;
 
-        public bool TryUpdateAttributes(IReadOnlyList<int> path, IReadOnlyDictionary<string, string?> attributes)
+        public bool TryUpdateAttributes(IReadOnlyList<int> path, IReadOnlyDictionary<string, object?> attributes)
             => false;
 
         public void Refresh()
