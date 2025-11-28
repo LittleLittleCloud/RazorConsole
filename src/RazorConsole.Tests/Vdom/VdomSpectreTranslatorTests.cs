@@ -1,11 +1,13 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
 using System.Reflection;
+
 using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Syntax;
 using RazorConsole.Core.Rendering.Vdom;
 using RazorConsole.Core.Vdom;
+
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -135,10 +137,10 @@ public class VdomSpectreTranslatorTests
         });
 
         var node = VNode.CreateComponent();
-        node.ComponentType = typeof(RazorConsole.Components.Panel);
-        node.Attrs[nameof(RazorConsole.Components.Panel.Border)] = BoxBorder.Rounded;
-        node.Attrs[nameof(RazorConsole.Components.Panel.Padding)] = new Padding(1, 1, 1, 1);
-        node.Attrs[nameof(RazorConsole.Components.Panel.Title)] = "Title";
+        node.ComponentType = typeof(Components.Panel);
+        node.Attrs[nameof(Components.Panel.Border)] = BoxBorder.Rounded;
+        node.Attrs[nameof(Components.Panel.Padding)] = new Padding(1, 1, 1, 1);
+        node.Attrs[nameof(Components.Panel.Title)] = "Title";
         node.AddChild(child);
 
         var translator = new VdomSpectreTranslator();
