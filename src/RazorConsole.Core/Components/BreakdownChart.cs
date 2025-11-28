@@ -1,0 +1,87 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
+using System.Globalization;
+
+using Microsoft.AspNetCore.Components;
+
+using RazorConsole.Core.Abstarctions.Components;
+
+using Spectre.Console;
+
+namespace RazorConsole.Components;
+
+/// <summary>
+/// Renders a breakdown chart using Spectre.Console's <see cref="global::Spectre.Console.BreakdownChart"/> renderable.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Displays data as proportional segments in a horizontal bar with optional tags showing labels, values, and percentages.
+/// </para>
+/// <para>
+/// See the <see href="https://spectreconsole.net/widgets/breakdownchart">Spectre.Console BreakdownChart documentation</see> for more information.
+/// </para>
+/// </remarks>
+public sealed class BreakdownChart : ComponentBase, ISyntheticComponent
+{
+    /// <summary>
+    /// Breakdown chart data items. Each item must provide <c>Label</c>, <c>Value</c>, and <c>Color</c>.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// new BreakdownChartItem("Jan", 12, Color.Red)
+    /// </code>
+    /// </example>
+    [Parameter]
+    [EditorRequired]
+    public required List<IBreakdownChartItem> BreakdownChartItems { get; set; }
+
+    /// <summary>
+    /// Whether the chart and tags should be rendered in compact mode. Default is <c>false</c>.
+    /// </summary>
+    [Parameter]
+    public bool Compact { get; set; }
+
+    /// <summary>
+    /// CultureInfo to use when rendering values. Default is <see cref="CultureInfo.CurrentCulture"/>.
+    /// </summary>
+    [Parameter]
+    public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
+
+    /// <summary>
+    /// Whether the chart should expand to available space. When <c>false</c>, width is automatically calculated. Default is <c>false</c>.
+    /// </summary>
+    [Parameter]
+    public bool Expand { get; set; }
+
+    /// <summary>
+    /// Width of the breakdown chart in characters. If <c>null</c>, automatically calculated.
+    /// </summary>
+    [Parameter]
+    public int? Width { get; set; }
+
+    /// <summary>
+    /// Whether to show tags. Default is <c>false</c>.
+    /// </summary>
+    [Parameter]
+    public bool ShowTags { get; set; }
+
+    /// <summary>
+    /// Whether to show tag values. Default is <c>false</c>.
+    /// </summary>
+    [Parameter]
+    public bool ShowTagValues { get; set; }
+
+    /// <summary>
+    /// Whether to show tag values with percentage. Default is <c>false</c>.
+    /// </summary>
+    [Parameter]
+    public bool ShowTagValuesPercentage { get; set; }
+
+    /// <summary>
+    /// Color in which the values will be shown. If <c>null</c>, uses default color.
+    /// </summary>
+    [Parameter]
+    public Color? ValueColor { get; set; }
+
+}
+
