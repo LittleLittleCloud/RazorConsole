@@ -14,7 +14,12 @@ using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering;
 
-internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.RenderSnapshot>
+internal sealed class ConsoleRenderer(
+    IServiceProvider services,
+    ILoggerFactory loggerFactory,
+    VdomSpectreTranslator translator)
+    : Renderer(services, loggerFactory),
+    IObservable<ConsoleRenderer.RenderSnapshot>
 {
     private sealed class ImmediateDispatcher : Dispatcher
     {
@@ -52,34 +57,30 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
     private static readonly ImmediateDispatcher DispatcherInstance = new();
 
-    private readonly Dictionary<int, VNode> _componentRoots = new();
+    private readonly Dictionary<int, VNode> _componentRoots = [];
     private readonly Stack<VNode> _cursor = new();
-    private readonly VdomSpectreTranslator _translator;
-    private readonly ILogger<ConsoleRenderer> _logger;
+    private readonly VdomSpectreTranslator _translator = translator
+        ?? throw new ArgumentNullException(nameof(translator));
+    private readonly ILogger<ConsoleRenderer> _logger = loggerFactory?.CreateLogger<ConsoleRenderer>()
+        ?? throw new ArgumentNullException(nameof(loggerFactory));
+#if NET9_0_OR_GREATER
+    private readonly Lock _observersSync = new();
+#else
     private readonly object _observersSync = new();
-    private readonly List<IObserver<RenderSnapshot>> _observers = new();
+#endif
+    private readonly List<IObserver<RenderSnapshot>> _observers = [];
 
     private TaskCompletionSource<RenderSnapshot>? _pendingRender;
     private int _rootComponentId = -1;
     private RenderSnapshot _lastSnapshot = RenderSnapshot.Empty;
     private bool _disposed;
 
-    public ConsoleRenderer(IServiceProvider services, ILoggerFactory loggerFactory, VdomSpectreTranslator translator)
-        : base(services, loggerFactory)
-    {
-        _translator = translator ?? throw new ArgumentNullException(nameof(translator));
-        _logger = loggerFactory?.CreateLogger<ConsoleRenderer>() ?? throw new ArgumentNullException(nameof(loggerFactory));
-    }
-
     public override Dispatcher Dispatcher => DispatcherInstance;
 
     public async Task<RenderSnapshot> MountComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(ParameterView parameters, CancellationToken cancellationToken)
         where TComponent : IComponent
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(ConsoleRenderer));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -116,14 +117,15 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
     public IDisposable Subscribe(IObserver<RenderSnapshot> observer)
     {
-        if (observer is null)
-        {
-            throw new ArgumentNullException(nameof(observer));
-        }
+        ArgumentNullException.ThrowIfNull(observer);
 
         RenderSnapshot snapshot;
         IDisposable subscription;
+#if NET9_0_OR_GREATER
+        using (_observersSync.EnterScope())
+#else
         lock (_observersSync)
+#endif
         {
             if (_disposed)
             {
@@ -682,7 +684,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 return;
             }
 
-            observers = _observers.ToArray();
+            observers = [.. _observers];
         }
 
         foreach (var observer in observers)
@@ -708,7 +710,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 return;
             }
 
-            observers = _observers.ToArray();
+            observers = [.. _observers];
         }
 
         foreach (var observer in observers)
@@ -759,7 +761,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 return;
             }
 
-            observers = _observers.ToArray();
+            observers = [.. _observers];
             _observers.Clear();
         }
 
@@ -816,23 +818,19 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         base.Dispose(disposing);
     }
 
-    private sealed class Subscription : IDisposable
+    private sealed class Subscription(
+        ConsoleRenderer owner,
+        IObserver<ConsoleRenderer.RenderSnapshot> observer)
+        : IDisposable
     {
-        private readonly ConsoleRenderer _owner;
-        private IObserver<RenderSnapshot>? _observer;
-
-        public Subscription(ConsoleRenderer owner, IObserver<RenderSnapshot> observer)
-        {
-            _owner = owner;
-            _observer = observer;
-        }
+        private IObserver<RenderSnapshot>? _observer = observer;
 
         public void Dispose()
         {
             var observer = Interlocked.Exchange(ref _observer, null);
             if (observer is not null)
             {
-                _owner.Unsubscribe(observer);
+                owner.Unsubscribe(observer);
             }
         }
     }
