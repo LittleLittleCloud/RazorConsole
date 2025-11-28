@@ -134,14 +134,12 @@ public class VdomSpectreTranslatorTests
             span.AddChild(Text("Panel body"));
         });
 
-        var node = Element("div", panel =>
-        {
-            panel.SetAttribute("class", "panel");
-            panel.SetAttribute("data-panel-border", "rounded");
-            panel.SetAttribute("data-panel-padding", "1 1 1 1");
-            panel.SetAttribute("data-header", "Title");
-            panel.AddChild(child);
-        });
+        var node = VNode.CreateComponent();
+        node.ComponentType = typeof(RazorConsole.Components.Panel);
+        node.Attrs[nameof(RazorConsole.Components.Panel.Border)] = BoxBorder.Rounded;
+        node.Attrs[nameof(RazorConsole.Components.Panel.Padding)] = new Padding(1, 1, 1, 1);
+        node.Attrs[nameof(RazorConsole.Components.Panel.Title)] = "Title";
+        node.AddChild(child);
 
         var translator = new VdomSpectreTranslator();
 
