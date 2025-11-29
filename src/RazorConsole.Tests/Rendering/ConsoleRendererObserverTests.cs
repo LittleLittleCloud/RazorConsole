@@ -1,6 +1,8 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
 #pragma warning disable BL0006 // RenderTree types are "internal-ish"; acceptable for console renderer tests.
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using RazorConsole.Core.Rendering;
 
 namespace RazorConsole.Tests.Rendering;
@@ -34,7 +36,7 @@ public sealed class ConsoleRendererObserverTests
     }
 
     [Fact]
-    public void Unsubscribe_RemovesObserver()
+    public async Task Unsubscribe_RemovesObserver()
     {
         using var renderer = TestHelpers.CreateTestRenderer();
         var observer = new TestObserver();
@@ -43,8 +45,10 @@ public sealed class ConsoleRendererObserverTests
         var initialSnapshotCount = observer.Snapshots.Count;
         subscription.Dispose();
 
+        // Trigger a render cycle to verify observer is detached
+        await renderer.MountComponentAsync<SimpleTestComponent>(ParameterView.Empty, CancellationToken.None);
+
         // Observer should not receive further notifications after unsubscribe
-        // This is tested implicitly - if unsubscribe didn't work, observer would receive more calls
         observer.Snapshots.Count.ShouldBe(initialSnapshotCount);
     }
 
@@ -75,6 +79,16 @@ public sealed class ConsoleRendererObserverTests
         public void OnCompleted()
         {
             IsCompleted = true;
+        }
+    }
+
+    private sealed class SimpleTestComponent : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddContent(1, "Test");
+            builder.CloseElement();
         }
     }
 }
