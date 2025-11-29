@@ -148,21 +148,5 @@ internal static partial class LoggerExtensions
     public static partial void LogErrorCompletingObserversDuringDispose(
         this ILogger logger,
         Exception ex);
-
-    [LoggerMessage(
-        EventId = 19,
-        Level = LogLevel.Debug,
-        Message = "NuGet responded with {StatusCode} when checking for updates.")]
-    public static partial void LogNuGetResponseStatusCode(
-        this ILogger logger,
-        int statusCode);
-
-    [LoggerMessage(
-        EventId = 20,
-        Level = LogLevel.Debug,
-        Message = "Failed to query NuGet for gallery updates.")]
-    public static partial void LogFailedToQueryNuGet(
-        this ILogger logger,
-        Exception ex);
 }
 

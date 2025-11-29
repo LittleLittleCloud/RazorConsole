@@ -54,39 +54,6 @@ public sealed class MeasuredAlign : Renderable
         Vertical = vertical;
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Align"/> class that is left aligned.
-    /// </summary>
-    /// <param name="renderable">The <see cref="IRenderable"/> to align.</param>
-    /// <param name="vertical">The vertical alignment, or <c>null</c> if none.</param>
-    /// <returns>A new <see cref="Align"/> object.</returns>
-    public static Align Left(IRenderable renderable, VerticalAlignment? vertical = null)
-    {
-        return new Align(renderable, HorizontalAlignment.Left, vertical);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Align"/> class that is center aligned.
-    /// </summary>
-    /// <param name="renderable">The <see cref="IRenderable"/> to align.</param>
-    /// <param name="vertical">The vertical alignment, or <c>null</c> if none.</param>
-    /// <returns>A new <see cref="Align"/> object.</returns>
-    public static Align Center(IRenderable renderable, VerticalAlignment? vertical = null)
-    {
-        return new Align(renderable, HorizontalAlignment.Center, vertical);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Align"/> class that is right aligned.
-    /// </summary>
-    /// <param name="renderable">The <see cref="IRenderable"/> to align.</param>
-    /// <param name="vertical">The vertical alignment, or <c>null</c> if none.</param>
-    /// <returns>A new <see cref="Align"/> object.</returns>
-    public static Align Right(IRenderable renderable, VerticalAlignment? vertical = null)
-    {
-        return new Align(renderable, HorizontalAlignment.Right, vertical);
-    }
-
     /// <inheritdoc/>
     protected override IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
     {
