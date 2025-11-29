@@ -49,7 +49,16 @@ jobs:
         run: dotnet build RazorConsole.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test --configuration Release --no-build
+        run: dotnet test --configuration Release --no-build -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ${{ github.workspace }}/**/coverage.cobertura.xml
+          fail_ci_if_error: false
+          flags: unittests
+          name: codecov-${{ matrix.os }}
+        continue-on-error: true
 
   website-build:
     name: Build website
@@ -132,7 +141,15 @@ jobs:
         run: dotnet build RazorConsole.slnx --configuration Release --no-restore -p:VersionSuffix=$VersionSuffix
 
       - name: Test
-        run: dotnet test --configuration Release --no-build
+        run: dotnet test --configuration Release --no-build -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+        
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ${{ github.workspace }}/**/coverage.cobertura.xml
+          fail_ci_if_error: false
+          flags: nightly
+          name: codecov-nightly
 
       - name: Pack libraries
         run: |
