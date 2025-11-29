@@ -11,11 +11,11 @@ public sealed class ConsoleRendererObserverTests
     public void Subscribe_NotifiesObserverWithCurrentSnapshot()
     {
         using var renderer = TestHelpers.CreateTestRenderer();
-        var observer = Substitute.For<IObserver<ConsoleRenderer.RenderSnapshot>>();
+        var observer = new TestObserver();
 
         var subscription = renderer.Subscribe(observer);
 
-        observer.Received(1).OnNext(Arg.Any<ConsoleRenderer.RenderSnapshot>());
+        observer.Snapshots.Count.ShouldBe(1);
         subscription.ShouldNotBeNull();
     }
 
@@ -23,13 +23,13 @@ public sealed class ConsoleRendererObserverTests
     public void Subscribe_WhenDisposed_CompletesObserver()
     {
         using var renderer = TestHelpers.CreateTestRenderer();
-        var observer = Substitute.For<IObserver<ConsoleRenderer.RenderSnapshot>>();
+        var observer = new TestObserver();
 
         renderer.Dispose();
         var subscription = renderer.Subscribe(observer);
 
-        observer.Received(1).OnNext(Arg.Any<ConsoleRenderer.RenderSnapshot>());
-        observer.Received(1).OnCompleted();
+        observer.Snapshots.Count.ShouldBe(1);
+        observer.IsCompleted.ShouldBeTrue();
         subscription.ShouldNotBeNull();
     }
 
@@ -37,14 +37,15 @@ public sealed class ConsoleRendererObserverTests
     public void Unsubscribe_RemovesObserver()
     {
         using var renderer = TestHelpers.CreateTestRenderer();
-        var observer = Substitute.For<IObserver<ConsoleRenderer.RenderSnapshot>>();
+        var observer = new TestObserver();
 
         var subscription = renderer.Subscribe(observer);
+        var initialSnapshotCount = observer.Snapshots.Count;
         subscription.Dispose();
 
         // Observer should not receive further notifications after unsubscribe
         // This is tested implicitly - if unsubscribe didn't work, observer would receive more calls
-        observer.Received().OnNext(Arg.Any<ConsoleRenderer.RenderSnapshot>());
+        observer.Snapshots.Count.ShouldBe(initialSnapshotCount);
     }
 
     [Fact]
@@ -54,7 +55,28 @@ public sealed class ConsoleRendererObserverTests
 
         Should.Throw<ArgumentNullException>(() => renderer.Subscribe(null!));
     }
+
+    private sealed class TestObserver : IObserver<ConsoleRenderer.RenderSnapshot>
+    {
+        public List<ConsoleRenderer.RenderSnapshot> Snapshots { get; } = new();
+        public List<Exception> Errors { get; } = new();
+        public bool IsCompleted { get; private set; }
+
+        public void OnNext(ConsoleRenderer.RenderSnapshot value)
+        {
+            Snapshots.Add(value);
+        }
+
+        public void OnError(Exception error)
+        {
+            Errors.Add(error);
+        }
+
+        public void OnCompleted()
+        {
+            IsCompleted = true;
+        }
+    }
 }
 
 #pragma warning restore BL0006
-
