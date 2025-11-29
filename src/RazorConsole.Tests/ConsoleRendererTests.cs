@@ -15,17 +15,19 @@ public sealed class ConsoleRendererTests
 
         var snapshot = await renderer.MountComponentAsync<ContainerComponent>(ParameterView.Empty, CancellationToken.None);
 
-        var root = Assert.IsType<Core.Vdom.VNode>(snapshot.Root);
-        Assert.Equal(Core.Vdom.VNodeKind.Element, root.Kind);
-        Assert.Equal("div", root.TagName);
-        Assert.DoesNotContain(Enumerate(root).Skip(1), node => node.Kind == Core.Vdom.VNodeKind.Component);
+        var root = snapshot.Root.ShouldBeOfType<Core.Vdom.VNode>();
+        root.Kind.ShouldBe(Core.Vdom.VNodeKind.Element);
+        root.TagName.ShouldBe("div");
+        Enumerate(root).Skip(1).ShouldNotContain(node => node.Kind == Core.Vdom.VNodeKind.Component);
 
-        var span = Assert.Single(root.Children);
-        Assert.Equal(Core.Vdom.VNodeKind.Element, span.Kind);
-        Assert.Equal("span", span.TagName);
-        var text = Assert.Single(span.Children);
-        Assert.Equal(Core.Vdom.VNodeKind.Text, text.Kind);
-        Assert.Equal("child", text.Text);
+        root.Children.ShouldHaveSingleItem();
+        var span = root.Children.Single();
+        span.Kind.ShouldBe(Core.Vdom.VNodeKind.Element);
+        span.TagName.ShouldBe("span");
+        span.Children.ShouldHaveSingleItem();
+        var text = span.Children.Single();
+        text.Kind.ShouldBe(Core.Vdom.VNodeKind.Text);
+        text.Text.ShouldBe("child");
     }
 
     [Fact]

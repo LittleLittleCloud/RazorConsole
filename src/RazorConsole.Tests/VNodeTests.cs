@@ -12,9 +12,9 @@ public sealed class VNodeTests
         var left = BuildSampleNode();
         var right = BuildSampleNode();
 
-        Assert.True(left == right);
-        Assert.True(left.Equals(right));
-        Assert.Equal(left.GetHashCode(), right.GetHashCode());
+        (left == right).ShouldBeTrue();
+        left.Equals(right).ShouldBeTrue();
+        left.GetHashCode().ShouldBe(right.GetHashCode());
     }
 
     [Fact]
@@ -24,8 +24,8 @@ public sealed class VNodeTests
         var right = BuildSampleNode();
         right.SetAttribute("data-id", "other");
 
-        Assert.True(left != right);
-        Assert.False(left.Equals(right));
+        (left != right).ShouldBeTrue();
+        left.Equals(right).ShouldBeFalse();
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public sealed class VNodeTests
         var right = BuildSampleNode();
         right.Children[0].AddChild(VNode.CreateText("extra"));
 
-        Assert.True(left != right);
+        (left != right).ShouldBeTrue();
     }
 
     [Fact]
@@ -43,9 +43,9 @@ public sealed class VNodeTests
     {
         var node = BuildSampleNode();
 
-        Assert.False(node == null);
-        Assert.True(node != null);
-        Assert.True((VNode?)null == (VNode?)null);
+        (node == null).ShouldBeFalse();
+        (node != null).ShouldBeTrue();
+        ((VNode?)null == (VNode?)null).ShouldBeTrue();
     }
 
     private static VNode BuildSampleNode()

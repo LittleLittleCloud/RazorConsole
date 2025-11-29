@@ -18,12 +18,12 @@ public sealed class TextInputTests
 
         var snapshot = await renderer.MountComponentAsync<ValueHost>(ParameterView.Empty, CancellationToken.None);
 
-        var root = Assert.IsType<RazorConsole.Core.Vdom.VNode>(snapshot.Root);
-        Assert.Equal("div", root.TagName);
-        Assert.Equal("true", root.Attributes["data-focusable"]);
-        Assert.True(root.Attributes.ContainsKey("data-text-input"));
-        Assert.Equal("Alice", root.Attributes["value"]);
-        Assert.Equal("true", root.Attributes["data-has-value"]);
+        var root = snapshot.Root.ShouldBeOfType<RazorConsole.Core.Vdom.VNode>();
+        root.TagName.ShouldBe("div");
+        root.Attributes["data-focusable"].ShouldBe("true");
+        root.Attributes.ContainsKey("data-text-input").ShouldBeTrue();
+        root.Attributes["value"].ShouldBe("Alice");
+        root.Attributes["data-has-value"].ShouldBe("true");
     }
 
     [Fact]
@@ -34,10 +34,10 @@ public sealed class TextInputTests
 
         var snapshot = await renderer.MountComponentAsync<PlaceholderHost>(ParameterView.Empty, CancellationToken.None);
 
-        var root = Assert.IsType<RazorConsole.Core.Vdom.VNode>(snapshot.Root);
-        Assert.Equal("", root.Attributes["value"]);
-        Assert.Equal("false", root.Attributes["data-has-value"]);
-        Assert.Equal("Type here", root.Attributes["data-placeholder"]);
+        var root = snapshot.Root.ShouldBeOfType<RazorConsole.Core.Vdom.VNode>();
+        root.Attributes["value"].ShouldBe("");
+        root.Attributes["data-has-value"].ShouldBe("false");
+        root.Attributes["data-placeholder"].ShouldBe("Type here");
     }
 
     [Fact]
@@ -48,8 +48,8 @@ public sealed class TextInputTests
 
         var snapshot = await renderer.MountComponentAsync<ExpandedHost>(ParameterView.Empty, CancellationToken.None);
 
-        var root = Assert.IsType<RazorConsole.Core.Vdom.VNode>(snapshot.Root);
-        Assert.Equal("true", root.Attributes["data-expand"]);
+        var root = snapshot.Root.ShouldBeOfType<RazorConsole.Core.Vdom.VNode>();
+        root.Attributes["data-expand"].ShouldBe("true");
     }
 
     [Fact]
@@ -60,16 +60,16 @@ public sealed class TextInputTests
 
         var snapshot = await renderer.MountComponentAsync<MaskedHost>(ParameterView.Empty, CancellationToken.None);
 
-        var root = Assert.IsType<VNode>(snapshot.Root);
-        Assert.Equal("true", root.Attributes["data-mask-input"]);
+        var root = snapshot.Root.ShouldBeOfType<VNode>();
+        root.Attributes["data-mask-input"].ShouldBe("true");
 
         var maskedSpan = FindNode(root, static node =>
             node.Attributes.TryGetValue("data-text", out var textFlag) &&
             textFlag == "true" &&
             node.Attributes.ContainsKey("data-content"));
 
-        Assert.NotNull(maskedSpan);
-        Assert.Equal("••••••", maskedSpan!.Attributes["data-content"]);
+        maskedSpan.ShouldNotBeNull();
+        maskedSpan!.Attributes["data-content"].ShouldBe("••••••");
     }
 
     private sealed class ValueHost : ComponentBase

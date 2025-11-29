@@ -18,11 +18,11 @@ public sealed class SelectTests
 
         var snapshot = await renderer.MountComponentAsync<FocusedValueHost>(ParameterView.Empty, CancellationToken.None);
 
-        var root = Assert.IsType<VNode>(snapshot.Root);
-        Assert.Equal("div", root.TagName);
+        var root = snapshot.Root.ShouldBeOfType<VNode>();
+        root.TagName.ShouldBe("div");
 
         // Verify the component rendered with options
-        Assert.True(root.Children.Count > 0);
+        root.Children.Count.ShouldBeGreaterThan(0);
     }
 
     [Fact]
@@ -33,11 +33,11 @@ public sealed class SelectTests
 
         var snapshot = await renderer.MountComponentAsync<BasicHost>(ParameterView.Empty, CancellationToken.None);
 
-        var root = Assert.IsType<VNode>(snapshot.Root);
-        Assert.Equal("div", root.TagName);
+        var root = snapshot.Root.ShouldBeOfType<VNode>();
+        root.TagName.ShouldBe("div");
 
         // Verify the component rendered with options
-        Assert.True(root.Children.Count > 0);
+        root.Children.Count.ShouldBeGreaterThan(0);
     }
 
     [Fact]
@@ -48,10 +48,10 @@ public sealed class SelectTests
 
         var snapshot = await renderer.MountComponentAsync<BasicHost>(ParameterView.Empty, CancellationToken.None);
 
-        var root = Assert.IsType<VNode>(snapshot.Root);
+        var root = snapshot.Root.ShouldBeOfType<VNode>();
 
         // The select should render the options
-        Assert.True(root.Children.Count > 0);
+        root.Children.Count.ShouldBeGreaterThan(0);
     }
 
     private sealed class BasicHost : ComponentBase

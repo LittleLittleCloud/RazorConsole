@@ -21,9 +21,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Text>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Text>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -40,9 +40,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Markup>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Markup>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -61,9 +61,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<SyntaxRenderable>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<SyntaxRenderable>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -78,9 +78,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Markup>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Markup>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -101,9 +101,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.NotNull(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldNotBeNull();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -119,9 +119,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Markup>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Markup>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -147,10 +147,10 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        var panel = Assert.IsType<Panel>(renderable);
-        Assert.NotNull(panel.Header);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        var panel = renderable.ShouldBeOfType<Panel>();
+        panel.Header.ShouldNotBeNull();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -174,9 +174,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Rows>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Rows>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -191,9 +191,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Panel>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Panel>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -227,9 +227,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Grid>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Grid>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -245,9 +245,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<BlockInlineRenderable>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<BlockInlineRenderable>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -270,9 +270,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Padder>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Padder>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -288,9 +288,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Markup>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Markup>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -309,10 +309,11 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        var animated = Assert.IsAssignableFrom<IAnimatedConsoleRenderable>(renderable);
-        var registered = Assert.Single(animations);
-        Assert.Same(animated, registered);
+        success.ShouldBeTrue();
+        var animated = renderable.ShouldBeAssignableTo<IAnimatedConsoleRenderable>();
+        animations.ShouldHaveSingleItem();
+        var registered = animations.Single();
+        registered.ShouldBeSameAs(animated);
     }
 
     [Fact]
@@ -338,9 +339,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<MeasuredAlign>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<MeasuredAlign>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -384,13 +385,13 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(tableNode, out var renderable, out var animations);
 
-        Assert.True(success);
-        var table = Assert.IsType<Table>(renderable);
-        Assert.True(table.Expand);
-        Assert.True(table.ShowHeaders);
-        Assert.Equal(3, table.Columns.Count);
-        Assert.Equal(Justify.Right, table.Columns[2].Alignment);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        var table = renderable.ShouldBeOfType<Table>();
+        table.Expand.ShouldBeTrue();
+        table.ShowHeaders.ShouldBeTrue();
+        table.Columns.Count.ShouldBe(3);
+        table.Columns[2].Alignment.ShouldBe(Justify.Right);
+        animations.ShouldBeEmpty();
 
         static VNode HeaderCell(string content, string align) => Element("th", th =>
         {
@@ -416,10 +417,10 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        var markup = Assert.IsType<Markup>(renderable);
-        Assert.Equal("[bold]Important[/]", BuildInlineMarkupLiteral(node));
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        var markup = renderable.ShouldBeOfType<Markup>();
+        BuildInlineMarkupLiteral(node).ShouldBe("[bold]Important[/]");
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -438,10 +439,10 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        var markup = Assert.IsType<Markup>(renderable);
-        Assert.Equal("[bold]Hello [italic]world[/][/]", BuildInlineMarkupLiteral(node));
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        var markup = renderable.ShouldBeOfType<Markup>();
+        BuildInlineMarkupLiteral(node).ShouldBe("[bold]Hello [italic]world[/][/]");
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -456,10 +457,10 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        var markup = Assert.IsType<Markup>(renderable);
-        Assert.Equal("[indianred1 on #1f1f1f]var value = 42;[/]", BuildInlineMarkupLiteral(node));
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        var markup = renderable.ShouldBeOfType<Markup>();
+        BuildInlineMarkupLiteral(node).ShouldBe("[indianred1 on #1f1f1f]var value = 42;[/]");
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -475,10 +476,10 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        var markup = Assert.IsType<Markup>(renderable);
-        Assert.Equal("[link=https://example.com]Click here[/]", BuildInlineMarkupLiteral(node));
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        var markup = renderable.ShouldBeOfType<Markup>();
+        BuildInlineMarkupLiteral(node).ShouldBe("[link=https://example.com]Click here[/]");
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -493,10 +494,10 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        var markup = Assert.IsType<Markup>(renderable);
-        Assert.Equal("Not a link", BuildInlineMarkupLiteral(node));
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        var markup = renderable.ShouldBeOfType<Markup>();
+        BuildInlineMarkupLiteral(node).ShouldBe("Not a link");
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -512,13 +513,13 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        var markup = Assert.IsType<Markup>(renderable);
+        success.ShouldBeTrue();
+        var markup = renderable.ShouldBeOfType<Markup>();
         // Markup.Escape should escape the square brackets
         var expectedMarkup = BuildInlineMarkupLiteral(node);
-        Assert.Contains("link=", expectedMarkup);
-        Assert.Contains("Link", expectedMarkup);
-        Assert.Empty(animations);
+        expectedMarkup.ShouldContain("link=");
+        expectedMarkup.ShouldContain("Link");
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -538,10 +539,10 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        var markup = Assert.IsType<Markup>(renderable);
-        Assert.Equal("[link=https://example.com]Click [bold]here[/][/]", BuildInlineMarkupLiteral(node));
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        var markup = renderable.ShouldBeOfType<Markup>();
+        BuildInlineMarkupLiteral(node).ShouldBe("[link=https://example.com]Click [bold]here[/][/]");
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -556,7 +557,7 @@ public class VdomSpectreTranslatorTests
         };
 
         var renderables = InvokeTryConvertChildren(children, context);
-        Assert.Equal(2, renderables.Count);
+        renderables.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -572,7 +573,7 @@ public class VdomSpectreTranslatorTests
         };
 
         var renderables = InvokeTryConvertChildren(children, context);
-        Assert.Equal(2, renderables.Count);
+        renderables.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -587,7 +588,8 @@ public class VdomSpectreTranslatorTests
 
         var renderables = InvokeTryConvertChildren(children, context);
 
-        var markup = Assert.Single(renderables);
+        renderables.ShouldHaveSingleItem();
+        var markup = renderables.Single();
         AssertMarkupText(markup);
     }
 
@@ -614,9 +616,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Rows>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Rows>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -638,9 +640,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Rows>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Rows>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -667,9 +669,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Rows>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Rows>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -692,9 +694,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Rows>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Rows>();
+        animations.ShouldBeEmpty();
     }
 
     [Fact]
@@ -706,9 +708,9 @@ public class VdomSpectreTranslatorTests
 
         var success = translator.TryTranslate(node, out var renderable, out var animations);
 
-        Assert.True(success);
-        Assert.IsType<Markup>(renderable);
-        Assert.Empty(animations);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Markup>();
+        animations.ShouldBeEmpty();
     }
 
     private static VNode Element(string tagName, Action<VNode>? configure = null)
@@ -723,34 +725,34 @@ public class VdomSpectreTranslatorTests
     private static string BuildInlineMarkupLiteral(VNode node)
     {
         var translatorType = typeof(HtmlInlineTextElementTranslator);
-        Assert.NotNull(translatorType);
+        translatorType.ShouldNotBeNull();
 
         var method = translatorType!.GetMethod("TryBuildMarkup", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
-        Assert.NotNull(method);
+        method.ShouldNotBeNull();
 
         var arguments = new object?[] { node, null };
         var success = (bool)method!.Invoke(null, arguments)!;
-        Assert.True(success);
+        success.ShouldBeTrue();
 
-        return Assert.IsType<string>(arguments[1]);
+        return arguments[1].ShouldBeOfType<string>();
     }
 
     private static List<IRenderable> InvokeTryConvertChildren(IReadOnlyList<VNode> children, TranslationContext context)
     {
         var method = typeof(VdomSpectreTranslator).GetMethod("TryConvertChildrenToRenderables", BindingFlags.Static | BindingFlags.Public);
-        Assert.NotNull(method);
+        method.ShouldNotBeNull();
 
         var arguments = new object?[] { children, context, null };
         var success = (bool)method!.Invoke(null, arguments)!;
-        Assert.True(success);
+        success.ShouldBeTrue();
 
-        var renderables = Assert.IsType<List<IRenderable>>(arguments[2]);
+        var renderables = arguments[2].ShouldBeOfType<List<IRenderable>>();
         return renderables;
     }
 
     private static void AssertMarkupText(IRenderable renderable)
     {
         // TODO think about better way to extract text from markup
-        var markup = Assert.IsType<Markup>(renderable);
+        var markup = renderable.ShouldBeOfType<Markup>();
     }
 }

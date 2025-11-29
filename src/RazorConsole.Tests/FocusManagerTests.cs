@@ -29,8 +29,8 @@ public sealed class FocusManagerTests
 
         PushInitialSnapshot(manager, initial);
 
-        Assert.True(manager.HasFocusables);
-        Assert.Equal("first", manager.CurrentFocusKey);
+        manager.HasFocusables.ShouldBeTrue();
+        manager.CurrentFocusKey.ShouldBe("first");
     }
 
     [Fact]
@@ -51,12 +51,12 @@ public sealed class FocusManagerTests
 
         await manager.FocusNextAsync(session.Token);
         await manager.FocusNextAsync(session.Token);
-        Assert.Equal("third", manager.CurrentFocusKey);
+        manager.CurrentFocusKey.ShouldBe("third");
 
         var changed = await manager.FocusPreviousAsync(session.Token);
 
-        Assert.True(changed);
-        Assert.Equal("second", manager.CurrentFocusKey);
+        changed.ShouldBeTrue();
+        manager.CurrentFocusKey.ShouldBe("second");
     }
 
     [Fact]
@@ -88,8 +88,8 @@ public sealed class FocusManagerTests
 
         PushInitialSnapshot(manager, view);
 
-        Assert.True(manager.HasFocusables);
-        Assert.Equal("interactive", manager.CurrentFocusKey);
+        manager.HasFocusables.ShouldBeTrue();
+        manager.CurrentFocusKey.ShouldBe("interactive");
     }
 
     [Fact]
@@ -130,20 +130,22 @@ public sealed class FocusManagerTests
 
         PushInitialSnapshot(manager, view);
 
-        Assert.Collection(
-            dispatcher.Events,
-            e => Assert.Equal(("focusin", 2UL), e),
-            e => Assert.Equal(("focus", 1UL), e));
+        dispatcher.Events.ShouldBe(new[]
+        {
+            ("focusin", 2UL),
+            ("focus", 1UL)
+        });
 
         dispatcher.Events.Clear();
 
         await manager.FocusNextAsync(session.Token);
 
-        Assert.Collection(
-            dispatcher.Events,
-            e => Assert.Equal(("focusout", 3UL), e),
-            e => Assert.Equal(("focusin", 5UL), e),
-            e => Assert.Equal(("focus", 4UL), e));
+        dispatcher.Events.ShouldBe(new[]
+        {
+            ("focusout", 3UL),
+            ("focusin", 5UL),
+            ("focus", 4UL)
+        });
     }
 
     [Fact]
@@ -162,13 +164,13 @@ public sealed class FocusManagerTests
 
         PushInitialSnapshot(manager, initial);
 
-        Assert.True(manager.HasFocusables);
-        Assert.Equal("first", manager.CurrentFocusKey);
+        manager.HasFocusables.ShouldBeTrue();
+        manager.CurrentFocusKey.ShouldBe("first");
 
         var changed = await manager.FocusNextAsync(session.Token);
 
-        Assert.True(changed);
-        Assert.Equal("second", manager.CurrentFocusKey);
+        changed.ShouldBeTrue();
+        manager.CurrentFocusKey.ShouldBe("second");
     }
 
     [Fact]
@@ -215,11 +217,11 @@ public sealed class FocusManagerTests
 
         PushInitialSnapshot(manager, view);
 
-        Assert.Equal("first", manager.CurrentFocusKey);
+        manager.CurrentFocusKey.ShouldBe("first");
 
         // Move focus to the second element
         await manager.FocusNextAsync(session.Token);
-        Assert.Equal("second", manager.CurrentFocusKey);
+        manager.CurrentFocusKey.ShouldBe("second");
 
         dispatcher.Events.Clear();
 
@@ -246,17 +248,18 @@ public sealed class FocusManagerTests
         await Task.Delay(100, Xunit.TestContext.Current.CancellationToken);
 
         // Focus should be on third after explicit focus call
-        Assert.Equal("third", manager.CurrentFocusKey);
+        manager.CurrentFocusKey.ShouldBe("third");
 
         // Focus events should have been dispatched from both auto-refocus and explicit focus
-        Assert.Collection(
-            dispatcher.Events,
-            e => Assert.Equal(("focusout", 6UL), e),  // second loses focus
-            e => Assert.Equal(("focusin", 2UL), e),   // first gains focus (auto-refocus)
-            e => Assert.Equal(("focus", 1UL), e),     // first focus event (auto-refocus)
-            e => Assert.Equal(("focusout", 3UL), e),  // first loses focus
-            e => Assert.Equal(("focusin", 8UL), e),   // third gains focus
-            e => Assert.Equal(("focus", 7UL), e));    // third focus event
+        dispatcher.Events.ShouldBe(new[]
+        {
+            ("focusout", 6UL),  // second loses focus
+            ("focusin", 2UL),   // first gains focus (auto-refocus)
+            ("focus", 1UL),     // first focus event (auto-refocus)
+            ("focusout", 3UL),  // first loses focus
+            ("focusin", 8UL),   // third gains focus
+            ("focus", 7UL)     // third focus event
+        });
     }
 
     [Fact]
@@ -275,8 +278,8 @@ public sealed class FocusManagerTests
 
         PushInitialSnapshot(manager, initial);
 
-        Assert.True(manager.HasFocusables);
-        Assert.Equal("first", manager.CurrentFocusKey);
+        manager.HasFocusables.ShouldBeTrue();
+        manager.CurrentFocusKey.ShouldBe("first");
 
         // Remove all focusable elements
         var emptyView = CreateView(Array.Empty<string>(), focusedKey: null);
@@ -288,8 +291,8 @@ public sealed class FocusManagerTests
         ((IObserver<ConsoleRenderer.RenderSnapshot>)manager).OnNext(snapshot);
 
         // Focus should be cleared
-        Assert.False(manager.HasFocusables);
-        Assert.Null(manager.CurrentFocusKey);
+        manager.HasFocusables.ShouldBeFalse();
+        manager.CurrentFocusKey.ShouldBeNull();
     }
 
     private static void PushInitialSnapshot(FocusManager manager, ConsoleViewResult view)

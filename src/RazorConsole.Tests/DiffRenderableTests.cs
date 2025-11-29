@@ -35,9 +35,9 @@ public sealed class DiffRenderableTests
             new("prefix "),
         });
 
-        Assert.Contains(controlSegments, text => text.Contains(CUF(prefixWidth), StringComparison.Ordinal));
-        Assert.DoesNotContain(controlSegments, text => text.Contains(EL(2), StringComparison.Ordinal));
-        Assert.Contains(result, segment => segment.Text == "changed");
+        controlSegments.ShouldContain(text => text.Contains(CUF(prefixWidth), StringComparison.Ordinal));
+        controlSegments.ShouldNotContain(text => text.Contains(EL(2), StringComparison.Ordinal));
+        result.ShouldContain(segment => segment.Text == "changed");
     }
 
     [Fact]
@@ -61,6 +61,6 @@ public sealed class DiffRenderableTests
             .Where(text => text.Contains(ESC, StringComparison.Ordinal))
             .ToList();
 
-        Assert.Contains(controlSegments, text => text.Contains(EL(0), StringComparison.Ordinal));
+        controlSegments.ShouldContain(text => text.Contains(EL(0), StringComparison.Ordinal));
     }
 }

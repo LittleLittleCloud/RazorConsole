@@ -26,7 +26,7 @@ public sealed class CustomTranslatorTests
 
         // Assert - Custom translator should be in the list
         // We should have at least one more translator than the default count (20)
-        Assert.True(translatorList.Count > 20);
+        translatorList.Count.ShouldBeGreaterThan(20);
     }
 
     [Fact]
@@ -51,8 +51,8 @@ public sealed class CustomTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out _);
 
         // Assert
-        Assert.True(success);
-        Assert.IsType<Text>(renderable);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Text>();
     }
 
     [Fact]
@@ -77,8 +77,8 @@ public sealed class CustomTranslatorTests
         var success = translator.TryTranslate(node, out var renderable, out _);
 
         // Assert
-        Assert.True(success);
-        Assert.IsType<Text>(renderable);
+        success.ShouldBeTrue();
+        renderable.ShouldBeOfType<Text>();
     }
 
     // Test custom translator

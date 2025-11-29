@@ -33,19 +33,12 @@ public class KeyboardEventManagerTests
         var enter = new ConsoleKeyInfo('\r', ConsoleKey.Enter, shift: false, alt: false, control: false);
         await harness.Manager.HandleKeyAsync(enter, CancellationToken.None);
 
-        Assert.Collection(
-            harness.Dispatcher.Events,
-            dispatched =>
-            {
-                Assert.Equal(1UL, dispatched.HandlerId);
-                Assert.IsType<MouseEventArgs>(dispatched.Args);
-            },
-            dispatched =>
-            {
-                Assert.Equal(3UL, dispatched.HandlerId);
-                var change = Assert.IsType<ChangeEventArgs>(dispatched.Args);
-                Assert.Equal("seed", change.Value);
-            });
+        harness.Dispatcher.Events.Count.ShouldBe(2);
+        harness.Dispatcher.Events[0].HandlerId.ShouldBe(1UL);
+        harness.Dispatcher.Events[0].Args.ShouldBeOfType<MouseEventArgs>();
+        harness.Dispatcher.Events[1].HandlerId.ShouldBe(3UL);
+        var change = harness.Dispatcher.Events[1].Args.ShouldBeOfType<ChangeEventArgs>();
+        change.Value.ShouldBe("seed");
     }
 
     [Fact]
@@ -64,10 +57,11 @@ public class KeyboardEventManagerTests
         var character = new ConsoleKeyInfo('x', ConsoleKey.X, shift: false, alt: false, control: false);
         await harness.Manager.HandleKeyAsync(character, CancellationToken.None);
 
-        var @event = Assert.Single(harness.Dispatcher.Events);
-        Assert.Equal(5UL, @event.HandlerId);
-        var changeArgs = Assert.IsType<ChangeEventArgs>(@event.Args);
-        Assert.Equal("x", changeArgs.Value);
+        harness.Dispatcher.Events.ShouldHaveSingleItem();
+        var @event = harness.Dispatcher.Events.Single();
+        @event.HandlerId.ShouldBe(5UL);
+        var changeArgs = @event.Args.ShouldBeOfType<ChangeEventArgs>();
+        changeArgs.Value.ShouldBe("x");
     }
 
     [Fact]
@@ -77,13 +71,13 @@ public class KeyboardEventManagerTests
             new FocusElementSpec("first"),
             new FocusElementSpec("second"));
 
-        Assert.Equal("first", harness.FocusManager.CurrentFocusKey);
+        harness.FocusManager.CurrentFocusKey.ShouldBe("first");
 
         var tab = new ConsoleKeyInfo('\t', ConsoleKey.Tab, shift: false, alt: false, control: false);
         await harness.Manager.HandleKeyAsync(tab, CancellationToken.None);
 
-        Assert.Equal("second", harness.FocusManager.CurrentFocusKey);
-        Assert.Empty(harness.Dispatcher.Events);
+        harness.FocusManager.CurrentFocusKey.ShouldBe("second");
+        harness.Dispatcher.Events.ShouldBeEmpty();
     }
 
     [Fact]
@@ -104,38 +98,28 @@ public class KeyboardEventManagerTests
         var character = new ConsoleKeyInfo('a', ConsoleKey.A, shift: false, alt: false, control: false);
         await harness.Manager.HandleKeyAsync(character, CancellationToken.None);
 
-        Assert.Collection(
-            harness.Dispatcher.Events,
-            dispatched =>
-            {
-                Assert.Equal(10UL, dispatched.HandlerId);
-                var args = Assert.IsType<KeyboardEventArgs>(dispatched.Args);
-                Assert.Equal("keydown", args.Type);
-                Assert.Equal("a", args.Key);
-                Assert.Equal("KeyA", args.Code);
-            },
-            dispatched =>
-            {
-                Assert.Equal(11UL, dispatched.HandlerId);
-                var args = Assert.IsType<KeyboardEventArgs>(dispatched.Args);
-                Assert.Equal("keypress", args.Type);
-                Assert.Equal("a", args.Key);
-                Assert.Equal("KeyA", args.Code);
-            },
-            dispatched =>
-            {
-                Assert.Equal(13UL, dispatched.HandlerId);
-                var change = Assert.IsType<ChangeEventArgs>(dispatched.Args);
-                Assert.Equal("a", change.Value);
-            },
-            dispatched =>
-            {
-                Assert.Equal(12UL, dispatched.HandlerId);
-                var args = Assert.IsType<KeyboardEventArgs>(dispatched.Args);
-                Assert.Equal("keyup", args.Type);
-                Assert.Equal("a", args.Key);
-                Assert.Equal("KeyA", args.Code);
-            });
+        harness.Dispatcher.Events.Count.ShouldBe(4);
+        harness.Dispatcher.Events[0].HandlerId.ShouldBe(10UL);
+        var keydownArgs = harness.Dispatcher.Events[0].Args.ShouldBeOfType<KeyboardEventArgs>();
+        keydownArgs.Type.ShouldBe("keydown");
+        keydownArgs.Key.ShouldBe("a");
+        keydownArgs.Code.ShouldBe("KeyA");
+
+        harness.Dispatcher.Events[1].HandlerId.ShouldBe(11UL);
+        var keypressArgs = harness.Dispatcher.Events[1].Args.ShouldBeOfType<KeyboardEventArgs>();
+        keypressArgs.Type.ShouldBe("keypress");
+        keypressArgs.Key.ShouldBe("a");
+        keypressArgs.Code.ShouldBe("KeyA");
+
+        harness.Dispatcher.Events[2].HandlerId.ShouldBe(13UL);
+        var changeArgs = harness.Dispatcher.Events[2].Args.ShouldBeOfType<ChangeEventArgs>();
+        changeArgs.Value.ShouldBe("a");
+
+        harness.Dispatcher.Events[3].HandlerId.ShouldBe(12UL);
+        var keyupArgs = harness.Dispatcher.Events[3].Args.ShouldBeOfType<KeyboardEventArgs>();
+        keyupArgs.Type.ShouldBe("keyup");
+        keyupArgs.Key.ShouldBe("a");
+        keyupArgs.Code.ShouldBe("KeyA");
     }
 
     [Fact]
@@ -154,24 +138,18 @@ public class KeyboardEventManagerTests
         var tab = new ConsoleKeyInfo('\t', ConsoleKey.Tab, shift: false, alt: false, control: false);
         await harness.Manager.HandleKeyAsync(tab, CancellationToken.None);
 
-        Assert.Equal("second", harness.FocusManager.CurrentFocusKey);
+        harness.FocusManager.CurrentFocusKey.ShouldBe("second");
 
-        Assert.Collection(
-            harness.Dispatcher.Events,
-            dispatched =>
-            {
-                Assert.Equal(21UL, dispatched.HandlerId);
-                var args = Assert.IsType<KeyboardEventArgs>(dispatched.Args);
-                Assert.Equal("keydown", args.Type);
-                Assert.Equal("Tab", args.Key);
-            },
-            dispatched =>
-            {
-                Assert.Equal(22UL, dispatched.HandlerId);
-                var args = Assert.IsType<KeyboardEventArgs>(dispatched.Args);
-                Assert.Equal("keyup", args.Type);
-                Assert.Equal("Tab", args.Key);
-            });
+        harness.Dispatcher.Events.Count.ShouldBe(2);
+        harness.Dispatcher.Events[0].HandlerId.ShouldBe(21UL);
+        var keydownArgs = harness.Dispatcher.Events[0].Args.ShouldBeOfType<KeyboardEventArgs>();
+        keydownArgs.Type.ShouldBe("keydown");
+        keydownArgs.Key.ShouldBe("Tab");
+
+        harness.Dispatcher.Events[1].HandlerId.ShouldBe(22UL);
+        var keyupArgs = harness.Dispatcher.Events[1].Args.ShouldBeOfType<KeyboardEventArgs>();
+        keyupArgs.Type.ShouldBe("keyup");
+        keyupArgs.Key.ShouldBe("Tab");
     }
 
     [Fact]
@@ -204,10 +182,11 @@ public class KeyboardEventManagerTests
         var nextChar = new ConsoleKeyInfo('b', ConsoleKey.B, shift: false, alt: false, control: false);
         await harness.Manager.HandleKeyAsync(nextChar, CancellationToken.None);
 
-        var @event = Assert.Single(harness.Dispatcher.Events);
-        Assert.Equal(101UL, @event.HandlerId);
-        var change = Assert.IsType<ChangeEventArgs>(@event.Args);
-        Assert.Equal("b", change.Value);
+        harness.Dispatcher.Events.ShouldHaveSingleItem();
+        var @event = harness.Dispatcher.Events.Single();
+        @event.HandlerId.ShouldBe(101UL);
+        var change = @event.Args.ShouldBeOfType<ChangeEventArgs>();
+        change.Value.ShouldBe("b");
     }
 
     private sealed class KeyboardHarness : IAsyncDisposable

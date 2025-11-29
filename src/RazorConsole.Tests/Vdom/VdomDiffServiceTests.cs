@@ -16,9 +16,10 @@ public class VdomDiffServiceTests
 
         var diff = _service.Diff(previous, current);
 
-        Assert.True(diff.HasChanges);
-        var insert = Assert.Single(diff.Mutations, mutation => mutation.Kind == VdomMutationKind.InsertNode);
-        Assert.Equal(new[] { 1 }, insert.Path);
+        diff.HasChanges.ShouldBeTrue();
+        diff.Mutations.ShouldContain(mutation => mutation.Kind == VdomMutationKind.InsertNode);
+        var insert = diff.Mutations.Single(mutation => mutation.Kind == VdomMutationKind.InsertNode);
+        insert.Path.ShouldBe(new[] { 1 });
     }
 
     [Fact]
@@ -29,9 +30,10 @@ public class VdomDiffServiceTests
 
         var diff = _service.Diff(previous, current);
 
-        var mutation = Assert.Single(diff.Mutations);
-        Assert.Equal(VdomMutationKind.UpdateAttributes, mutation.Kind);
-        Assert.Equal("New", mutation.Attributes!["header"]);
+        diff.Mutations.ShouldHaveSingleItem();
+        var mutation = diff.Mutations.Single();
+        mutation.Kind.ShouldBe(VdomMutationKind.UpdateAttributes);
+        mutation.Attributes!["header"].ShouldBe("New");
     }
 
     [Fact]
@@ -42,8 +44,9 @@ public class VdomDiffServiceTests
 
         var diff = _service.Diff(previous, current);
 
-        var mutation = Assert.Single(diff.Mutations);
-        Assert.Equal(VdomMutationKind.RemoveNode, mutation.Kind);
-        Assert.Equal(new[] { 0 }, mutation.Path);
+        diff.Mutations.ShouldHaveSingleItem();
+        var mutation = diff.Mutations.Single();
+        mutation.Kind.ShouldBe(VdomMutationKind.RemoveNode);
+        mutation.Path.ShouldBe(new[] { 0 });
     }
 }

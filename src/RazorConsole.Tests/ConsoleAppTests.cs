@@ -42,9 +42,9 @@ public sealed class ConsoleAppTests
         cts.Cancel();
         await runTask;
 
-        Assert.NotNull(observed);
-        Assert.Same(observed, result);
-        Assert.Contains("Callback", result.Html, StringComparison.Ordinal);
+        observed.ShouldNotBeNull();
+        observed.ShouldBeSameAs(result);
+        result.Html.ShouldContain("Callback");
     }
 
     [Fact]
@@ -64,8 +64,8 @@ public sealed class ConsoleAppTests
         cts.Cancel();
         await runTask;
 
-        Assert.NotNull(options);
-        Assert.Equivalent(new ConsoleAppOptions(), options);
+        options.ShouldNotBeNull();
+        options.ShouldBeEquivalentTo(new ConsoleAppOptions());
     }
 
     private sealed class TestComponent : ComponentBase

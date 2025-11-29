@@ -15,9 +15,9 @@ public sealed class SyntaxHighlighterServiceTests
 
         var result = _service.Highlight(request);
 
-        Assert.NotEmpty(result.Lines);
-        Assert.Contains("public", result.Lines[0], StringComparison.Ordinal);
-        Assert.Contains('[', result.Lines[0]);
+        result.Lines.ShouldNotBeEmpty();
+        result.Lines[0].ShouldContain("public");
+        result.Lines[0].ShouldContain('[');
     }
 
     [Fact]
@@ -27,9 +27,9 @@ public sealed class SyntaxHighlighterServiceTests
 
         var result = _service.Highlight(request);
 
-        Assert.Empty(result.Lines);
-        Assert.True(result.ShowLineNumbers);
-        Assert.Equal(SyntaxOptions.Default.PlaceholderMarkup, result.PlaceholderMarkup);
+        result.Lines.ShouldBeEmpty();
+        result.ShowLineNumbers.ShouldBeTrue();
+        result.PlaceholderMarkup.ShouldBe(SyntaxOptions.Default.PlaceholderMarkup);
     }
 
     [Fact]
@@ -40,8 +40,8 @@ public sealed class SyntaxHighlighterServiceTests
 
         var result = _service.Highlight(request);
 
-        Assert.NotEmpty(result.Lines);
-        Assert.DoesNotContain('\t', result.Lines[0]);
+        result.Lines.ShouldNotBeEmpty();
+        result.Lines[0].ShouldNotContain('\t');
     }
 
     [Fact]
@@ -52,9 +52,9 @@ public sealed class SyntaxHighlighterServiceTests
         var encoded = SyntaxHighlightingService.EncodePayload(model);
         var decoded = SyntaxHighlightingService.DecodePayload(encoded);
 
-        Assert.Equal(model.ShowLineNumbers, decoded.ShowLineNumbers);
-        Assert.Equal(model.LineNumberStyleMarkup, decoded.LineNumberStyleMarkup);
-        Assert.Equal(model.PlaceholderMarkup, decoded.PlaceholderMarkup);
-        Assert.Equal(model.Lines, decoded.Lines);
+        decoded.ShowLineNumbers.ShouldBe(model.ShowLineNumbers);
+        decoded.LineNumberStyleMarkup.ShouldBe(model.LineNumberStyleMarkup);
+        decoded.PlaceholderMarkup.ShouldBe(model.PlaceholderMarkup);
+        decoded.Lines.ShouldBe(model.Lines);
     }
 }

@@ -21,11 +21,11 @@ public sealed class ComponentActivatorTests
         IComponent component = activator.CreateInstance(typeof(MyComponent));
 
         // Assert
-        Assert.NotNull(component);
-        MyComponent myComponent = Assert.IsType<MyComponent>(component);
-        Assert.NotNull(myComponent.Service);
-        Assert.IsType<MyService>(myComponent.Service);
-        Assert.Equal(MyService.message, myComponent.GetMessage());
+        component.ShouldNotBeNull();
+        var myComponent = component.ShouldBeOfType<MyComponent>();
+        myComponent.Service.ShouldNotBeNull();
+        myComponent.Service.ShouldBeOfType<MyService>();
+        myComponent.GetMessage().ShouldBe(MyService.message);
     }
 
     [Fact]
@@ -42,14 +42,14 @@ public sealed class ComponentActivatorTests
         IComponent component = activator.CreateInstance(typeof(MyKeyedComponent));
 
         // Assert
-        Assert.NotNull(component);
-        MyKeyedComponent myComponent = Assert.IsType<MyKeyedComponent>(component);
-        Assert.NotNull(myComponent.FirstService);
-        Assert.IsType<MyService>(myComponent.FirstService);
-        Assert.NotNull(myComponent.SecondService);
-        Assert.IsType<MyService>(myComponent.SecondService);
-        Assert.Equal(MyService.message, myComponent.FirstGetMessage());
-        Assert.Equal(MyService.message, myComponent.SecondGetMessage());
+        component.ShouldNotBeNull();
+        var myComponent = component.ShouldBeOfType<MyKeyedComponent>();
+        myComponent.FirstService.ShouldNotBeNull();
+        myComponent.FirstService.ShouldBeOfType<MyService>();
+        myComponent.SecondService.ShouldNotBeNull();
+        myComponent.SecondService.ShouldBeOfType<MyService>();
+        myComponent.FirstGetMessage().ShouldBe(MyService.message);
+        myComponent.SecondGetMessage().ShouldBe(MyService.message);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class ComponentActivatorTests
         ComponentActivator activator = new(serviceProvider);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => activator.CreateInstance(typeof(string)));
+        Should.Throw<ArgumentException>(() => activator.CreateInstance(typeof(string)));
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class ComponentActivatorTests
         ComponentActivator activator = new(serviceProvider);
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => activator.CreateInstance(typeof(MyComponent)));
+        Should.Throw<InvalidOperationException>(() => activator.CreateInstance(typeof(MyComponent)));
     }
 
     private interface IMyService

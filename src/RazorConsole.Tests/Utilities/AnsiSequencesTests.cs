@@ -9,18 +9,18 @@ public sealed class AnsiSequencesTests
     [Fact]
     public void IDN_ReturnsIndexEscapeSequence()
     {
-        Assert.Equal("\u001bD", AnsiSequences.IDN());
+        AnsiSequences.IDN().ShouldBe("\u001bD");
     }
 
     [Fact]
     public void NEL_ReturnsNextLineEscapeSequence()
     {
-        Assert.Equal("\u001bE", AnsiSequences.NEL());
+        AnsiSequences.NEL().ShouldBe("\u001bE");
     }
 
     [Fact]
     public void RI_ReturnsReverseIndexEscapeSequence()
     {
-        Assert.Equal("\u001bM", AnsiSequences.RI());
+        AnsiSequences.RI().ShouldBe("\u001bM");
     }
 }

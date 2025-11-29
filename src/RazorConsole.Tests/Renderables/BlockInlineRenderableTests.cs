@@ -23,14 +23,14 @@ public class BlockInlineRenderableTests
     [Fact]
     public void Constructor_WithNullItems_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => new BlockInlineRenderable(null!));
+        Should.Throw<ArgumentNullException>(() => new BlockInlineRenderable(null!));
     }
 
     [Fact]
     public void Constructor_WithEmptyList_DoesNotThrow()
     {
         var renderable = new BlockInlineRenderable(new List<BlockInlineRenderable.RenderableItem>());
-        Assert.NotNull(renderable);
+        renderable.ShouldNotBeNull();
     }
 
     [Fact]
@@ -39,9 +39,9 @@ public class BlockInlineRenderableTests
         var markup = new Markup("Hello");
         var item = BlockInlineRenderable.Block(markup);
 
-        Assert.NotNull(item);
-        Assert.True(item.IsBlock);
-        Assert.Same(markup, item.Renderable);
+        item.ShouldNotBeNull();
+        item.IsBlock.ShouldBeTrue();
+        item.Renderable.ShouldBeSameAs(markup);
     }
 
     [Fact]
@@ -50,9 +50,9 @@ public class BlockInlineRenderableTests
         var markup = new Markup("Hello");
         var item = BlockInlineRenderable.Inline(markup);
 
-        Assert.NotNull(item);
-        Assert.False(item.IsBlock);
-        Assert.Same(markup, item.Renderable);
+        item.ShouldNotBeNull();
+        item.IsBlock.ShouldBeFalse();
+        item.Renderable.ShouldBeSameAs(markup);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class BlockInlineRenderableTests
 
         var segments = renderable.Render(options, 80);
 
-        Assert.Empty(segments);
+        segments.ShouldBeEmpty();
     }
 
     [Fact]
@@ -80,8 +80,8 @@ public class BlockInlineRenderableTests
         var segments = new List<Segment>(renderable.Render(options, 80));
 
         // Should have the text segment(s) but no line break at the end
-        Assert.NotEmpty(segments);
-        Assert.DoesNotContain(segments, s => s.IsLineBreak);
+        segments.ShouldNotBeEmpty();
+        segments.ShouldNotContain(s => s.IsLineBreak);
     }
 
     [Fact]
@@ -100,8 +100,8 @@ public class BlockInlineRenderableTests
         var segments = new List<Segment>(renderable.Render(options, 80));
 
         // Should render all items without line breaks between them
-        Assert.NotEmpty(segments);
-        Assert.DoesNotContain(segments, s => s.IsLineBreak);
+        segments.ShouldNotBeEmpty();
+        segments.ShouldNotContain(s => s.IsLineBreak);
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public class BlockInlineRenderableTests
         var segments = new List<Segment>(renderable.Render(options, 80));
 
         // Should have content from both items, no line break at the end
-        Assert.NotEmpty(segments);
+        segments.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -137,8 +137,8 @@ public class BlockInlineRenderableTests
         var segments = new List<Segment>(renderable.Render(options, 80));
 
         // Should have a line break between inline and block
-        Assert.NotEmpty(segments);
-        Assert.Contains(segments, s => s.IsLineBreak);
+        segments.ShouldNotBeEmpty();
+        segments.ShouldContain(s => s.IsLineBreak);
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class BlockInlineRenderableTests
 
         // Should have line breaks between blocks
         var lineBreaks = segments.Count(s => s.IsLineBreak);
-        Assert.Equal(2, lineBreaks); // 2 line breaks for 3 blocks
+        lineBreaks.ShouldBe(2); // 2 line breaks for 3 blocks
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class BlockInlineRenderableTests
 
         // Should have 1 line break (between the two block elements)
         var lineBreaks = segments.Count(s => s.IsLineBreak);
-        Assert.Equal(1, lineBreaks);
+        lineBreaks.ShouldBe(1);
     }
 
     [Fact]
@@ -190,8 +190,8 @@ public class BlockInlineRenderableTests
 
         var measurement = renderable.Measure(options, 80);
 
-        Assert.Equal(0, measurement.Min);
-        Assert.Equal(0, measurement.Max);
+        measurement.Min.ShouldBe(0);
+        measurement.Max.ShouldBe(0);
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public class BlockInlineRenderableTests
         var measurement = renderable.Measure(options, 80);
 
         // Measurement should reflect the content
-        Assert.True(measurement.Min > 0);
-        Assert.True(measurement.Max > 0);
+        measurement.Min.ShouldBeGreaterThan(0);
+        measurement.Max.ShouldBeGreaterThan(0);
     }
 }

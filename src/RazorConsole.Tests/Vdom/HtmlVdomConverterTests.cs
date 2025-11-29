@@ -11,18 +11,18 @@ public class HtmlVdomConverterTests
     {
         var success = HtmlVdomConverter.TryConvert("<div class='panel'><span>Hi</span></div>", out var root);
 
-        Assert.True(success);
-        Assert.NotNull(root);
-        Assert.Equal(VNodeKind.Element, root.Kind);
-        Assert.Equal("div", root.TagName);
-        Assert.Equal("panel", root.Attributes["class"]);
-        Assert.Single(root.Children);
+        success.ShouldBeTrue();
+        root.ShouldNotBeNull();
+        root.Kind.ShouldBe(VNodeKind.Element);
+        root.TagName.ShouldBe("div");
+        root.Attributes["class"].ShouldBe("panel");
+        root.Children.ShouldHaveSingleItem();
         var textElement = root.Children[0];
-        Assert.Equal(VNodeKind.Element, textElement.Kind);
-        Assert.Equal("span", textElement.TagName);
+        textElement.Kind.ShouldBe(VNodeKind.Element);
+        textElement.TagName.ShouldBe("span");
         var text = textElement.Children[0];
-        Assert.Equal(VNodeKind.Text, text.Kind);
-        Assert.Equal("Hi", text.Text);
+        text.Kind.ShouldBe(VNodeKind.Text);
+        text.Text.ShouldBe("Hi");
     }
 
     [Fact]
@@ -32,8 +32,8 @@ public class HtmlVdomConverterTests
         HtmlVdomConverter.TryConvert("<p data-key='a'>Hello</p>", out var second);
         HtmlVdomConverter.TryConvert("<p data-key='a'>World</p>", out var mutated);
 
-        Assert.True(VdomComparer.AreEqual(first, second));
-        Assert.False(VdomComparer.AreEqual(first, mutated));
+        VdomComparer.AreEqual(first, second).ShouldBeTrue();
+        VdomComparer.AreEqual(first, mutated).ShouldBeFalse();
     }
 
     [Fact]
@@ -45,9 +45,9 @@ public class HtmlVdomConverterTests
 
         var diff = service.Diff(previous, current);
 
-        Assert.True(diff.HasChanges);
-        Assert.Single(diff.Mutations);
-        Assert.Equal(VdomMutationKind.UpdateText, diff.Mutations[0].Kind);
-        Assert.Equal("Bye", diff.Mutations[0].Text);
+        diff.HasChanges.ShouldBeTrue();
+        diff.Mutations.ShouldHaveSingleItem();
+        diff.Mutations[0].Kind.ShouldBe(VdomMutationKind.UpdateText);
+        diff.Mutations[0].Text.ShouldBe("Bye");
     }
 }
