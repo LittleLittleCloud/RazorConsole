@@ -13,7 +13,11 @@ namespace RazorConsole.Core.Focus;
 public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 {
     private readonly IFocusEventDispatcher? _eventDispatcher;
+#if NET9_0_OR_GREATER
+    private readonly Lock _sync = new();
+#else
     private readonly object _sync = new();
+#endif
     private List<FocusTarget> _focuseTargets = new();
     private int _currentIndex = -1;
     private ConsoleLiveDisplayContext? _context;
@@ -46,7 +50,11 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
     {
         get
         {
+#if NET9_0_OR_GREATER
+            using (_sync.EnterScope())
+#else
             lock (_sync)
+#endif
             {
                 return _focuseTargets.Count > 0;
             }
@@ -68,7 +76,11 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
     /// <returns><see langword="true"/> when a focus target is active; otherwise <see langword="false"/>.</returns>
     internal bool TryGetFocusedTarget(out FocusTarget? snapshot)
     {
+#if NET9_0_OR_GREATER
+        using (_sync.EnterScope())
+#else
         lock (_sync)
+#endif
         {
             if (_currentIndex < 0 || _currentIndex >= _focuseTargets.Count)
             {
@@ -104,7 +116,11 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 
         FocusTarget? initialFocus = null;
 
+#if NET9_0_OR_GREATER
+        using (_sync.EnterScope())
+#else
         lock (_sync)
+#endif
         {
             ResetState_NoLock();
 
@@ -166,7 +182,11 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
         previousTarget = null;
         nextTarget = null;
 
+#if NET9_0_OR_GREATER
+        using (_sync.EnterScope())
+#else
         lock (_sync)
+#endif
         {
             if (_focuseTargets.Count == 0)
             {
@@ -211,7 +231,11 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
         FocusTarget? previousTarget = null;
         FocusTarget? target;
 
+#if NET9_0_OR_GREATER
+        using (_sync.EnterScope())
+#else
         lock (_sync)
+#endif
         {
             if (_focuseTargets.Count == 0)
             {
@@ -245,7 +269,11 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 
     internal void EndSession(ConsoleLiveDisplayContext context)
     {
+#if NET9_0_OR_GREATER
+        using (_sync.EnterScope())
+#else
         lock (_sync)
+#endif
         {
             if (!ReferenceEquals(_context, context))
             {
@@ -278,35 +306,20 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 
         token.ThrowIfCancellationRequested();
 
-        if (previousTarget is not null && TryGetEvent(previousTarget, "onfocusout", out var focusOutEvent))
+        if (previousTarget is not null && previousTarget.Events.TryGetEvent("onfocusout", out var focusOutEvent))
         {
             await dispatcher.DispatchAsync(focusOutEvent.HandlerId, new FocusEventArgs { Type = "focusout" }, token).ConfigureAwait(false);
         }
 
-        if (TryGetEvent(target, "onfocusin", out var focusInEvent))
+        if (target.Events.TryGetEvent("onfocusin", out var focusInEvent))
         {
             await dispatcher.DispatchAsync(focusInEvent.HandlerId, new FocusEventArgs { Type = "focusin" }, token).ConfigureAwait(false);
         }
 
-        if (TryGetEvent(target, "onfocus", out var focusEvent))
+        if (target.Events.TryGetEvent("onfocus", out var focusEvent))
         {
             await dispatcher.DispatchAsync(focusEvent.HandlerId, new FocusEventArgs { Type = "focus" }, token).ConfigureAwait(false);
         }
-    }
-
-    private static bool TryGetEvent(FocusTarget target, string name, out VNodeEvent nodeEvent)
-    {
-        foreach (var candidate in target.Events)
-        {
-            if (string.Equals(candidate.Name, name, StringComparison.OrdinalIgnoreCase))
-            {
-                nodeEvent = candidate;
-                return true;
-            }
-        }
-
-        nodeEvent = default;
-        return false;
     }
 
     private void ResetState_NoLock()
@@ -320,7 +333,11 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 
     private FocusTarget? UpdateFocusTargets(ConsoleRenderer.RenderSnapshot view)
     {
+#if NET9_0_OR_GREATER
+        using (_sync.EnterScope())
+#else
         lock (_sync)
+#endif
         {
             return UpdateFocusTargets_NoLock(view);
         }
@@ -426,7 +443,11 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 
     void IObserver<ConsoleRenderer.RenderSnapshot>.OnNext(ConsoleRenderer.RenderSnapshot value)
     {
+#if NET9_0_OR_GREATER
+        using (_sync.EnterScope())
+#else
         lock (_sync)
+#endif
         {
             FocusTarget? previousFocusTarget = _currentIndex >= 0 ? _focuseTargets[_currentIndex] : null;
 

@@ -7,7 +7,8 @@ namespace RazorConsole.Core.Renderables;
 
 internal class DiffRenderable : Renderable
 {
-    private readonly object _lock = new object();
+    // Cannot use Lock for NET9+ because Render method uses yield return which is incompatible with Lock.Scope
+    private readonly object _lock = new();
     private readonly IAnsiConsole _console;
     private IRenderable _renderable;
     private SegmentShape _shape = new(0, 0);
@@ -34,6 +35,7 @@ internal class DiffRenderable : Renderable
 
     protected override IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
     {
+        // Cannot use Lock.Scope with yield return, must use regular lock
         lock (_lock)
         {
             yield return Segment.Control(RM(DECTCEM));

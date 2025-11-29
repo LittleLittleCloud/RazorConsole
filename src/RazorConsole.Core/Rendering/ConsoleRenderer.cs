@@ -188,7 +188,18 @@ internal sealed class ConsoleRenderer(
             _pendingRender?.TrySetResult(snapshot);
             _pendingRender = null;
 
-            _ = Task.Run(() => NotifyObservers(snapshot));
+            // Notify observers asynchronously with proper error handling
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    NotifyObservers(snapshot);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogErrorNotifyingObserverOfSnapshot(ex);
+                }
+            });
 
             return Task.CompletedTask;
         }
@@ -677,34 +688,22 @@ internal sealed class ConsoleRenderer(
 
     private void NotifyObservers(RenderSnapshot snapshot)
     {
-        IObserver<RenderSnapshot>[] observers;
-        lock (_observersSync)
-        {
-            if (_observers.Count == 0)
-            {
-                return;
-            }
-
-            observers = [.. _observers];
-        }
-
-        foreach (var observer in observers)
-        {
-            try
-            {
-                observer.OnNext(snapshot);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogErrorNotifyingObserverOfSnapshot(ex);
-            }
-        }
+        NotifyObserversInternal(observer => observer.OnNext(snapshot), ex => _logger.LogErrorNotifyingObserverOfSnapshot(ex));
     }
 
     private void NotifyError(Exception exception)
     {
+        NotifyObserversInternal(observer => observer.OnError(exception), ex => _logger.LogErrorNotifyingObserverOfError(ex));
+    }
+
+    private void NotifyObserversInternal(Action<IObserver<RenderSnapshot>> action, Action<Exception> errorLogger)
+    {
         IObserver<RenderSnapshot>[] observers;
+#if NET9_0_OR_GREATER
+        using (_observersSync.EnterScope())
+#else
         lock (_observersSync)
+#endif
         {
             if (_observers.Count == 0)
             {
@@ -718,11 +717,11 @@ internal sealed class ConsoleRenderer(
         {
             try
             {
-                observer.OnError(exception);
+                action(observer);
             }
             catch (Exception ex)
             {
-                _logger.LogErrorNotifyingObserverOfError(ex);
+                errorLogger(ex);
             }
         }
     }
@@ -755,7 +754,11 @@ internal sealed class ConsoleRenderer(
     private void CompleteObservers()
     {
         IObserver<RenderSnapshot>[] observers;
+#if NET9_0_OR_GREATER
+        using (_observersSync.EnterScope())
+#else
         lock (_observersSync)
+#endif
         {
             if (_observers.Count == 0)
             {
@@ -781,7 +784,11 @@ internal sealed class ConsoleRenderer(
 
     private void Unsubscribe(IObserver<RenderSnapshot> observer)
     {
+#if NET9_0_OR_GREATER
+        using (_observersSync.EnterScope())
+#else
         lock (_observersSync)
+#endif
         {
             _observers.Remove(observer);
         }
@@ -791,7 +798,11 @@ internal sealed class ConsoleRenderer(
     {
         if (disposing)
         {
+#if NET9_0_OR_GREATER
+            using (_observersSync.EnterScope())
+#else
             lock (_observersSync)
+#endif
             {
                 if (_disposed)
                 {
