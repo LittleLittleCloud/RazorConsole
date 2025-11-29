@@ -74,7 +74,14 @@ public sealed class ConsoleRendererTests
 
         var snapshot = await renderer.MountComponentAsync<ParameterComponent>(parameters, CancellationToken.None);
 
-        snapshot.Root.ShouldNotBeNull();
+        var root = snapshot.Root.ShouldBeOfType<Core.Vdom.VNode>();
+        root.Kind.ShouldBe(Core.Vdom.VNodeKind.Element);
+        root.TagName.ShouldBe("div");
+        root.Children.ShouldHaveSingleItem();
+
+        var text = root.Children.Single();
+        text.Kind.ShouldBe(Core.Vdom.VNodeKind.Text);
+        text.Text.ShouldBe("Test");
     }
 
     private static IEnumerable<Core.Vdom.VNode> Enumerate(Core.Vdom.VNode node)
