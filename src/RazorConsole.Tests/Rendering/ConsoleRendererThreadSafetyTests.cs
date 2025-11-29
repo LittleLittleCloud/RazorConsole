@@ -98,8 +98,12 @@ public sealed class ConsoleRendererThreadSafetyTests
         using var renderer = TestHelpers.CreateTestRenderer();
         var subscriptions = new List<IDisposable>();
         var exceptions = new List<Exception>();
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+            Xunit.TestContext.Current?.CancellationToken ?? CancellationToken.None);
+        var cancellationToken = cancellationTokenSource.Token;
 
-        var subscribeTasks = Enumerable.Range(0, 5).Select(i => Task.Run(() =>
+        // Start subscribe tasks
+        var subscribeTasks = Enumerable.Range(0, 10).Select(i => Task.Run(() =>
         {
             try
             {
@@ -117,15 +121,16 @@ public sealed class ConsoleRendererThreadSafetyTests
                     exceptions.Add(ex);
                 }
             }
-        })).ToArray();
+        }, cancellationToken)).ToArray();
 
-        await Task.WhenAll(subscribeTasks);
-
-        var unsubscribeTasks = subscriptions.Select(sub => Task.Run(() =>
+        // Mount a component to trigger render notifications
+        // This will cause the observer list to be read (via NotifyObservers) while subscribe/unsubscribe modify it
+        var mountTask = Task.Run(async () =>
         {
             try
             {
-                sub.Dispose();
+                await renderer.MountComponentAsync<SimpleTestComponent>(
+                    ParameterView.Empty, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -134,9 +139,84 @@ public sealed class ConsoleRendererThreadSafetyTests
                     exceptions.Add(ex);
                 }
             }
-        })).ToArray();
+        }, cancellationToken);
 
-        await Task.WhenAll(unsubscribeTasks);
+        // Start unsubscribe task concurrently (it will unsubscribe as subscriptions become available)
+        // This tests the race condition between subscribe (write) and unsubscribe (write)
+        // The mount operation above will trigger notifications that read the observer list concurrently
+        var unsubscribeTask = Task.Run(async () =>
+        {
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    IDisposable? sub = null;
+                    lock (subscriptions)
+                    {
+                        if (subscriptions.Count > 0)
+                        {
+                            sub = subscriptions[0];
+                            subscriptions.RemoveAt(0);
+                        }
+                    }
+
+                    if (sub != null)
+                    {
+                        try
+                        {
+                            sub.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            lock (exceptions)
+                            {
+                                exceptions.Add(ex);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Small delay to avoid busy-waiting
+                        await Task.Delay(1, cancellationToken);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when cancellation is requested
+            }
+        }, cancellationToken);
+
+        // Wait for all subscribe tasks to complete
+        await Task.WhenAll(subscribeTasks);
+
+        // Wait for mount to complete (this triggers notifications that read the observer list)
+        await mountTask;
+
+        // Give unsubscribe task time to exercise the race condition with any pending notifications
+        await Task.Delay(50, cancellationToken);
+
+        // Cancel ongoing tasks
+        cancellationTokenSource.Cancel();
+
+        // Wait for unsubscribe task to complete
+        await unsubscribeTask;
+
+        // Clean up any remaining subscriptions
+        lock (subscriptions)
+        {
+            foreach (var sub in subscriptions)
+            {
+                try
+                {
+                    sub.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    exceptions.Add(ex);
+                }
+            }
+        }
 
         exceptions.ShouldBeEmpty();
     }
