@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Focus;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Vdom;
@@ -92,7 +93,7 @@ internal sealed class KeyboardEventManager
             }
             catch (Exception ex)
             {
-                _logger.LogDebug(ex, "Transient failure while reading keyboard input.");
+                _logger.LogTransientKeyboardInputFailure(ex);
                 try
                 {
                     await Task.Delay(200, token).ConfigureAwait(false);
@@ -154,7 +155,7 @@ internal sealed class KeyboardEventManager
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Unable to update focus target.");
+            _logger.LogUnableToUpdateFocusTarget(ex);
         }
     }
 
@@ -217,7 +218,7 @@ internal sealed class KeyboardEventManager
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to dispatch {EventName} handler.", @event.Name);
+            _logger.LogFailedToDispatchHandler(ex, @event.Name);
         }
     }
 

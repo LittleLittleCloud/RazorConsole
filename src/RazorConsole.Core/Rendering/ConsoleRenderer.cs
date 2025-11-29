@@ -7,6 +7,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Vdom;
 using RazorConsole.Core.Vdom;
@@ -100,12 +101,12 @@ internal sealed class ConsoleRenderer(
         }
         catch (OperationCanceledException)
         {
-            _logger.LogInformation("Component mounting was cancelled");
+            _logger.LogComponentMountingCancelled();
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error mounting component {ComponentType}", typeof(TComponent).Name);
+            _logger.LogErrorMountingComponent(ex, typeof(TComponent).Name);
             _pendingRender?.TrySetException(ex);
             throw;
         }
@@ -167,7 +168,7 @@ internal sealed class ConsoleRenderer(
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error applying component edits for component {ComponentId}", diff.ComponentId);
+                    _logger.LogErrorApplyingComponentEdits(ex, diff.ComponentId);
                     throw;
                 }
             }
@@ -193,7 +194,7 @@ internal sealed class ConsoleRenderer(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in UpdateDisplayAsync");
+            _logger.LogErrorInUpdateDisplayAsync(ex);
             _pendingRender?.TrySetException(ex);
             _pendingRender = null;
             throw;
@@ -202,7 +203,7 @@ internal sealed class ConsoleRenderer(
 
     protected override void HandleException(Exception exception)
     {
-        _logger.LogError(exception, "Error occurred during rendering");
+        _logger.LogErrorDuringRendering(exception);
         NotifyError(exception);
         System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception).Throw();
     }
@@ -478,7 +479,7 @@ internal sealed class ConsoleRenderer(
 
             if (!_translator.TryTranslate(vnode, out var renderable, out var animatedRenderables) || renderable is null)
             {
-                _logger.LogWarning("Failed to translate VNode to renderable");
+                _logger.LogFailedToTranslateVNode();
                 return RenderSnapshot.Empty;
             }
 
@@ -486,7 +487,7 @@ internal sealed class ConsoleRenderer(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating render snapshot");
+            _logger.LogErrorCreatingRenderSnapshot(ex);
             return RenderSnapshot.Empty;
         }
     }
@@ -565,7 +566,7 @@ internal sealed class ConsoleRenderer(
         var tagName = element.TagName;
         if (string.IsNullOrWhiteSpace(tagName))
         {
-            _logger.LogError("Element VNode does not have a tag name");
+            _logger.LogElementVNodeMissingTagName();
             throw new InvalidOperationException("Element VNodes must define a tag name.");
         }
 
@@ -695,7 +696,7 @@ internal sealed class ConsoleRenderer(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error notifying observer of render snapshot");
+                _logger.LogErrorNotifyingObserverOfSnapshot(ex);
             }
         }
     }
@@ -721,7 +722,7 @@ internal sealed class ConsoleRenderer(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error notifying observer of error");
+                _logger.LogErrorNotifyingObserverOfError(ex);
             }
         }
     }
@@ -730,13 +731,13 @@ internal sealed class ConsoleRenderer(
     {
         if (handlerId == 0)
         {
-            _logger.LogError("Attempted to dispatch event with invalid handler ID");
+            _logger.LogInvalidHandlerId();
             throw new ArgumentOutOfRangeException(nameof(handlerId));
         }
 
         if (eventArgs is null)
         {
-            _logger.LogError("Attempted to dispatch event with null eventArgs");
+            _logger.LogNullEventArgs();
             throw new ArgumentNullException(nameof(eventArgs));
         }
 
@@ -746,7 +747,7 @@ internal sealed class ConsoleRenderer(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error dispatching event with handler ID {HandlerId}", handlerId);
+            _logger.LogErrorDispatchingEvent(ex, handlerId);
             throw;
         }
     }
@@ -773,7 +774,7 @@ internal sealed class ConsoleRenderer(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error completing observer");
+                _logger.LogErrorCompletingObserver(ex);
             }
         }
     }
@@ -806,7 +807,7 @@ internal sealed class ConsoleRenderer(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error completing observers during dispose");
+                _logger.LogErrorCompletingObserversDuringDispose(ex);
             }
 
             _componentRoots.Clear();
