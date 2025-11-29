@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 using RazorConsole.Core;
 using RazorConsole.Core.Controllers;
 
-namespace RazorConsole.Tests;
+namespace RazorConsole.Tests.Rendering;
 
 public sealed class ConsoleAppTests
 {
@@ -82,3 +82,4 @@ public sealed class ConsoleAppTests
         }
     }
 }
+

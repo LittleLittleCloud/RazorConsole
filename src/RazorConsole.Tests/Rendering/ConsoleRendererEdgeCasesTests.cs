@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using RazorConsole.Core.Rendering;
 
-namespace RazorConsole.Tests;
+namespace RazorConsole.Tests.Rendering;
 
 public sealed class ConsoleRendererEdgeCasesTests
 {
@@ -140,3 +140,4 @@ public sealed class ConsoleRendererEdgeCasesTests
 }
 
 #pragma warning restore BL0006
+

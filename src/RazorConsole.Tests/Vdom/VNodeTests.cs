@@ -2,7 +2,7 @@
 
 using RazorConsole.Core.Vdom;
 
-namespace RazorConsole.Tests;
+namespace RazorConsole.Tests.Vdom;
 
 public sealed class VNodeTests
 {
@@ -63,3 +63,4 @@ public sealed class VNodeTests
         return root;
     }
 }
+

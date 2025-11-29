@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using RazorConsole.Core.Utilities;
 
-namespace RazorConsole.Tests;
+namespace RazorConsole.Tests.Utilities;
 
 public sealed class ComponentActivatorTests
 {
@@ -119,3 +119,4 @@ public sealed class ComponentActivatorTests
         public string SecondGetMessage() => SecondService.GetMessage();
     }
 }
+

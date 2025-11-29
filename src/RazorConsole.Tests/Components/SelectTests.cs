@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RazorConsole.Components;
 using RazorConsole.Core.Vdom;
 
-namespace RazorConsole.Tests;
+namespace RazorConsole.Tests.Components;
 
 public sealed class SelectTests
 {

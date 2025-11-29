@@ -4,7 +4,7 @@ using RazorConsole.Core.Renderables;
 using Spectre.Console.Rendering;
 using static RazorConsole.Core.Utilities.AnsiSequences;
 
-namespace RazorConsole.Tests;
+namespace RazorConsole.Tests.Renderables;
 
 public sealed class DiffRenderableTests
 {
@@ -64,3 +64,4 @@ public sealed class DiffRenderableTests
         controlSegments.ShouldContain(text => text.Contains(EL(0), StringComparison.Ordinal));
     }
 }
+

@@ -12,7 +12,7 @@ using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
 using Spectre.Console.Rendering;
 
-namespace RazorConsole.Tests;
+namespace RazorConsole.Tests.Input;
 
 public class KeyboardEventManagerTests
 {
@@ -351,3 +351,4 @@ public class KeyboardEventManagerTests
             => Array.Empty<Segment>();
     }
 }
+

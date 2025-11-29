@@ -9,7 +9,7 @@ using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
 using Spectre.Console.Rendering;
 
-namespace RazorConsole.Tests;
+namespace RazorConsole.Tests.Focus;
 
 public sealed class FocusManagerTests
 {
@@ -400,3 +400,4 @@ public sealed class FocusManagerTests
         }
     }
 }
+

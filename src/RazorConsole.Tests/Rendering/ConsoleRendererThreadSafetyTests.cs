@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using RazorConsole.Core.Rendering;
 
-namespace RazorConsole.Tests;
+namespace RazorConsole.Tests.Rendering;
 
 public sealed class ConsoleRendererThreadSafetyTests
 {
@@ -179,3 +179,4 @@ public sealed class ConsoleRendererThreadSafetyTests
         }
     }
 }
+

@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace RazorConsole.Tests;
+namespace RazorConsole.Tests.Rendering;
 
 public sealed class ConsoleRendererTests
 {
@@ -134,3 +134,4 @@ public sealed class ConsoleRendererTests
     }
 }
 #pragma warning restore BL0006
+

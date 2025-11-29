@@ -2,10 +2,9 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
-using RazorConsole.Components;
 using RazorConsole.Core.Rendering.Markdown;
 
-namespace RazorConsole.Tests;
+namespace RazorConsole.Tests.Rendering.Markdown;
 
 public sealed class MarkdownTests
 {
@@ -95,8 +94,9 @@ Console.WriteLine(""test"");
             { "Content", "# Hello World" }
         });
 
-        var snapshot = await renderer.MountComponentAsync<Markdown>(parameters, CancellationToken.None);
+        var snapshot = await renderer.MountComponentAsync<RazorConsole.Components.Markdown>(parameters, CancellationToken.None);
 
         snapshot.Root.ShouldNotBeNull();
     }
 }
+
