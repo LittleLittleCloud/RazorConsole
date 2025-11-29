@@ -1,0 +1,12 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
+using System.Text.Json.Serialization;
+
+using RazorConsole.Core.Syntax;
+
+namespace RazorConsole.Core.Rendering.Syntax;
+
+[JsonSerializable(typeof(SyntaxHighlightingService.SyntaxHighlightPayload))]
+internal partial class SyntaxHighlightingJsonContext : JsonSerializerContext
+{
+}

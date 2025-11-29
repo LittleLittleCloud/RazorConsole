@@ -2,8 +2,8 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+
 using RazorConsole.Core.Rendering;
-using RazorConsole.Core.Rendering.Vdom;
 using RazorConsole.Core.Vdom;
 
 namespace RazorConsole.Tests;

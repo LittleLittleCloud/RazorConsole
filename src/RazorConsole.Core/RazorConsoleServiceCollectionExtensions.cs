@@ -12,8 +12,8 @@ using RazorConsole.Core.Focus;
 using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Rendering.Markdown;
-using RazorConsole.Core.Rendering.Syntax;
 using RazorConsole.Core.Rendering.Vdom;
+using RazorConsole.Core.Syntax;
 using RazorConsole.Core.Utilities;
 using RazorConsole.Core.Vdom;
 
