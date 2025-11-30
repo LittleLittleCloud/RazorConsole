@@ -1,15 +1,13 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
-
 using RazorConsole.Core;
+using RazorConsole.Core.Controllers;
 using RazorConsole.Core.Focus;
 using RazorConsole.Core.Input;
 using RazorConsole.Core.Rendering;
-
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
