@@ -13,6 +13,7 @@
     <ProjectReference Include="..\RazorConsole.Gallery\RazorConsole.Gallery.csproj" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <PackageReference Include="Shouldly" />
   </ItemGroup>
 
   <ItemGroup>

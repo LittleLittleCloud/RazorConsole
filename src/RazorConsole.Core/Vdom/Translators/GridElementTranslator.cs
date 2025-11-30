@@ -1,5 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -14,12 +15,12 @@ public sealed class GridElementTranslator : IVdomElementTranslator
     {
         renderable = null;
 
-        if (node.Kind != VNodeKind.Element)
+        if (node.Kind != VNodeKind.Component)
         {
             return false;
         }
 
-        if (!node.Attributes.TryGetValue("class", out var value) || !string.Equals(value, "grid", StringComparison.OrdinalIgnoreCase))
+        if (node.ComponentType != typeof(RazorConsole.Components.Grid))
         {
             return false;
         }
@@ -29,11 +30,11 @@ public sealed class GridElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        var columnCount = VdomSpectreTranslator.TryGetIntAttribute(node, "data-columns", 2);
-        var isExpanded = !string.Equals(VdomSpectreTranslator.GetAttribute(node, "data-expand"), "false", StringComparison.OrdinalIgnoreCase);
+        var columnCount = node.GetAttributeValue(nameof(RazorConsole.Components.Grid.Columns), 2);
+        var expand = node.GetAttributeValue(nameof(RazorConsole.Components.Grid.Expand), false);
         var grid = new Grid()
         {
-            Expand = isExpanded
+            Expand = expand
         };
 
         for (var i = 0; i < columnCount; i++)
@@ -49,10 +50,7 @@ public sealed class GridElementTranslator : IVdomElementTranslator
             }
         }
 
-        if (VdomSpectreTranslator.TryParsePositiveInt(VdomSpectreTranslator.GetAttribute(node, "data-width"), out var width))
-        {
-            grid.Width = width;
-        }
+        grid.Width = node.GetAttributeValue<int?>(nameof(RazorConsole.Components.Grid.Width));
 
         renderable = grid;
         return true;

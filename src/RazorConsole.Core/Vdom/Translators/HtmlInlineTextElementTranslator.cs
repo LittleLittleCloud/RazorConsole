@@ -1,6 +1,7 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
 using System.Text;
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -115,7 +116,7 @@ public sealed class HtmlInlineTextElementTranslator : IVdomElementTranslator
 
         if (LinkTags.Contains(tagName))
         {
-            if (node.Attributes.TryGetValue("href", out var href) && !string.IsNullOrWhiteSpace(href))
+            if (node.TryGetAttributeValue<string>("href", out var href) && !string.IsNullOrWhiteSpace(href))
             {
                 builder.Append($"[link={Markup.Escape(href)}]");
                 if (!TryAppendChildren(node.Children, builder, allowNestedFormatting: true))

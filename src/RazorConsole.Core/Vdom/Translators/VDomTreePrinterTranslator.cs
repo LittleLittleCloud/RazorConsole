@@ -141,7 +141,7 @@ internal class VDomTreePrinterTranslator : IVdomElementTranslator
         return summary.ToString();
     }
 
-    private static void AppendAttributes(StringBuilder builder, IReadOnlyDictionary<string, string?> attributes)
+    private static void AppendAttributes(StringBuilder builder, IReadOnlyDictionary<string, object?> attributes)
     {
         if (attributes.Count == 0)
         {

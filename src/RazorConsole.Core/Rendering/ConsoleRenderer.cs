@@ -4,12 +4,17 @@
 #pragma warning disable BL0006 // RenderTree types are "internal-ish"; acceptable for console renderer.
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
+
+using RazorConsole.Core.Abstarctions.Components;
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Rendering.Vdom;
 using RazorConsole.Core.Vdom;
+
 using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering;
@@ -304,8 +309,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                     }
                     else
                     {
-                        var value = FormatAttributeValue(attribute.AttributeValue);
-                        element.SetAttribute(attribute.AttributeName!, value);
+                        element.SetAttribute(attribute.AttributeName!, attribute.AttributeValue);
                     }
 
                     index++;
@@ -358,6 +362,12 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                 if (frame.ComponentType is not null)
                 {
                     component.SetAttribute("component-type", frame.ComponentType.FullName);
+                    // Check if the component type implements ISyntheticComponent
+                    // Synthetic components are identified by their Type rather than HTML attributes
+                    if (typeof(ISyntheticComponent).IsAssignableFrom(frame.ComponentType))
+                    {
+                        component.ComponentType = frame.ComponentType;
+                    }
                 }
 
                 var end = index + frame.ComponentSubtreeLength;
@@ -368,8 +378,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
                     var attribute = frames.Array[index];
                     if (attribute.AttributeEventHandlerId == 0)
                     {
-                        var value = FormatAttributeValue(attribute.AttributeValue);
-                        component.SetAttribute(attribute.AttributeName!, value);
+                        component.SetAttribute(attribute.AttributeName!, attribute.AttributeValue);
                     }
 
                     index++;
@@ -486,9 +495,34 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         if (childId.HasValue && !visitedComponents.Contains(childId.Value) && _componentRoots.TryGetValue(childId.Value, out var componentRoot))
         {
             visitedComponents.Add(childId.Value);
-            foreach (var descendant in CollectRenderableChildren(componentRoot, visitedComponents))
+            var children = CollectRenderableChildren(componentRoot, visitedComponents);
+
+            // If component has ComponentType, wrap children in an element with that ComponentType
+            // Synthetic components need ComponentType even if they have no children (e.g., Figlet)
+            if (node.ComponentType is not null)
             {
-                yield return descendant;
+                var wrapper = VNode.CreateComponent();
+                wrapper.ComponentType = node.ComponentType;
+                // Copy component attributes to wrapper
+                foreach (var attr in node.Attributes)
+                {
+                    if (!string.Equals(attr.Key, "component-id", StringComparison.Ordinal))
+                    {
+                        wrapper.SetAttribute(attr.Key, attr.Value);
+                    }
+                }
+                foreach (var child in children)
+                {
+                    wrapper.AddChild(child);
+                }
+                yield return wrapper;
+            }
+            else
+            {
+                foreach (var descendant in children)
+                {
+                    yield return descendant;
+                }
             }
 
             visitedComponents.Remove(childId.Value);
@@ -516,6 +550,12 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
         if (!string.IsNullOrWhiteSpace(element.Key))
         {
             clone.SetKey(element.Key);
+        }
+
+        // Copy ComponentType if it exists
+        if (element.ComponentType is not null)
+        {
+            clone.ComponentType = element.ComponentType;
         }
 
         foreach (var attribute in element.Attributes)
@@ -552,7 +592,7 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
 
     private static int? TryGetComponentId(VNode node)
     {
-        if (node.Attributes.TryGetValue("component-id", out var value)
+        if (node.TryGetAttributeValue<string>("component-id", out var value)
             && int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var componentId))
         {
             return componentId;
@@ -569,10 +609,10 @@ internal sealed class ConsoleRenderer : Renderer, IObservable<ConsoleRenderer.Re
             return;
         }
 
-        var value = FormatAttributeValue(frame.AttributeValue);
-        parent.SetAttribute(frame.AttributeName!, value);
+        parent.SetAttribute(frame.AttributeName!, frame.AttributeValue);
         if (IsKeyAttribute(frame.AttributeName!))
         {
+            var value = FormatAttributeValue(frame.AttributeValue);
             parent.SetKey(string.IsNullOrWhiteSpace(value) ? null : value);
         }
     }

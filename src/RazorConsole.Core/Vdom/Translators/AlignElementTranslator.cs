@@ -1,7 +1,10 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Renderables;
 using RazorConsole.Core.Vdom;
+
+using Spectre.Console;
 using Spectre.Console.Rendering;
 
 namespace RazorConsole.Core.Rendering.Vdom;
@@ -14,12 +17,12 @@ public sealed class AlignElementTranslator : IVdomElementTranslator
     {
         renderable = null;
 
-        if (node.Kind != VNodeKind.Element)
+        if (node.Kind != VNodeKind.Component)
         {
             return false;
         }
 
-        if (!node.Attributes.TryGetValue("class", out var value) || !string.Equals(value, "align", StringComparison.OrdinalIgnoreCase))
+        if (node.ComponentType != typeof(Components.Align))
         {
             return false;
         }
@@ -29,10 +32,10 @@ public sealed class AlignElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        var horizontal = VdomSpectreTranslator.ParseHorizontalAlignment(VdomSpectreTranslator.GetAttribute(node, "data-horizontal"));
-        var vertical = VdomSpectreTranslator.ParseVerticalAlignment(VdomSpectreTranslator.GetAttribute(node, "data-vertical"));
-        var width = VdomSpectreTranslator.ParseOptionalPositiveInt(VdomSpectreTranslator.GetAttribute(node, "data-width"));
-        var height = VdomSpectreTranslator.ParseOptionalPositiveInt(VdomSpectreTranslator.GetAttribute(node, "data-height"));
+        var horizontal = node.GetAttributeValue(nameof(Components.Align.Horizontal), HorizontalAlignment.Left);
+        var vertical = node.GetAttributeValue<VerticalAlignment?>(nameof(Components.Align.Vertical));
+        var width = node.GetAttributeValue<int?>(nameof(Components.Align.Width));
+        var height = node.GetAttributeValue<int?>(nameof(Components.Align.Height));
 
         var align = new MeasuredAlign(children, horizontal, vertical)
         {

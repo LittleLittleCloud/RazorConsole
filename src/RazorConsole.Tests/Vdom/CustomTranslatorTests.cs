@@ -1,6 +1,7 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering.Vdom;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
@@ -100,7 +101,7 @@ public sealed class CustomTranslatorTests
                 return false;
             }
 
-            if (!node.Attributes.TryGetValue("data-custom", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+            if (!node.TryGetAttributeValue<string>("data-custom", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

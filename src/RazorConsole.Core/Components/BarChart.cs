@@ -1,32 +1,27 @@
-@namespace RazorConsole.Components
+// Copyright (c) RazorConsole. All rights reserved.
 
-@using System.Globalization
-@using Spectre.Console
+using System.Globalization;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 
-<barchart
-    data-items="@ItemsJson"
-    data-width="@WidthAttribute"
-    data-label="@Label"
-    data-label-style="@LabelStyleAttributes"
-    data-label-alignment="@LabelAlignmentAttribute"
-    data-max-value="@MaxValueAttribute"
-    data-show-values="@ShowValuesAttribute"
-    data-culture="@CultureAttribute"
-/>
+using RazorConsole.Core.Abstarctions.Components;
+using Spectre.Console;
 
-@code{
-    /// <summary>
-    /// Renders a bar chart using Spectre.Console's <see cref="global::Spectre.Console.BarChart"/> renderable.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Displays data as horizontal bars with optional labels and values. Each bar can have a custom color.
-    /// </para>
-    /// <para>
-    /// See the <see href="https://spectreconsole.net/widgets/barchart">Spectre.Console BarChart documentation</see> for more information.
-    /// </para>
-    /// </remarks>
+namespace RazorConsole.Components;
 
+/// <summary>
+/// Renders a bar chart using Spectre.Console's <see cref="global::Spectre.Console.BarChart"/> renderable.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Displays data as horizontal bars with optional labels and values. Each bar can have a custom color.
+/// </para>
+/// <para>
+/// See the <see href="https://spectreconsole.net/widgets/barchart">Spectre.Console BarChart documentation</see> for more information.
+/// </para>
+/// </remarks>
+public sealed class BarChart : ComponentBase, ISyntheticComponent
+{
     /// <summary>
     /// Bar chart data items. Each item must provide <c>Label</c> and <c>Value</c>, with optional <c>Color</c>.
     /// </summary>
@@ -93,25 +88,10 @@
     [Parameter]
     public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
 
-
-    private string ItemsJson => System.Text.Json.JsonSerializer.Serialize(
-        BarChartItems.Select(item => new ChartItemData(
-            item.Label,
-            item.Value,
-            item.Color?.ToHex()
-        )).ToList(),
-        ChartJsonContext.Default.ListChartItemData
-    );
-
-    private string WidthAttribute => Width?.ToString() ?? string.Empty;
-
-    private string LabelStyleAttributes => new Style(LabelForeground, LabelBackground, LabelDecoration).ToMarkup();
-
-    private string LabelAlignmentAttribute => LabelAlignment?.ToString().ToLowerInvariant() ?? string.Empty;
-
-    private string MaxValueAttribute => MaxValue?.ToString() ?? string.Empty;
-
-    private string ShowValuesAttribute => ShowValues ? "true" : "false";
-
-    private string CultureAttribute => Culture.Name;
+    /// <inheritdoc/>
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        // Synthetic component - rendering is handled by BarChartTranslator
+    }
 }
+

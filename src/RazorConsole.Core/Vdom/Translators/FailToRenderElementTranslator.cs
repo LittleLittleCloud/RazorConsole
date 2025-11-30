@@ -66,7 +66,13 @@ public sealed class FailToRenderElementTranslator : IVdomElementTranslator
         foreach (var attribute in node.Attributes.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
         {
             var key = Markup.Escape(attribute.Key);
-            var value = Markup.Escape(attribute.Value ?? "null");
+            var valueStr = attribute.Value switch
+            {
+                null => "null",
+                string s => s,
+                _ => attribute.Value.ToString() ?? "null"
+            };
+            var value = Markup.Escape(valueStr);
             builder.AppendLine($"  • [cyan]{key}[/] = [yellow]{value}[/]");
         }
     }

@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Components.Web;
 using RazorConsole.Core.Controllers;
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering;
 using RazorConsole.Core.Vdom;
 
@@ -398,7 +399,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
             return false;
         }
 
-        if (!element.Attributes.TryGetValue("data-focusable", out var focusableValue) || string.IsNullOrWhiteSpace(focusableValue))
+        if (!element.TryGetAttributeValue<string>("data-focusable", out var focusableValue) || string.IsNullOrWhiteSpace(focusableValue))
         {
             return element.Events.Count > 0;
         }
@@ -461,7 +462,7 @@ public sealed class FocusManager : IObserver<ConsoleRenderer.RenderSnapshot>
 
         public string Key { get; }
 
-        public IReadOnlyDictionary<string, string?> Attributes => _vnode.Attributes;
+        public IReadOnlyDictionary<string, object?> Attributes => _vnode.Attributes;
 
         public IReadOnlyCollection<VNodeEvent> Events => _vnode.Events;
 

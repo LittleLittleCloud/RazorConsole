@@ -1,5 +1,7 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
+
 namespace RazorConsole.Core.Vdom;
 
 internal static class VdomComparer
@@ -48,12 +50,12 @@ internal static class VdomComparer
 
         foreach (var pair in left.Attributes)
         {
-            if (!right.Attributes.TryGetValue(pair.Key, out var rightValue))
+            if (!right.TryGetAttributeValue<object?>(pair.Key, out var rightValue))
             {
                 return false;
             }
 
-            if (!string.Equals(pair.Value, rightValue, StringComparison.Ordinal))
+            if (!EqualityComparer<object?>.Default.Equals(pair.Value, rightValue))
             {
                 return false;
             }

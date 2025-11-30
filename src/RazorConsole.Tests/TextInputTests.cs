@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using RazorConsole.Components;
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Vdom;
 
 namespace RazorConsole.Tests;
@@ -64,7 +65,7 @@ public sealed class TextInputTests
         Assert.Equal("true", root.Attributes["data-mask-input"]);
 
         var maskedSpan = FindNode(root, static node =>
-            node.Attributes.TryGetValue("data-text", out var textFlag) &&
+            node.TryGetAttributeValue<string>("data-text", out var textFlag) &&
             textFlag == "true" &&
             node.Attributes.ContainsKey("data-content"));
 

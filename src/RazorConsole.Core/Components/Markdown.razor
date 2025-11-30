@@ -36,11 +36,6 @@
     /// <exception cref="InvalidOperationException">Thrown when MarkdownRenderingService has not been registered.</exception>
     protected override void OnParametersSet()
     {
-        if (MarkdownService is null)
-        {
-            throw new InvalidOperationException("MarkdownRenderingService has not been registered.");
-        }
-
         _html = MarkdownService.ConvertToHtml(Content ?? string.Empty);
     }
 }

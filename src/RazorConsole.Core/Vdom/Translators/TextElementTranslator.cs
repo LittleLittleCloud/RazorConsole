@@ -1,5 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -24,13 +25,13 @@ public sealed class TextElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        if (!node.Attributes.TryGetValue("data-text", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+        if (!node.TryGetAttributeValue<string>("data-text", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
 
         string? text;
-        if (node.Attributes.TryGetValue("data-content", out var inlineContent) && inlineContent is not null)
+        if (node.TryGetAttributeValue<string>("data-content", out var inlineContent))
         {
             if (node.Children.Any())
             {
@@ -53,12 +54,12 @@ public sealed class TextElementTranslator : IVdomElementTranslator
         var styleAttributes = VdomSpectreTranslator.GetAttribute(node, "data-style");
         if (string.IsNullOrEmpty(styleAttributes))
         {
-            renderable = new Markup(text);
+            renderable = new Markup(text ?? string.Empty);
         }
         else
         {
             var style = Style.Parse(styleAttributes ?? string.Empty);
-            renderable = new Markup(text, style);
+            renderable = new Markup(text ?? string.Empty, style);
         }
 
         return true;

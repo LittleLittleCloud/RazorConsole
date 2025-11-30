@@ -1,5 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -14,12 +15,12 @@ public sealed class RowsElementTranslator : IVdomElementTranslator
     {
         renderable = null;
 
-        if (node.Kind != VNodeKind.Element)
+        if (node.Kind != VNodeKind.Component)
         {
             return false;
         }
 
-        if (!node.Attributes.TryGetValue("class", out var value) || !string.Equals(value, "rows", StringComparison.OrdinalIgnoreCase))
+        if (node.ComponentType != typeof(RazorConsole.Components.Rows))
         {
             return false;
         }
@@ -29,7 +30,7 @@ public sealed class RowsElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        var expand = VdomSpectreTranslator.GetAttribute(node, "data-expand") == "true";
+        var expand = node.GetAttributeValue(nameof(RazorConsole.Components.Rows.Expand), false);
 
         renderable = new Rows(children)
         {

@@ -1,5 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
@@ -9,28 +10,18 @@ namespace RazorConsole.Core.Rendering.Vdom;
 
 public sealed class PanelElementTranslator : IVdomElementTranslator
 {
-    public int Priority => 100;
-
-    private static readonly IReadOnlyDictionary<string, BoxBorder> BorderLookup = new Dictionary<string, BoxBorder>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "square", BoxBorder.Square },
-            { "rounded", BoxBorder.Rounded },
-            { "double", BoxBorder.Double },
-            { "heavy", BoxBorder.Heavy },
-            { "ascii", BoxBorder.Ascii },
-            { "none", BoxBorder.None },
-        };
+    public int Priority => 150;
 
     public bool TryTranslate(VNode node, TranslationContext context, out IRenderable? renderable)
     {
         renderable = null;
 
-        if (node.Kind != VNodeKind.Element)
+        if (node.Kind != VNodeKind.Component)
         {
             return false;
         }
 
-        if (!IsPanelNode(node))
+        if (node.ComponentType != typeof(Components.Panel))
         {
             return false;
         }
@@ -43,27 +34,17 @@ public sealed class PanelElementTranslator : IVdomElementTranslator
         var content = VdomSpectreTranslator.ComposeChildContent(children);
         var panel = new Panel(content);
 
-        if (ShouldExpand(node))
+        if (node.GetAttributeValue(nameof(Components.Panel.Expand), false))
         {
             panel = panel.Expand();
         }
 
-        panel.Border = ResolveBorder(VdomSpectreTranslator.GetAttribute(node, "data-border"));
+        panel.Border = node.GetAttributeValue(nameof(Components.Panel.Border), BoxBorder.Square);
 
-        if (VdomSpectreTranslator.TryParsePadding(VdomSpectreTranslator.GetAttribute(node, "data-padding"), out var padding))
-        {
-            panel.Padding = padding;
-        }
+        panel.Padding = node.GetAttributeValue<Padding?>(nameof(Components.Panel.Padding));
+        panel.Height = node.GetAttributeValue<int?>(nameof(Components.Panel.Height));
 
-        if (VdomSpectreTranslator.TryParsePositiveInt(VdomSpectreTranslator.GetAttribute(node, "data-height"), out var height))
-        {
-            panel.Height = height;
-        }
-
-        if (VdomSpectreTranslator.TryParsePositiveInt(VdomSpectreTranslator.GetAttribute(node, "data-width"), out var width))
-        {
-            panel.Width = width;
-        }
+        panel.Width = node.GetAttributeValue<int?>(nameof(Components.Panel.Width));
 
         ApplyHeader(node, panel);
         ApplyBorderColor(node, panel);
@@ -72,64 +53,34 @@ public sealed class PanelElementTranslator : IVdomElementTranslator
         return true;
     }
 
-    private static bool IsPanelNode(VNode node)
+    private static void ApplyHeader(VNode node, Spectre.Console.Panel panel)
     {
-        if (node.Kind != VNodeKind.Element)
-        {
-            return false;
-        }
-
-        if (node.Attributes.TryGetValue("class", out var value) && string.Equals(value, "panel", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool ShouldExpand(VNode node)
-    {
-        var value = VdomSpectreTranslator.GetAttribute(node, "data-expand");
-        return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static BoxBorder ResolveBorder(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return BoxBorder.Square;
-        }
-
-        return BorderLookup.TryGetValue(value, out var border) ? border : BoxBorder.Square;
-    }
-
-    private static void ApplyHeader(VNode node, Panel panel)
-    {
-        var header = VdomSpectreTranslator.GetAttribute(node, "data-header");
-        if (string.IsNullOrWhiteSpace(header))
+        if (!node.TryGetAttributeValue<string>(nameof(Components.Panel.Title), out var title) || string.IsNullOrWhiteSpace(title))
         {
             return;
         }
 
-        var headerColor = VdomSpectreTranslator.GetAttribute(node, "data-header-color");
-        var markup = string.IsNullOrWhiteSpace(headerColor)
-            ? Markup.Escape(header)
-            : ComponentMarkupUtilities.CreateStyledMarkup(headerColor, header, requiresEscape: true);
-
-        panel.Header = new PanelHeader(markup);
+        if (node.TryGetAttributeValue<Color>(nameof(Components.Panel.TitleColor), out var titleColor))
+        {
+            var markup = ComponentMarkupUtilities.CreateStyledMarkup(titleColor.ToMarkup(), title, requiresEscape: true);
+            panel.Header = new PanelHeader(markup);
+        }
+        else
+        {
+            panel.Header = new PanelHeader(Spectre.Console.Markup.Escape(title));
+        }
     }
 
-    private static void ApplyBorderColor(VNode node, Panel panel)
+    private static void ApplyBorderColor(VNode node, Spectre.Console.Panel panel)
     {
-        var borderColorValue = VdomSpectreTranslator.GetAttribute(node, "data-border-color");
-        if (string.IsNullOrWhiteSpace(borderColorValue))
+        if (!node.TryGetAttributeValue<Color>(nameof(Components.Panel.BorderColor), out var borderColor))
         {
             return;
         }
 
         try
         {
-            var style = Style.Parse(borderColorValue);
+            var style = new Style(borderColor);
             panel.BorderStyle(style);
         }
         catch (Exception)

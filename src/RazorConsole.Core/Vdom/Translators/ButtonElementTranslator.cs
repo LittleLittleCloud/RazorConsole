@@ -1,5 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering.ComponentMarkup;
 using RazorConsole.Core.Vdom;
 using Spectre.Console.Rendering;
@@ -25,7 +26,7 @@ public sealed class ButtonElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        if (!node.Attributes.TryGetValue("data-button", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+        if (!node.TryGetAttributeValue<string>("data-button", out var value) || !string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }

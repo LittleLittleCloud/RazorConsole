@@ -1,5 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering.Syntax;
 using RazorConsole.Core.Vdom;
 using Spectre.Console.Rendering;
@@ -19,7 +20,7 @@ public sealed class SyntaxHighlighterElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        if (!node.Attributes.TryGetValue("class", out var @class) || !string.Equals(@class, "syntax-highlighter", StringComparison.OrdinalIgnoreCase))
+        if (!node.TryGetAttributeValue<string>("class", out var @class) || !string.Equals(@class, "syntax-highlighter", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }

@@ -1,32 +1,26 @@
-@using RazorConsole.Core.Rendering
-@using Spectre.Console
-@namespace RazorConsole.Components
-@implements IDisposable
+// Copyright (c) RazorConsole. All rights reserved.
 
-<div class="spectre-canvas"
-     data-canvas="true"
-     data-width="@CanvasWidth"
-     data-height="@CanvasHeight"
-     data-maxwidth="@MaxWidthAttribute"
-     data-pixelwidth="@PixelWidth"
-     data-scale="@ScaleAttribute"
-     data-canvas-data-id="@_dataId"
-     data-update-token="@_updateToken"/>
+using Microsoft.AspNetCore.Components;
 
-@code {
-    /// <summary>
-    /// Renders a pixel-based canvas for drawing graphics in the console using Spectre.Console's <see cref="global::Spectre.Console.Canvas"/> renderable.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This component wraps Spectre.Console's Canvas to enable pixel-based drawing of graphics, charts, and pixel art.
-    /// Pixels are rendered using console characters with specified colors at (x, y) coordinates.
-    /// </para>
-    /// <para>
-    /// See the <see href="https://spectreconsole.net/widgets/canvas">Spectre.Console Canvas documentation</see> for more information.
-    /// </para>
-    /// </remarks>
+using RazorConsole.Core.Abstarctions.Components;
+using Spectre.Console;
 
+namespace RazorConsole.Components;
+
+/// <summary>
+/// Renders a pixel-based canvas for drawing graphics in the console using Spectre.Console's <see cref="global::Spectre.Console.Canvas"/> renderable.
+/// </summary>
+/// <remarks>
+/// <para>
+/// This component wraps Spectre.Console's Canvas to enable pixel-based drawing of graphics, charts, and pixel art.
+/// Pixels are rendered using console characters with specified colors at (x, y) coordinates.
+/// </para>
+/// <para>
+/// See the <see href="https://spectreconsole.net/widgets/canvas">Spectre.Console Canvas documentation</see> for more information.
+/// </para>
+/// </remarks>
+public sealed class SpectreCanvas : ComponentBase, ISyntheticComponent, IDisposable
+{
     /// <summary>
     /// The array of pixels to render. Each pixel is defined by (x, y) coordinates and color.
     /// </summary>
@@ -69,20 +63,16 @@
     [Parameter]
     public bool Scale { get; set; }
 
-    private string? MaxWidthAttribute => MaxWidth?.ToString();
-    private string ScaleAttribute => Scale ? "true" : "false";
-
-    private readonly Guid _dataId = Guid.NewGuid();
-    private Guid _updateToken; // Token that forces re-render when pixels array has changed
     private (int x, int y, Color color)[]? _lastPixelsReference;
 
+    /// <inheritdoc/>
     protected override void OnInitialized()
     {
         base.OnInitialized();
         ValidatePixelsLength();
-        UpdateRegistry();
     }
 
+    /// <inheritdoc/>
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -90,9 +80,7 @@
 
         if (!ReferenceEquals(_lastPixelsReference, Pixels))
         {
-            _updateToken = Guid.NewGuid();
             _lastPixelsReference = Pixels;
-            UpdateRegistry();
         }
     }
 
@@ -105,13 +93,10 @@
         }
     }
 
-    private void UpdateRegistry()
-    {
-        CanvasDataRegistry.Register(_dataId, Pixels);
-    }
-
+    /// <inheritdoc/>
     public void Dispose()
     {
-        CanvasDataRegistry.Unregister(_dataId);
+        // No cleanup needed - Pixels are passed directly via Attrs
     }
 }
+

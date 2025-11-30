@@ -1,5 +1,6 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -14,7 +15,12 @@ public sealed class ColumnsElementTranslator : IVdomElementTranslator
     {
         renderable = null;
 
-        if (!IsColumnsNode(node))
+        if (node.Kind != VNodeKind.Component)
+        {
+            return false;
+        }
+
+        if (node.ComponentType != typeof(RazorConsole.Components.Columns))
         {
             return false;
         }
@@ -24,27 +30,12 @@ public sealed class ColumnsElementTranslator : IVdomElementTranslator
             return false;
         }
 
-        var expand = VdomSpectreTranslator.GetAttribute(node, "data-expand") == "true";
+        var expand = node.GetAttributeValue(nameof(RazorConsole.Components.Columns.Expand), false);
         renderable = new Columns(children)
         {
             Expand = expand,
         };
 
         return true;
-    }
-
-    private static bool IsColumnsNode(VNode node)
-    {
-        if (node.Kind != VNodeKind.Element)
-        {
-            return false;
-        }
-
-        if (node.Attributes.TryGetValue("class", out var value) && string.Equals(value, "columns", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        return false;
     }
 }

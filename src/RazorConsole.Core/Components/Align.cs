@@ -1,0 +1,63 @@
+// Copyright (c) RazorConsole. All rights reserved.
+
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+
+using RazorConsole.Core.Abstarctions.Components;
+using Spectre.Console;
+
+namespace RazorConsole.Components;
+
+/// <summary>
+/// Aligns content horizontally and vertically within a container using Spectre.Console's <see cref="global::Spectre.Console.Align"/> renderable.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Positions content within a specified area using horizontal (Left, Center, Right) and vertical (Top, Middle, Bottom) alignment options.
+/// </para>
+/// <para>
+/// See the <see href="https://spectreconsole.net/widgets/align">Spectre.Console Align documentation</see> for more information.
+/// </para>
+/// </remarks>
+public sealed class Align : ComponentBase, ISyntheticComponent
+{
+    /// <summary>
+    /// Content to be aligned.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Horizontal alignment of the content. Default is <see cref="HorizontalAlignment.Left"/>.
+    /// </summary>
+    [Parameter]
+    public HorizontalAlignment Horizontal { get; set; } = HorizontalAlignment.Left;
+
+    /// <summary>
+    /// Vertical alignment of the content. Default is <see cref="VerticalAlignment.Top"/>.
+    /// </summary>
+    [Parameter]
+    public VerticalAlignment Vertical { get; set; } = VerticalAlignment.Top;
+
+    /// <summary>
+    /// Width of the alignment container in characters. If <c>null</c>, automatically determined by content.
+    /// </summary>
+    [Parameter]
+    public int? Width { get; set; }
+
+    /// <summary>
+    /// Height of the alignment container in characters. If <c>null</c>, automatically determined by content.
+    /// </summary>
+    [Parameter]
+    public int? Height { get; set; }
+
+    /// <inheritdoc/>
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (ChildContent is not null)
+        {
+            builder.AddContent(0, ChildContent);
+        }
+    }
+}
+

@@ -1,9 +1,9 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
-
 
 namespace RazorConsole.Core.Rendering.Vdom;
 
@@ -15,37 +15,36 @@ public sealed class CanvasElementTranslator : IVdomElementTranslator
     {
         renderable = null;
 
-
-        if (node.Kind != VNodeKind.Element)
+        if (node.Kind != VNodeKind.Component)
         {
             return false;
         }
 
-        if (!string.Equals(node.TagName, "div", StringComparison.OrdinalIgnoreCase))
+        if (node.ComponentType != typeof(RazorConsole.Components.SpectreCanvas))
         {
             return false;
         }
 
-        if (!node.Attributes.TryGetValue("data-canvas", out var canvasAttr)
-            || !string.Equals(canvasAttr, "true", StringComparison.OrdinalIgnoreCase))
+        if (!node.TryGetAttributeValue<int>(nameof(RazorConsole.Components.SpectreCanvas.CanvasWidth), out var width))
         {
             return false;
         }
 
-        var width = GetIntAttribute(node, "data-width");
+        if (!node.TryGetAttributeValue<int>(nameof(RazorConsole.Components.SpectreCanvas.CanvasHeight), out var height))
+        {
+            return false;
+        }
 
-        var height = GetIntAttribute(node, "data-height");
+        var pixelWidth = node.GetAttributeValue(nameof(RazorConsole.Components.SpectreCanvas.PixelWidth), 2);
+        var scale = node.GetAttributeValue(nameof(RazorConsole.Components.SpectreCanvas.Scale), false);
+        var maxWidth = node.GetAttributeValue<int?>(nameof(RazorConsole.Components.SpectreCanvas.MaxWidth));
 
-        var pixelWidth = GetIntAttribute(node, "data-pixelwidth", 2);
-
-        var scale = GetBoolAttribute(node, "data-scale", false);
-
-        var maxWidth = GetNullableIntAttribute(node, "data-maxwidth");
-
-        var pixelsDataIdAttribute = VdomSpectreTranslator.GetAttribute(node, "data-canvas-data-id");
+        if (!node.TryGetAttributeValue<(int x, int y, Color color)[]>(nameof(RazorConsole.Components.SpectreCanvas.Pixels), out var pixels) || pixels is null || pixels.Length == 0)
+        {
+            return false;
+        }
 
         var canvas = new Canvas(width, height);
-
 
         if (maxWidth.HasValue)
         {
@@ -53,74 +52,14 @@ public sealed class CanvasElementTranslator : IVdomElementTranslator
         }
 
         canvas.PixelWidth = pixelWidth;
-
-
         canvas.Scale = scale;
 
-
-        if (!string.IsNullOrWhiteSpace(pixelsDataIdAttribute) &&
-            Guid.TryParse(pixelsDataIdAttribute, out var dataId))
+        foreach (var p in pixels)
         {
-            var dataInDictionary = CanvasDataRegistry.TryGetData(dataId, out var pixels);
-
-            if (!dataInDictionary)
-            {
-                return false;
-            }
-
-            foreach (var p in pixels!)
-
-
-            {
-                canvas.SetPixel(p.Item1, p.Item2, p.Item3);
-            }
-        }
-        else
-        {
-            return false;
+            canvas.SetPixel(p.x, p.y, p.color);
         }
 
         renderable = canvas;
         return true;
-    }
-
-
-    private static int GetIntAttribute(VNode node, string name, int? defaultValue = null)
-    {
-        if (node.Attributes.TryGetValue(name, out var value)
-            && int.TryParse(value, out var result))
-        {
-            return result;
-        }
-
-        if (defaultValue.HasValue)
-        {
-            return defaultValue.Value;
-        }
-
-        throw new InvalidOperationException($"Required canvas attribute '{name}' is missing or has an invalid value.");
-    }
-
-
-    private static bool GetBoolAttribute(VNode node, string name, bool defaultValue)
-    {
-        if (node.Attributes.TryGetValue(name, out var value))
-        {
-            return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
-        }
-
-        return defaultValue;
-    }
-
-
-    private static int? GetNullableIntAttribute(VNode node, string name)
-    {
-        if (node.Attributes.TryGetValue(name, out var value)
-            && int.TryParse(value, out var result))
-        {
-            return result;
-        }
-
-        return null;
     }
 }

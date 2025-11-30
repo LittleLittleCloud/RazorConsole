@@ -1,8 +1,7 @@
 // Copyright (c) RazorConsole. All rights reserved.
 
 using System.Globalization;
-using System.Text.Json;
-using RazorConsole.Components;
+using RazorConsole.Core.Extensions;
 using RazorConsole.Core.Rendering.Vdom;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -22,19 +21,8 @@ public class BreakdownChartTranslator : IVdomElementTranslator
             return false;
         }
 
-        var itemsAttribute = VdomSpectreTranslator.GetAttribute(node, "data-items");
-        if (string.IsNullOrEmpty(itemsAttribute))
-        {
-            return false;
-        }
-
-        List<JsonElement> rawItems;
-        try
-        {
-            rawItems = JsonSerializer.Deserialize(itemsAttribute, ChartJsonContext.Default.ListJsonElement) ??
-                       throw new InvalidOperationException();
-        }
-        catch
+        if (!node.TryGetAttributeValue<List<IBreakdownChartItem>>(nameof(Components.BreakdownChart.BreakdownChartItems), out var breakdownChartItems)
+            || breakdownChartItems is null)
         {
             return false;
         }
@@ -42,68 +30,28 @@ public class BreakdownChartTranslator : IVdomElementTranslator
         var breakdownChart = new Spectre.Console.BreakdownChart();
         try
         {
-            AddBreakdownChartItems(breakdownChart, rawItems);
+            AddBreakdownChartItems(breakdownChart, breakdownChartItems);
         }
         catch
         {
             return false;
         }
 
-        if (VdomSpectreTranslator.TryGetBoolAttribute(node, "data-compact", out var compact))
-        {
-            breakdownChart.Compact = compact;
-        }
+        breakdownChart.Compact = node.GetAttributeValue(nameof(Components.BreakdownChart.Compact), false);
+        breakdownChart.Culture = node.GetAttributeValue(nameof(Components.BreakdownChart.Culture), CultureInfo.CurrentCulture);
+        breakdownChart.Expand = node.GetAttributeValue(nameof(Components.BreakdownChart.Expand), false);
+        breakdownChart.Width = node.GetAttributeValue<int?>(nameof(Components.BreakdownChart.Width));
+        breakdownChart.ShowTags = node.GetAttributeValue(nameof(Components.BreakdownChart.ShowTags), false);
+        breakdownChart.ShowTagValues = node.GetAttributeValue(nameof(Components.BreakdownChart.ShowTagValues), false);
 
-
-        var cultureInfoAttribute = VdomSpectreTranslator.GetAttribute(node, "data-culture");
-        CultureInfo cultureInfo;
-        if (cultureInfoAttribute != null)
-        {
-            try
-            {
-                cultureInfo = CultureInfo.GetCultureInfo(cultureInfoAttribute);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-        else
-        {
-            return false;
-        }
-        breakdownChart.Culture = cultureInfo;
-
-        if (VdomSpectreTranslator.TryGetBoolAttribute(node, "data-expand", out var expand))
-        {
-            breakdownChart.Expand = expand;
-        }
-
-        if (VdomSpectreTranslator.TryParsePositiveInt(VdomSpectreTranslator.GetAttribute(node, "data-width"),
-                out var width))
-        {
-            breakdownChart.Width = width;
-        }
-
-        if (VdomSpectreTranslator.TryGetBoolAttribute(node, "data-show-tags", out var showTags))
-        {
-            breakdownChart.ShowTags = showTags;
-        }
-
-        if (VdomSpectreTranslator.TryGetBoolAttribute(node, "data-show-tag-values", out var showTagValues))
-        {
-            breakdownChart.ShowTagValues = showTagValues;
-        }
-
-        if (VdomSpectreTranslator.TryGetBoolAttribute(node, "data-show-tag-values-percentage", out var showTagValuesPercentage) && showTagValuesPercentage)
+        if (node.GetAttributeValue(nameof(Components.BreakdownChart.ShowTagValuesPercentage), false))
         {
             breakdownChart.ShowPercentage();
         }
 
-        var valueColorAttribute = VdomSpectreTranslator.GetAttribute(node, "data-value-color");
-        if (!string.IsNullOrEmpty(valueColorAttribute) && Color.TryFromHex(valueColorAttribute, out var valueColor))
+        if (node.TryGetAttributeValue<Color>(nameof(Components.BreakdownChart.ValueColor), out var colorValue))
         {
-            breakdownChart.ValueColor = valueColor;
+            breakdownChart.ValueColor = colorValue;
         }
 
         renderable = breakdownChart;
@@ -113,12 +61,12 @@ public class BreakdownChartTranslator : IVdomElementTranslator
 
     private static bool IsBreakdownChart(VNode node)
     {
-        if (node.Kind != VNodeKind.Element)
+        if (node.Kind != VNodeKind.Component)
         {
             return false;
         }
 
-        if (!string.Equals(node.TagName, "breakdownchart", StringComparison.OrdinalIgnoreCase))
+        if (node.ComponentType != typeof(RazorConsole.Components.BreakdownChart))
         {
             return false;
         }
@@ -126,58 +74,11 @@ public class BreakdownChartTranslator : IVdomElementTranslator
         return true;
     }
 
-    private void AddBreakdownChartItems(Spectre.Console.BreakdownChart breakdownChart, List<JsonElement> rawItems)
+    private void AddBreakdownChartItems(Spectre.Console.BreakdownChart breakdownChart, List<IBreakdownChartItem> items)
     {
-        foreach (var el in rawItems)
+        foreach (var item in items)
         {
-            if (el.ValueKind != JsonValueKind.Object)
-            {
-                throw new InvalidCastException("Only objects are supported");
-            }
-
-            string itemLabel;
-            if (el.TryGetProperty(nameof(IBreakdownChartItem.Label), out var l))
-            {
-                var labelValue = l.GetString();
-                itemLabel = labelValue ?? throw new InvalidOperationException("Label cannot be null");
-            }
-            else
-            {
-                throw new InvalidCastException("Not found label property");
-            }
-
-            double itemValue;
-            if (el.TryGetProperty(nameof(IBreakdownChartItem.Value), out var v))
-            {
-                itemValue = v.TryGetDouble(out var value)
-                    ? value
-                    : throw new InvalidOperationException($"Unable to parse `{itemLabel}` value as a double");
-            }
-            else
-            {
-                throw new InvalidCastException("Not found value property");
-            }
-
-            Color color;
-            if (el.TryGetProperty(nameof(IBreakdownChartItem.Color), out var cProp) &&
-                !string.IsNullOrWhiteSpace(cProp.GetString()))
-            {
-                var hex = cProp.GetString();
-                if (hex != null && Color.TryFromHex(hex, out var parsed))
-                {
-                    color = parsed;
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Unable to parse `{itemLabel}` as a color");
-                }
-            }
-            else
-            {
-                throw new InvalidCastException("Not found color property");
-            }
-
-            breakdownChart.AddItem(itemLabel, itemValue, color);
+            breakdownChart.AddItem(item.Label, item.Value, item.Color);
         }
     }
 }
