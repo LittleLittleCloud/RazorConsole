@@ -64,7 +64,7 @@ export default function Home() {
                 Browse Components
               </Button>
             </Link>
-            <a href="https://github.com/LittleLittleCloud/RazorConsole" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/RazorConsole/RazorConsole" target="_blank" rel="noopener noreferrer">
               <Button size="lg" variant="secondary" className="gap-2">
                 <Github className="w-4 h-4" />
                 GitHub
@@ -153,13 +153,13 @@ export default function Home() {
               <CardDescription>Real-world applications</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <a href="https://github.com/LittleLittleCloud/RazorConsole/tree/main/examples/LLMAgentTUI" 
+              <a href="https://github.com/RazorConsole/RazorConsole/tree/main/examples/LLMAgentTUI" 
                  target="_blank" 
                  rel="noopener noreferrer"
                  className="block text-slate-700 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 transition-colors">
                 • LLM Agent TUI - Claude Code-inspired chat interface
               </a>
-              <a href="https://github.com/LittleLittleCloud/RazorConsole/tree/main/src/RazorConsole.Gallery" 
+              <a href="https://github.com/RazorConsole/RazorConsole/tree/main/src/RazorConsole.Gallery" 
                  target="_blank" 
                  rel="noopener noreferrer"
                  className="block text-slate-700 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 transition-colors">

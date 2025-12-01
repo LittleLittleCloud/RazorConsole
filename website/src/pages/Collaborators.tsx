@@ -68,7 +68,7 @@ export default function Collaborators() {
               </p>
               <div className="flex gap-4 justify-center flex-wrap">
                 <a
-                  href="https://github.com/LittleLittleCloud/RazorConsole/blob/main/CONTRIBUTING.md"
+                  href="https://github.com/RazorConsole/RazorConsole/blob/main/CONTRIBUTING.md"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
