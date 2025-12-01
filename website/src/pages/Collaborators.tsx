@@ -64,9 +64,11 @@ export default function Collaborators() {
                       href={`https://x.com/${collaborator.x}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label={`${collaborator.name} on X`}
                     >
                       <Button variant="outline" size="sm" className="gap-2">
                         <XIcon className="w-4 h-4" />
+                        <span className="sr-only">X profile</span>
                       </Button>
                     </a>
                   )}
@@ -75,20 +77,24 @@ export default function Collaborators() {
                       href={`https://linkedin.com/in/${collaborator.linkedin}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label={`${collaborator.name} on LinkedIn`}
                     >
                       <Button variant="outline" size="sm" className="gap-2">
                         <Linkedin className="w-4 h-4" />
+                        <span className="sr-only">LinkedIn profile</span>
                       </Button>
                     </a>
                   )}
-                  {collaborator.website && (
+                  {collaborator.website && /^https?:\/\//i.test(collaborator.website) && (
                     <a
                       href={collaborator.website}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label={`${collaborator.name}'s website`}
                     >
                       <Button variant="outline" size="sm" className="gap-2">
                         <Globe className="w-4 h-4" />
+                        <span className="sr-only">Personal website</span>
                       </Button>
                     </a>
                   )}
