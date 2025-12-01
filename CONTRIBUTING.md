@@ -38,7 +38,7 @@ The templates will guide you through providing the necessary information:
 git lfs install
 
 # Clone the repository
-git clone https://github.com/LittleLittleCloud/RazorConsole.git
+git clone https://github.com/RazorConsole/RazorConsole.git
 cd RazorConsole
 
 # Build the solution

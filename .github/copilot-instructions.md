@@ -26,7 +26,7 @@ These instructions are automatically appended to Copilot Chat sessions when work
 
 ## Release Note guidance
 - Check out the version to be released from `VersionPrefix` in `nuget-package.props`, saying it's `0.1.1` for example.
-- Query all completed GitHub Issues/PRs under `https://github.com/LittleLittleCloud/RazorConsole`'s `v{VersionPrefix}` milestone. They would be added to that milestone when they're completed or their associated PR is merged, so you can use this approach to collect all changes included in the current release.
+- Query all completed GitHub Issues/PRs under `https://github.com/RazorConsole/RazorConsole`'s `v{VersionPrefix}` milestone. They would be added to that milestone when they're completed or their associated PR is merged, so you can use this approach to collect all changes included in the current release.
 - Draft the release notes based on the collected issues and PRs and save it under `release-notes/` folder with the filename format `v{VersionPrefix}.md`.
 - The release notes should include:
   - A summary of highlights, including new components, major bug fixes, notable improvements, release date, etc.

@@ -79,4 +79,4 @@ await app.RunAsync();
 </div>
 ```
 
-For a deeper dive, read the [custom translators guide](https://github.com/LittleLittleCloud/RazorConsole/blob/main/design-doc/custom-translators.md).
+For a deeper dive, read the [custom translators guide](https://github.com/RazorConsole/RazorConsole/blob/main/design-doc/custom-translators.md).

@@ -9,10 +9,10 @@
 [![Component Gallery](https://img.shields.io/nuget/v/RazorConsole.Gallery.svg?style=flat-square&logo=nuget&label=gallery&color=purple)](https://www.nuget.org/packages/RazorConsole.Gallery)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/RazorConsole.Core.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/RazorConsole.Core)
 
-[![GitHub Release](https://img.shields.io/github/v/release/LittleLittleCloud/RazorConsole?style=flat-square&logo=github)](https://github.com/LittleLittleCloud/RazorConsole/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/RazorConsole/RazorConsole?style=flat-square&logo=github)](https://github.com/RazorConsole/RazorConsole/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0%20%7C%2010.0-512BD4?style=flat-square)](https://dotnet.microsoft.com/)
-[![codecov](https://img.shields.io/codecov/c/github/LittleLittleCloud/RazorConsole?style=flat-square&logo=codecov&token=)](https://codecov.io/gh/LittleLittleCloud/RazorConsole)
+[![codecov](https://img.shields.io/codecov/c/github/RazorConsole/RazorConsole?style=flat-square&logo=codecov&token=)](https://codecov.io/gh/RazorConsole/RazorConsole)
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/DphHAnJxCM)
 
@@ -289,7 +289,7 @@ RazorConsole supports hotreload via metadata update handler so you can apply UI 
 
 This project uses [Codecov](https://codecov.io/) for code coverage reporting. Coverage reports are automatically generated during CI builds using Microsoft Testing Platform (MTP) code coverage extension with xUnit.net v3. Coverage data is collected in Cobertura format and uploaded to Codecov for tracking and visualization.
 
-You can view the latest coverage reports at [codecov.io/gh/LittleLittleCloud/RazorConsole](https://codecov.io/gh/LittleLittleCloud/RazorConsole).
+You can view the latest coverage reports at [codecov.io/gh/RazorConsole/RazorConsole](https://codecov.io/gh/RazorConsole/RazorConsole).
 
 ### Git LFS
 
@@ -300,7 +300,7 @@ This repository uses [Git LFS](https://git-lfs.github.io/) for tracking large me
 git lfs install
 
 # Clone the repository (LFS files will be downloaded automatically)
-git clone https://github.com/LittleLittleCloud/RazorConsole.git
+git clone https://github.com/RazorConsole/RazorConsole.git
 ```
 
 The following file types are automatically tracked by Git LFS:

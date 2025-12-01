@@ -6,8 +6,8 @@
     <IsPackable>true</IsPackable>
 
     <!-- Default description and tags. Packages can override. -->
-    <Authors>LittleLittleCloud</Authors>
-    <Company>LittleLittleCloud</Company>
+    <Authors>RazorConsole</Authors>
+    <Company>RazorConsole</Company>
     <Product>RazorConsole</Product>
     <Description>Build interactive console applications using .NET Razor</Description>
     <PackageTags>spectre-console;razor;console</PackageTags>
@@ -15,9 +15,9 @@
 
         <!-- Required license, copyright, and repo information. Packages can override. -->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Copyright>© LittleLittleCloud. All rights reserved.</Copyright>
-    <PackageProjectUrl>https://github.com/LittleLittleCloud/RazorConsole/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/LittleLittleCloud/RazorConsole</RepositoryUrl>
+    <Copyright>© RazorConsole. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/RazorConsole/RazorConsole/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/RazorConsole/RazorConsole</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
     <!-- Use icon and NUGET readme from dotnet/nuget folder -->
