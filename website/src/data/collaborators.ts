@@ -4,6 +4,9 @@ export interface Collaborator {
   role: string
   bio: string
   avatar?: string
+  x?: string
+  linkedin?: string
+  website?: string
 }
 
 export const collaborators: Collaborator[] = [

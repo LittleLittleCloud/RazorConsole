@@ -1,7 +1,15 @@
-import { Github } from "lucide-react"
+import { Github, Linkedin, Globe } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { collaborators } from "@/data/collaborators"
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  )
+}
 
 export default function Collaborators() {
   return (
@@ -40,7 +48,7 @@ export default function Collaborators() {
                 <p className="text-sm text-slate-600 dark:text-slate-400 flex-1 text-center">
                   {collaborator.bio}
                 </p>
-                <div className="mt-4 flex justify-center">
+                <div className="mt-4 flex justify-center gap-2 flex-wrap">
                   <a
                     href={`https://github.com/${collaborator.github}`}
                     target="_blank"
@@ -51,6 +59,39 @@ export default function Collaborators() {
                       @{collaborator.github}
                     </Button>
                   </a>
+                  {collaborator.x && (
+                    <a
+                      href={`https://x.com/${collaborator.x}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="outline" size="sm" className="gap-2">
+                        <XIcon className="w-4 h-4" />
+                      </Button>
+                    </a>
+                  )}
+                  {collaborator.linkedin && (
+                    <a
+                      href={`https://linkedin.com/in/${collaborator.linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="outline" size="sm" className="gap-2">
+                        <Linkedin className="w-4 h-4" />
+                      </Button>
+                    </a>
+                  )}
+                  {collaborator.website && (
+                    <a
+                      href={collaborator.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="outline" size="sm" className="gap-2">
+                        <Globe className="w-4 h-4" />
+                      </Button>
+                    </a>
+                  )}
                 </div>
               </CardContent>
             </Card>
