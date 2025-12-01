@@ -22,4 +22,10 @@ export const collaborators: Collaborator[] = [
     role: "Collaborator, Component creator, Bug fixer.",
     bio: "Full-stack .NET developer | JS/TS & React frontend | RazorConsole collaborator",
   },
+  {
+    name: "FallenParadise",
+    github: "ParadiseFallen",
+    role: "Collaborator, OSS enjoyer.",
+    bio: "TeamLead | Full-stack .NET/React dev | RazorConsole collaborator",
+  },
 ]
