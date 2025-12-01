@@ -7,6 +7,7 @@ import ComponentsLayout from "@/pages/components/Layout"
 import ComponentsOverview from "@/pages/components/Overview"
 import ComponentDetail from "@/pages/components/Detail"
 import Advanced from "@/pages/Advanced"
+import Collaborators from "@/pages/Collaborators"
 import { useThemeEffect } from "@/components/ThemeProvider"
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route path=":name" element={<ComponentDetail />} />
           </Route>
           <Route path="advanced" element={<Advanced />} />
+          <Route path="collaborators" element={<Collaborators />} />
         </Route>
       </Routes>
     </BrowserRouter>

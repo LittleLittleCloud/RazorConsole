@@ -41,6 +41,12 @@ export default function Layout() {
                 >
                   Components
                 </Link>
+                <Link 
+                  to="/collaborators" 
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 transition-colors"
+                >
+                  Collaborators
+                </Link>
               </nav>
             </div>
 
@@ -104,6 +110,13 @@ export default function Layout() {
               >
                 Components
               </Link>
+              <Link 
+                to="/collaborators" 
+                className="block py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Collaborators
+              </Link>
               <a 
                 href="https://github.com/LittleLittleCloud/RazorConsole" 
                 target="_blank" 
@@ -158,6 +171,11 @@ export default function Layout() {
                      className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
                     Discord Community
                   </a>
+                </li>
+                <li>
+                  <Link to="/collaborators" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                    Collaborators
+                  </Link>
                 </li>
               </ul>
             </div>
