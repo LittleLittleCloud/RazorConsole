@@ -16,4 +16,10 @@ export const collaborators: Collaborator[] = [
     role: "Creator & Maintainer",
     bio: "Creator of RazorConsole. Passionate about building developer tools and bringing familiar web paradigms to console applications.",
   },
+  {
+    name: "Skoreyko Misha",
+    github: "TeseySTD",
+    role: "Collaborator, Component creator, Bug fixer.",
+    bio: "Full-stack .NET developer | JS/TS & React frontend | RazorConsole collaborator",
+  },
 ]
