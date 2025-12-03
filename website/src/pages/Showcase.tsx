@@ -1,7 +1,70 @@
-import { Github, Rocket } from "lucide-react"
+import { useState } from "react"
+import { ChevronLeft, ChevronRight, Rocket } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { showcaseProjects } from "@/data/showcase"
+
+function ImageBanner({ images, alt }: { images: string[], alt: string }) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  if (images.length === 0) return null
+
+  const goToPrevious = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
+  }
+
+  const goToNext = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
+  }
+
+  return (
+    <div className="relative h-48 overflow-hidden rounded-t-lg group">
+      <img
+        src={images[currentIndex]}
+        alt={`${alt} screenshot ${currentIndex + 1}`}
+        className="w-full h-full object-cover"
+        loading="lazy"
+      />
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={goToPrevious}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-label="Previous image"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={goToNext}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-label="Next image"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setCurrentIndex(index)
+                }}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  index === currentIndex ? "bg-white" : "bg-white/50"
+                }`}
+                aria-label={`Go to image ${index + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 export default function Showcase() {
   const getProjectUrl = (project: typeof showcaseProjects[0]) => {
@@ -14,21 +77,9 @@ export default function Showcase() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-              Showcase
-            </h1>
-            <a
-              href="https://github.com/RazorConsole/RazorConsole/edit/main/website/src/data/showcase.ts"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button size="sm" className="gap-2">
-                <Github className="w-4 h-4" />
-                Add Your Project
-              </Button>
-            </a>
-          </div>
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mb-4">
+            Showcase
+          </h1>
           <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
             Discover projects built with RazorConsole
           </p>
@@ -47,15 +98,8 @@ export default function Showcase() {
                   className="block transition-transform hover:scale-[1.02]"
                 >
                   <Card className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow">
-                    {project.image && (
-                      <div className="relative h-48 overflow-hidden rounded-t-lg">
-                        <img
-                          src={project.image}
-                          alt={`${project.name} screenshot`}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
+                    {project.images && project.images.length > 0 && (
+                      <ImageBanner images={project.images} alt={project.name} />
                     )}
                     <CardHeader>
                       <CardTitle className="text-xl">{project.name}</CardTitle>
