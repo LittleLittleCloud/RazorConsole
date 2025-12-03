@@ -8,12 +8,9 @@ export interface ShowcaseProject {
 
 export const showcaseProjects: ShowcaseProject[] = [
   // Add your project here! Submit a PR to be featured.
-  // Example:
-  // {
-  //   name: "My RazorConsole App",
-  //   description: "A description of what your app does.",
-  //   github: "username/repo",
-  //   website: "https://example.com",
-  //   image: "https://example.com/screenshot.png",
-  // },
+  {
+    name: "Waves",
+    description: "GitHub Game Off 2025 entry - A console game built with RazorConsole.",
+    github: "Skuzzle-UK/Waves",
+  },
 ]

@@ -313,8 +313,7 @@ The following file types are automatically tracked by Git LFS:
 
 Projects built with RazorConsole:
 
-<!-- Add your project here! Submit a PR to be featured. -->
-<!-- - [Project Name](link) - Brief description -->
+- [Waves](https://github.com/Skuzzle-UK/Waves) - GitHub Game Off 2025 entry
 
 *Want to showcase your project? Submit a PR to add it here!*
 
