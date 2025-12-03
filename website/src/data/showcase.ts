@@ -12,5 +12,6 @@ export const showcaseProjects: ShowcaseProject[] = [
     name: "Waves",
     description: "GitHub Game Off 2025 entry - A console game built with RazorConsole.",
     github: "Skuzzle-UK/Waves",
+    image: "https://raw.githubusercontent.com/Skuzzle-UK/Waves/main/coverimage.png",
   },
 ]
