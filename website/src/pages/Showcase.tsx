@@ -3,32 +3,32 @@ import { ChevronLeft, ChevronRight, Rocket } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { showcaseProjects } from "@/data/showcase"
 
-function ImageBanner({ images, alt }: { images: string[], alt: string }) {
+function ImageBanner({ imageUrls, alt }: { imageUrls: string[], alt: string }) {
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  if (images.length === 0) return null
+  if (imageUrls.length === 0) return null
 
   const goToPrevious = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
+    setCurrentIndex((prev) => (prev === 0 ? imageUrls.length - 1 : prev - 1))
   }
 
   const goToNext = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
+    setCurrentIndex((prev) => (prev === imageUrls.length - 1 ? 0 : prev + 1))
   }
 
   return (
-    <div className="relative h-48 overflow-hidden rounded-t-lg group">
+    <div className="relative h-72 overflow-hidden rounded-t-lg group">
       <img
-        src={images[currentIndex]}
+        src={imageUrls[currentIndex]}
         alt={`${alt} screenshot ${currentIndex + 1}`}
         className="w-full h-full object-cover"
         loading="lazy"
       />
-      {images.length > 1 && (
+      {imageUrls.length > 1 && (
         <>
           <button
             onClick={goToPrevious}
@@ -45,7 +45,7 @@ function ImageBanner({ images, alt }: { images: string[], alt: string }) {
             <ChevronRight className="w-4 h-4" />
           </button>
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-            {images.map((_, index) => (
+            {imageUrls.map((_, index) => (
               <button
                 key={index}
                 onClick={(e) => {
@@ -98,8 +98,8 @@ export default function Showcase() {
                   className="block transition-transform hover:scale-[1.02]"
                 >
                   <Card className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow">
-                    {project.images && project.images.length > 0 && (
-                      <ImageBanner images={project.images} alt={project.name} />
+                    {project.imageUrls && project.imageUrls.length > 0 && (
+                      <ImageBanner imageUrls={project.imageUrls} alt={project.name} />
                     )}
                     <CardHeader>
                       <CardTitle className="text-xl">{project.name}</CardTitle>

@@ -3,7 +3,7 @@ export interface ShowcaseProject {
   description: string
   github?: string
   website?: string
-  images?: string[]
+  imageUrls?: string[]
 }
 
 export const showcaseProjects: ShowcaseProject[] = [
@@ -12,7 +12,7 @@ export const showcaseProjects: ShowcaseProject[] = [
     name: "Waves",
     description: "GitHub Game Off 2025 entry - A console game built with RazorConsole.",
     github: "Skuzzle-UK/Waves",
-    images: [
+    imageUrls: [
       "https://raw.githubusercontent.com/Skuzzle-UK/Waves/main/coverimage.png",
       "https://raw.githubusercontent.com/Skuzzle-UK/Waves/main/screenshot.png",
       "https://raw.githubusercontent.com/Skuzzle-UK/Waves/main/screenshot2.png",
