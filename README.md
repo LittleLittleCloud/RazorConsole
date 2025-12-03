@@ -309,6 +309,15 @@ The following file types are automatically tracked by Git LFS:
 - Archives: `*.zip`, `*.tar.gz`
 - Documents: `*.pdf`
 
+## Showcase
+
+Projects built with RazorConsole:
+
+<!-- Add your project here! Submit a PR to be featured. -->
+<!-- - [Project Name](link) - Brief description -->
+
+*Want to showcase your project? Submit a PR to add it here!*
+
 ## Community & support
 
 - Join our [Discord server](https://discord.gg/DphHAnJxCM) to chat with the community and get help.

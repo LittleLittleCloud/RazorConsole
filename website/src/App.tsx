@@ -8,6 +8,7 @@ import ComponentsOverview from "@/pages/components/Overview"
 import ComponentDetail from "@/pages/components/Detail"
 import Advanced from "@/pages/Advanced"
 import Collaborators from "@/pages/Collaborators"
+import Showcase from "@/pages/Showcase"
 import { useThemeEffect } from "@/components/ThemeProvider"
 import ScrollToTop from "@/components/ScrollToTop"
 
@@ -28,6 +29,7 @@ function App() {
           </Route>
           <Route path="advanced" element={<Advanced />} />
           <Route path="collaborators" element={<Collaborators />} />
+          <Route path="showcase" element={<Showcase />} />
         </Route>
       </Routes>
     </BrowserRouter>
