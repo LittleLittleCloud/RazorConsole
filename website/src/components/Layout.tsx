@@ -30,7 +30,7 @@ export default function Layout() {
                   Home
                 </Link>
                 <Link 
-                  to="/docs#quick-start" 
+                  to="/docs/quick-start" 
                   className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 transition-colors"
                 >
                   Docs
@@ -188,17 +188,17 @@ export default function Layout() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/docs#quick-start" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                  <Link to="/docs/quick-start" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
                     Quick Start Guide
                   </Link>
                 </li>
                 <li>
-                  <Link to="/docs#built-in-components" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                  <Link to="/docs/built-in-components" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
                     Built-in Components
                   </Link>
                 </li>
                 <li>
-                  <Link to="/docs#hot-reload" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                  <Link to="/docs/hot-reload" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
                     Advanced Topics
                   </Link>
                 </li>
