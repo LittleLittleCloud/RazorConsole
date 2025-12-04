@@ -182,24 +182,30 @@ public sealed class OverflowElementTranslator : IVdomElementTranslator
 Register your custom translator in your application's service configuration:
 
 ```csharp
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using RazorConsole.Core;
 using RazorConsole.Core.Vdom;
 
-var app = AppHost.Create<MyComponent>(builder =>
-{
-    // Register by type (translator will be instantiated via DI)
-    builder.Services.AddVdomTranslator<OverflowElementTranslator>();
-    
-    // Or register by instance
-    builder.Services.AddVdomTranslator(new OverflowElementTranslator());
-    
-    // Or register with factory (useful for DI dependencies)
-    builder.Services.AddVdomTranslator(sp => 
-        new OverflowElementTranslator(/* inject services here */));
-});
+IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args)
+    .UseRazorConsole<MyComponent>(configure: config => 
+        {
+            config.ConfigureServices(services =>
+            {
+                // Register by type (translator will be instantiated via DI)
+                services.AddVdomTranslator<OverflowElementTranslator>();
+                
+                // Or register by instance
+                services.AddVdomTranslator(new OverflowElementTranslator());
+                
+                // Or register with factory (useful for DI dependencies)
+                services.AddVdomTranslator(sp => 
+                    new OverflowElementTranslator(/* inject services here */));  
+            });
+        }
+    );
 
-await app.RunAsync();
+IHost host = hostBuilder.Build();
+await host.RunAsync();
 ```
 
 ### Step 3: Use in Razor Components
@@ -215,9 +221,9 @@ Create Razor components that emit the VDOM structure your translator expects:
 </div>
 
 <div data-overflow="fold">
-    <Markup>[bold]This text will fold/wrap[/] when it's too long
-    for the available space in the console window.
-</Markup>
+    <Markup Content="This text will fold/wrap when it's too long
+            for the available space in the console window."
+    />
 </div>
 ```
 
@@ -252,6 +258,12 @@ int count = VdomSpectreTranslator.TryGetIntAttribute(node, "data-count", fallbac
 
 // Parse positive integer
 if (VdomSpectreTranslator.TryParsePositiveInt(rawValue, out int result))
+{
+    // Use result
+}
+
+// Parse positive double
+if (VdomSpectreTranslator.TryParsePositiveDouble(rawValue, out double result))
 {
     // Use result
 }
@@ -445,8 +457,8 @@ public sealed class DatabaseStyleTranslator : IVdomElementTranslator
 }
 
 // Registration
-builder.Services.AddSingleton<IStyleProvider, MyStyleProvider>();
-builder.Services.AddVdomTranslator<DatabaseStyleTranslator>();
+services.AddSingleton<IStyleProvider, MyStyleProvider>();
+services.AddVdomTranslator<DatabaseStyleTranslator>();
 ```
 
 ### Conditional Translation

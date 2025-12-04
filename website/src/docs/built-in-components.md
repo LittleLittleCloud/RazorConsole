@@ -6,11 +6,12 @@ RazorConsole ships with a library of Spectre.Console-powered components covering
 
 | Component | Highlights |
 |-----------|------------|
-| `Align` | Centers or aligns child content horizontally/vertically with optional fixed width/height. |
-| `Columns` | Flows children left-to-right, optionally expanding to fill the console width. |
-| `Rows` | Stacks children vertically, great for wizard-style layouts. |
-| `Grid` | Builds a multi-column layout with configurable column count and width. |
-| `Padder` | Adds Spectre padding around nested content to create spacing. |
+| [Align](https://razorconsole.github.io/RazorConsole/components/Align) | Centers or aligns child content horizontally/vertically with optional fixed width/height. |
+| [Columns](https://razorconsole.github.io/RazorConsole/components/Columns) | Flows children left-to-right, optionally expanding to fill the console width. |
+| [Rows](https://razorconsole.github.io/RazorConsole/components/Rows) | Stacks children vertically, great for wizard-style layouts. |
+| [Grid](https://razorconsole.github.io/RazorConsole/components/Grid) | Builds a multi-column layout with configurable column count and width. |
+| [Padder](https://razorconsole.github.io/RazorConsole/components/Padder) | Adds Spectre padding around nested content to create spacing. |
+| [Scrollable](https://razorconsole.github.io/RazorConsole/components/Scrollable) | Renders a sliding window of items (`PageSize`) with built-in keyboard navigation (Arrow keys, PageUp/Down). |
 
 ```razor
 <Columns Expand>
@@ -18,15 +19,15 @@ RazorConsole ships with a library of Spectre.Console-powered components covering
     <Markup Content="Step 2" />
     <Markup Content="Step 3" />
 </Columns>
-```
+````
 
 ## Input
 
 | Component | Highlights |
 |-----------|------------|
-| `TextButton` | Focusable button with customizable colors and click handlers via `EventCallback`. |
-| `TextInput` | Collects user input with placeholder, change handler, and optional password masking. |
-| `Select` | Keyboard-driven dropdown with highlighted selection state and callbacks. |
+| [TextButton](https://razorconsole.github.io/RazorConsole/components/TextButton) | Focusable button with customizable colors and click handlers via `EventCallback`. |
+| [TextInput](https://razorconsole.github.io/RazorConsole/components/TextInput) | Collects user input with placeholder, change handler, and optional password masking. |
+| [Select](https://razorconsole.github.io/RazorConsole/components/Select) | Keyboard-driven dropdown with highlighted selection state and callbacks. |
 
 ```razor
 <TextInput Value="@name" ValueChanged="@((v) => name = v)" Placeholder="Enter your name" />
@@ -35,22 +36,30 @@ RazorConsole ships with a library of Spectre.Console-powered components covering
 
 ## Display
 
-| Component | Highlights |
-|-----------|------------|
-| `Markup` | Renders Spectre markup with color, background, and text decoration support. |
-| `Panel` | Creates framed sections with optional title and border styling. |
-| `Border` | Wraps child content in a configurable border and padding. |
-| `Figlet` | Produces large ASCII headers using Figlet fonts. |
-| `SyntaxHighlighter` | Displays colorized source code with optional line numbers. |
-| `Markdown` | Renders Markdown text directly in the console. |
-| `Table` | Converts semantic `<table>` markup into Spectre tables. |
+| Component                                                                                                              | Highlights |
+|------------------------------------------------------------------------------------------------------------------------|------------|
+| [Markup](https://razorconsole.github.io/RazorConsole/components/Markup)                                                | Renders Spectre markup with color, background, and text decoration support. |
+| [Panel](https://razorconsole.github.io/RazorConsole/components/Panel)                  | Creates framed sections with optional title and border styling. |
+| [Border](https://razorconsole.github.io/RazorConsole/components/Border)                | Wraps child content in a configurable border and padding. |
+| [BarChart](https://razorconsole.github.io/RazorConsole/components/BarChart)            | Visualizes numeric data as horizontal bars with customizable styling, labels, and scaling. |
+| [BreakdownChart](https://razorconsole.github.io/RazorConsole/components/BreakdownChart) | Displays proportional data segments (pie-style) with optional legends and percentage values. |
+| [StepChart](https://razorconsole.github.io/RazorConsole/components/StepChart)                                          | Plots discrete values over time using Unicode box-drawing characters and multiple series. |
+| [Figlet](https://razorconsole.github.io/RazorConsole/components/Figlet)                                                | Produces large ASCII headers using Figlet fonts. |
+| [SyntaxHighlighter](https://razorconsole.github.io/RazorConsole/components/SyntaxHighlighter)                          | Displays colorized source code with optional line numbers. |
+| [SpectreCanvas](https://razorconsole.github.io/RazorConsole/components/SpectreCanvas)                                  | Provides a low-level pixel buffer for drawing custom graphics or pixel art. |
+| [Markdown](https://razorconsole.github.io/RazorConsole/components/Markdown)                                            | Renders Markdown text directly in the console. |
+| [Table](https://razorconsole.github.io/RazorConsole/components/Table)                                                  | Converts semantic `<table>` markup into Spectre tables. |
 
 ```razor
 <Panel Title="Server Status" BorderColor="Color.Green" Expand>
     <Columns>
-        <Markup Content="[green]✓[/] Online" />
-        <Markup Content="[yellow]Latency: 42ms[/]" />
+        <Markup Content="✓ Online" Color="Color.Green" />
+        <Markup Content="Latency: 42ms" Color="Color.Yellow" />
     </Columns>
+    <BarChart 
+        Width="40" 
+        BarChartItems="@items" 
+        Label="Load Distribution" />
 </Panel>
 ```
 
@@ -58,8 +67,8 @@ RazorConsole ships with a library of Spectre.Console-powered components covering
 
 | Component | Highlights |
 |-----------|------------|
-| `Spinner` | Animated progress indicator with optional message. |
-| `Newline` | Emits an empty line to separate sections. |
+| [Spinner](https://razorconsole.github.io/RazorConsole/components/Spinner) | Animated progress indicator with optional message. |
+| [Newline](https://razorconsole.github.io/RazorConsole/components/Newline) | Emits an empty line to separate sections. |
 
 ```razor
 <Spinner Message="Fetching data..." />

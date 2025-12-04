@@ -1,4 +1,4 @@
-### Focus Management
+# Focus Management
 
 Console UIs need strong focus cues for keyboard navigation. RazorConsole provides a `FocusManager` that automatically tracks focusable elements and coordinates focus changes, making keyboard navigation predictable and accessible.
 

@@ -1,4 +1,4 @@
-### Routing
+# Routing
 This document explains how routing works in modern `RazorConsole`  and how to use it.
 
 ---
