@@ -12,9 +12,27 @@
     <HotReloadAutoRestart>true</HotReloadAutoRestart>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+  
+  <!-- Set CompilerGeneratedFilesOutputPath after BaseIntermediateOutputPath is fully resolved -->
+  <Target Name="SetCompilerGeneratedFilesPath" BeforeTargets="PrepareForBuild" Condition="'$(Configuration)' == 'Debug'">
+    <PropertyGroup>
+      <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+    </PropertyGroup>
+  </Target>
 
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+  </PropertyGroup>
+
+  <!-- Example projects configuration -->
+  <PropertyGroup Condition="$(MSBuildProjectDirectory.Contains('examples'))">
+    <IsPackable>false</IsPackable>
+    <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
 </Project>

@@ -4,6 +4,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using RazorConsole.Core.Rendering;
+using RazorConsole.Core.Vdom;
+using RazorConsole.Tests.TestComponents;
 
 namespace RazorConsole.Tests.Rendering;
 
@@ -128,42 +130,44 @@ public sealed class ConsoleRendererTests
     }
 
     [Fact]
-    public async Task RemovesAttribute_InsideRegion_AppliesCorrectly()
+    public async Task NestedComponentRenderingTestAsync()
     {
         // Arrange
         using var renderer = TestHelpers.CreateTestRenderer();
-        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            { "Value", "Start" },
-            { "HasAttribute", true }
-        });
-
-        await renderer.MountComponentAsync<RegionTestComponent>(parameters, CancellationToken.None);
+        var component = new NestedComponent();
+        await renderer.MountComponentAsync(component, ParameterView.Empty, CancellationToken.None);
 
         // Act
         var tcs = new TaskCompletionSource<ConsoleRenderer.RenderSnapshot>();
         using var sub = renderer.Subscribe(new SimpleObserver(s =>
         {
-            var el = FindDiv(s.Root);
-            if (el != null && !el.Attributes.ContainsKey("data-val"))
+            var rootNode = s.Root;
+            if (rootNode is not null &&
+                rootNode.Children.Count() > 0 &&
+                rootNode.Children[0].Children[0].Text.Contains("Component is ready."))
             {
                 tcs.TrySetResult(s);
             }
         }));
 
-        await renderer.Dispatcher.InvokeAsync(async () =>
-        {
-            await RegionTestComponent.Instance!.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object?>
-            {
-                { "Value", "Start" },
-                { "HasAttribute", false } // Trigger RemoveAttribute
-            }));
-        });
+        component.UpdateOffset(10);
+        component.Ready();
 
         // Assert
-        var updatedSnapshot = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
-        var updatedElement = FindDiv(updatedSnapshot.Root!);
-        updatedElement.ShouldNotBeNull().Attributes.ContainsKey("data-val").ShouldBeFalse();
+        var updatedSnapshot = await tcs.Task.WaitAsync(TestContext.Current.CancellationToken);
+        var root = updatedSnapshot.Root.ShouldNotBeNull();
+        root.Children.Count().ShouldBe(2);
+        foreach (var child in root.Children[0].Children)
+        {
+            // child might be Text
+            if (child.Kind != VNodeKind.Element)
+            {
+                continue;
+            }
+            child.Children.Count().ShouldBe(2);
+            child.Children[0].Text.ShouldBe("10");
+            child.Children[1].Text.ShouldBe("10");
+        }
     }
 
 

@@ -6,40 +6,47 @@
     <Markup Content="Source Code: Align.razor" Foreground="@Color.DeepSkyBlue1"
             Decoration="@Decoration.Underline" link="@DocumentationUrl" />
     <Newline />
-	<Panel Title="Code" Border="BoxBorder.Rounded" Expand="true">
-		<SyntaxHighlighter Language="razor"
-						   Code="@_sampleCode"
-						   ShowLineNumbers="true" />
-	</Panel>
-	<Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
-		<Columns Expand = "true">
-			<Border>
-			<Align Width="18" Height="5"
-				   Horizontal="@(HorizontalAlignment.Left)"
-				   Vertical="@(VerticalAlignment.Top)">
-				<Markup Content="Top / Left" />
-			</Align>
-			</Border>
-			<Border>
-			<Align Width="18" Height="5"
-				   Horizontal="@(HorizontalAlignment.Center)"
-				   Vertical="@(VerticalAlignment.Middle)">
-				<Markup Content="Center" />
-			</Align>
-			</Border>
-			<Border>
-			<Align Width="18" Height="5"
-				   Horizontal="@(HorizontalAlignment.Right)"
-				   Vertical="@(VerticalAlignment.Bottom)">
-				<Markup Content="Bottom / Right" />
-			</Align>
-			</Border>
-		</Columns>
-	</Panel>
+    <Panel Title="Code" Border="BoxBorder.Rounded" Expand="true">
+        <SyntaxHighlighter Language="razor"
+                           Code="@_sampleCode"
+                           ShowLineNumbers="true" />
+    </Panel>
+    <Panel Title="Preview" Border="BoxBorder.Rounded" Expand="true">
+        <Columns Expand="true">
+            <Border>
+                <Align Width="18" Height="5"
+                       Horizontal="@(HorizontalAlignment.Left)"
+                       Vertical="@(VerticalAlignment.Top)">
+                    <Markup Content="Top / Left" />
+                </Align>
+            </Border>
+            <Border>
+                <Align Width="18" Height="5"
+                       Horizontal="@(HorizontalAlignment.Center)"
+                       Vertical="@(VerticalAlignment.Middle)">
+                    <Markup Content="Center" />
+                </Align>
+            </Border>
+            <Border>
+                <Align Width="18" Height="5"
+                       Horizontal="@(HorizontalAlignment.Right)"
+                       Vertical="@(VerticalAlignment.Bottom)">
+                    <Markup Content="Bottom / Right" />
+                </Align>
+            </Border>
+        </Columns>
+        <ol start="@_currentOffset">
+            <li>Top / Left</li>
+            <li>Center</li>
+            <li>Bottom / Right</li>
+        </ol>
+        <TextButton Content="@($"click me {_currentOffset}")" OnClick="() => _currentOffset++" />
+    </Panel>
 </Rows>
 
 @code {
-	private string _sampleCode = @"
+    private int _currentOffset = 0;
+    private string _sampleCode = @"
 <Columns Expand=""true"">
 	<Border>
 	<Align Width=""18"" Height=""5""
