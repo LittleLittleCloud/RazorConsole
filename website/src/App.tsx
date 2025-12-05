@@ -11,6 +11,7 @@ import Docs from "@/pages/Docs"
 import QuickStart from "@/pages/QuickStart"
 import Advanced from "@/pages/Advanced"
 import Collaborators from "@/pages/Collaborators"
+import Showcase from "@/pages/Showcase"
 
 // --- Lazy Imports ---
 const ComponentsLayout = lazy(() => import("@/pages/components/Layout"))
@@ -40,6 +41,7 @@ function App() {
 
           <Route path="advanced" element={<Advanced />} />
           <Route path="collaborators" element={<Collaborators />} />
+          <Route path="showcase" element={<Showcase />} />
         </Route>
       </Routes>
     </BrowserRouter>

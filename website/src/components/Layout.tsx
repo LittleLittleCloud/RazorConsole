@@ -47,6 +47,12 @@ export default function Layout() {
                 >
                   Collaborators
                 </Link>
+                <Link 
+                  to="/showcase" 
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 transition-colors"
+                >
+                  Showcase
+                </Link>
               </nav>
             </div>
 
@@ -117,6 +123,13 @@ export default function Layout() {
               >
                 Collaborators
               </Link>
+              <Link 
+                to="/showcase" 
+                className="block py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Showcase
+              </Link>
               <a 
                 href="https://github.com/RazorConsole/RazorConsole" 
                 target="_blank" 
@@ -175,6 +188,11 @@ export default function Layout() {
                 <li>
                   <Link to="/collaborators" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
                     Collaborators
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/showcase" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50">
+                    Showcase
                   </Link>
                 </li>
               </ul>
