@@ -12,8 +12,6 @@ import QuickStart from "@/pages/QuickStart"
 import Advanced from "@/pages/Advanced"
 import Collaborators from "@/pages/Collaborators"
 import Showcase from "@/pages/Showcase"
-import { useThemeEffect } from "@/components/ThemeProvider"
-import ScrollToTop from "@/components/ScrollToTop"
 
 // --- Lazy Imports ---
 const ComponentsLayout = lazy(() => import("@/pages/components/Layout"))
