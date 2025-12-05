@@ -5,7 +5,6 @@
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>razorconsole-gallery</ToolCommandName>
-
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/nuget/nuget-package.props" />

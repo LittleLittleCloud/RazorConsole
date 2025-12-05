@@ -2,17 +2,17 @@
 
 <Rows>
     <Markup Content="Scrollable component that adds ability to scroll through items and render limited count."
-            Foreground="@Color.Grey70" />
+            Foreground="@Color.Grey70"/>
     <Markup Content="Source Code: Scrollable.razor"
             Foreground="@Color.DeepSkyBlue1" Decoration="@Decoration.Underline"
-            link="@DocumentationUrl" />
-    <Newline />
+            link="@DocumentationUrl"/>
+    <Newline/>
 
     <Rows>
         <Panel Title="Code" Border="BoxBorder.Rounded" Expand="true">
             <SyntaxHighlighter Language="razor"
                                Code="@_scrollableMarkup"
-                               ShowLineNumbers="true" />
+                               ShowLineNumbers="true"/>
         </Panel>
         <Rows>
             <Panel Title="Alphabet Table" Border="BoxBorder.Rounded" Expand="true">
@@ -26,21 +26,21 @@
                                     <SpectreTH Align="Justify.Center">Letter</SpectreTH>
                                 </SpectreTR>
                             </SpectreTHead>
-                            <SpectreTBody>
+                            <SpectreTBody >
                                 @foreach (var item in context)
                                 {
                                     <SpectreTR>
                                         <SpectreTD>
-                                            <Markup Content="@item.Number.ToString()" Foreground="@item.Color" />
+                                            <Markup Content="@item.Number.ToString()" Foreground="@item.Color"/>
                                         </SpectreTD>
                                         <SpectreTD>
-                                            <Markup Content="@item.Letter" Foreground="@item.Color" />
+                                            <Markup Content="@item.Letter" Foreground="@item.Color"/>
                                         </SpectreTD>
                                     </SpectreTR>
                                 }
                             </SpectreTBody>
                         </SpectreTable>
-                        <Markup Content=@($"Page: {context.CurrentOffset + 1} / {context.PagesCount}") />
+                        <Markup Content=@($"Page: {context.CurrentOffset + 1} / {context.PagesCount}")/>
                     </Rows>
                 </Scrollable>
             </Panel>
@@ -53,7 +53,7 @@
                         @foreach (var item in context)
                         {
                             <li>
-                                <Markup Content=@($"{item.Letter}") Foreground="@item.Color" />
+                                <Markup Content=@($"{item.Letter}") Foreground="@item.Color"/>
                             </li>
                         }
                     </ol>
