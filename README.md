@@ -9,10 +9,10 @@
 [![Component Gallery](https://img.shields.io/nuget/v/RazorConsole.Gallery.svg?style=flat-square&logo=nuget&label=gallery&color=purple)](https://www.nuget.org/packages/RazorConsole.Gallery)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/RazorConsole.Core.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/RazorConsole.Core)
 
-[![GitHub Release](https://img.shields.io/github/v/release/LittleLittleCloud/RazorConsole?style=flat-square&logo=github)](https://github.com/LittleLittleCloud/RazorConsole/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/RazorConsole/RazorConsole?style=flat-square&logo=github)](https://github.com/RazorConsole/RazorConsole/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0%20%7C%2010.0-512BD4?style=flat-square)](https://dotnet.microsoft.com/)
-[![codecov](https://img.shields.io/codecov/c/github/LittleLittleCloud/RazorConsole?style=flat-square&logo=codecov&token=)](https://codecov.io/gh/LittleLittleCloud/RazorConsole)
+[![codecov](https://img.shields.io/codecov/c/github/RazorConsole/RazorConsole?style=flat-square&logo=codecov&token=)](https://codecov.io/gh/RazorConsole/RazorConsole)
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/DphHAnJxCM)
 
@@ -46,8 +46,8 @@ RazorConsole requires the Microsoft.NET.Sdk.Razor SDK to compile Razor component
 
 Here's a simple counter component to get you started:
 
-```csharp
-// Counter.razor
+#### Counter.razor
+```razor
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Web
 @using RazorConsole.Components
@@ -69,8 +69,12 @@ Here's a simple counter component to get you started:
         currentCount++;
     }
 }
+```
+#### Program.cs
+```csharp
+using Microsoft.Extensions.Hosting;
+using RazorConsole.Core;
 
-// Program.cs
 IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args)
     .UseRazorConsole<Counter>();
 IHost host = hostBuilder.Build();
@@ -90,11 +94,12 @@ Build your console UI using familiar Razor components with full support for data
 Create engaging user experiences with interactive elements like buttons, text inputs, selectors, and keyboard navigation - all with focus management handled automatically.
 
 ### 🎯 **Built-in Component Library**
-Get started quickly with 15+ pre-built components covering layout, input, display, and navigation needs:
-- **Layout**: `Grid`, `Columns`, `Rows`, `Align`, `Padder`, `Scrollable`
-- **Input**: `TextInput`, `TextButton`, `Select`
-- **Display**: `Markdown`, `Markup`, `Panel`, `Border`, `Figlet`, `SpectreCanvas`, `SyntaxHighlighter`, `Table`
-- **Utilities**: `Spinner`, `Newline`
+Get started quickly with **20+ pre-built components** covering layout, input, display, and navigation needs:
+- **Layout** (6): `Align`, `Columns`, `Rows`, `Grid`, `Padder`, `Scrollable`
+- **Input** (3): `TextInput`, `TextButton`, `Select`
+- **Display** (11): `BarChart`, `BreakdownChart`, `StepChart`, `Border`, `Figlet`, `Markdown`, `Markup`, `Panel`, `SpectreCanvas`, `SyntaxHighlighter`, `Table`
+- **Utilities** (2): `Spinner`, `Newline`
+
 
 For a full list of components and usage details, see the [Built-in Components](#built-in-components) section below.
 
@@ -112,7 +117,9 @@ For more details, see the [Component Gallery](#component-gallery) section below.
 RazorConsole ships with a catalog of ready-to-use components that wrap Spectre.Console constructs:
 
 - `Align` – position child content horizontally and vertically within a fixed box.
+- `BarChart` – Renders a horizontal bar chart with optional label, colors and value display.
 - `Border` – draw Spectre borders with customizable style, color, and padding.
+- `BreakdownChart` – Renders a colorful breakdown (pie-style) chart showing proportions with optional legend and values.
 - `Columns` – arrange items side-by-side, optionally stretching to fill the console width.
 - `Figlet` – render big ASCII art text using FIGlet fonts.
 - `Grid` – build multi-row, multi-column layouts with precise cell control.
@@ -122,10 +129,11 @@ RazorConsole ships with a catalog of ready-to-use components that wrap Spectre.C
 - `Padder` – add outer padding around child content without altering the child itself.
 - `Panel` – frame content inside a titled container with border and padding options.
 - `Rows` – stack child content vertically with optional expansion behavior.
-- `Select` – present a focusable option list with keyboard navigation.
-- `Spinner` – show animated progress indicators using Spectre spinner presets.
-- `SpectreCanvas` - draws an array of pixels with different colors.
 - `Scrollable` - enables keyboard-based vertical scrolling through the component's content, including nested components or HTML markup.
+- `Select` – present a focusable option list with keyboard navigation.
+- `SpectreCanvas` - draws an array of pixels with different colors.
+- `Spinner` – show animated progress indicators using Spectre spinner presets.
+- `StepChart` – Renders a terminal step chart using Unicode box-drawing characters. Perfect for displaying discrete value changes over time or categories.
 - `SyntaxHighlighter` – colorize code snippets using ColorCode themes.
 - `Table` – display structured data in formatted tables with headers, borders, and rich cell content.
 - `TextButton` – display clickable text with focus and pressed-state styling.
@@ -196,16 +204,24 @@ public sealed class OverflowElementTranslator : IVdomElementTranslator
 Register your translator in your application's service configuration:
 
 ```csharp
+using Microsoft.Extensions.Hosting;
 using RazorConsole.Core;
 using RazorConsole.Core.Vdom;
 
-var app = AppHost.Create<MyComponent>(builder =>
-{
-    // Register your custom translator
-    builder.Services.AddVdomTranslator<OverflowElementTranslator>();
-});
+IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args)
+    .UseRazorConsole<MyComponent>(configure: config => 
+        {
+            config.ConfigureServices(services =>
+            { 
+                // Register your custom translator
+                services.AddVdomTranslator<OverflowElementTranslator>();   
+            });
+        }
+    );
 
-await app.RunAsync();
+IHost host = hostBuilder.Build();
+await host.RunAsync();
+
 ```
 
 ### Using Custom Translators in Components
@@ -289,7 +305,7 @@ RazorConsole supports hotreload via metadata update handler so you can apply UI 
 
 This project uses [Codecov](https://codecov.io/) for code coverage reporting. Coverage reports are automatically generated during CI builds using Microsoft Testing Platform (MTP) code coverage extension with xUnit.net v3. Coverage data is collected in Cobertura format and uploaded to Codecov for tracking and visualization.
 
-You can view the latest coverage reports at [codecov.io/gh/LittleLittleCloud/RazorConsole](https://codecov.io/gh/LittleLittleCloud/RazorConsole).
+You can view the latest coverage reports at [codecov.io/gh/RazorConsole/RazorConsole](https://codecov.io/gh/RazorConsole/RazorConsole).
 
 ### Git LFS
 
@@ -300,7 +316,7 @@ This repository uses [Git LFS](https://git-lfs.github.io/) for tracking large me
 git lfs install
 
 # Clone the repository (LFS files will be downloaded automatically)
-git clone https://github.com/LittleLittleCloud/RazorConsole.git
+git clone https://github.com/RazorConsole/RazorConsole.git
 ```
 
 The following file types are automatically tracked by Git LFS:

@@ -60,15 +60,22 @@ public sealed class OverflowElementTranslator : IVdomElementTranslator
 #### Registering the translator
 
 ```csharp
+using Microsoft.Extensions.Hosting;
 using RazorConsole.Core;
 using RazorConsole.Core.Vdom;
 
-var app = AppHost.Create<MyComponent>(builder =>
-{
-    builder.Services.AddVdomTranslator<OverflowElementTranslator>();
-});
+IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args)
+    .UseRazorConsole<MyComponent>(configure: config => 
+        {
+            config.ConfigureServices(services =>
+            {
+                services.AddVdomTranslator<OverflowElementTranslator>();   
+            });
+        }
+    );
 
-await app.RunAsync();
+IHost host = hostBuilder.Build();
+await host.RunAsync();
 ```
 
 #### Using it in components
@@ -79,4 +86,4 @@ await app.RunAsync();
 </div>
 ```
 
-For a deeper dive, read the [custom translators guide](https://github.com/LittleLittleCloud/RazorConsole/blob/main/design-doc/custom-translators.md).
+For a deeper dive, read the [custom translators guide](https://github.com/RazorConsole/RazorConsole/blob/main/design-doc/custom-translators.md).

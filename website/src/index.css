@@ -7,8 +7,18 @@
     @apply min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-slate-50;
   }
 }
-html, body, #root {
-  overflow-x: hidden;
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+html, body {
+  overflow-x: clip; /*For components overflow fix*/
+
   max-width: 100vw;
+  position: relative;
+}
+
+#root {
   position: relative;
 }
