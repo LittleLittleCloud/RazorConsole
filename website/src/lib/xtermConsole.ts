@@ -240,19 +240,20 @@ ensureGlobalApi()
 // C# WASM Interop Functions
 // ================================
 // These functions call into the C# WebAssembly runtime via the razor-console module.
-// They are wrappers around the exported C# methods from the Registry class.
-// The razor-console module is linked to RazorConsole.Website's published output at build time.
+// We use DYNAMIC IMPORT here to prevent loading the heavy WASM module on initial page load.
 
-import { createRuntimeAndGetExports, type WasmExports } from 'razor-console'
+import type { WasmExports } from 'razor-console'
 
 let wasmExportsPromise: Promise<WasmExports> | null = null
 
 /**
  * Gets the WASM exports from main.js via the razor-console package.
- * The razor-console package is an npm alias to the published RazorConsole.Website output.
+ * Uses dynamic import to load the module only when needed.
  */
 async function getWasmExports(): Promise<WasmExports> {
   if (wasmExportsPromise === null) {
+    // Dynamic import: Webpack/Vite will split this into a separate chunk
+    const { createRuntimeAndGetExports } = await import('razor-console')
     wasmExportsPromise = createRuntimeAndGetExports()
   }
   return wasmExportsPromise

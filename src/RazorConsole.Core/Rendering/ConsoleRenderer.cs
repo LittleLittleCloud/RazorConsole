@@ -2,6 +2,7 @@
 
 #nullable enable
 #pragma warning disable BL0006 // RenderTree types are "internal-ish"; acceptable for console renderer.
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
@@ -78,14 +79,21 @@ internal sealed class ConsoleRenderer(
 
     public override Dispatcher Dispatcher => DispatcherInstance;
 
-    public async Task<RenderSnapshot> MountComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(ParameterView parameters, CancellationToken cancellationToken)
+    public Task<RenderSnapshot> MountComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(ParameterView parameters, CancellationToken cancellationToken)
         where TComponent : IComponent
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var component = InstantiateComponent(typeof(TComponent));
+        TComponent component = (TComponent)InstantiateComponent(typeof(TComponent));
+
+        return MountComponentAsync(component, parameters, cancellationToken);
+    }
+
+    internal async Task<RenderSnapshot> MountComponentAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(TComponent component, ParameterView parameters, CancellationToken cancellationToken)
+        where TComponent : IComponent
+    {
         var componentId = AssignRootComponentId(component);
         _rootComponentId = componentId;
 
@@ -122,11 +130,7 @@ internal sealed class ConsoleRenderer(
 
         RenderSnapshot snapshot;
         IDisposable subscription;
-#if NET9_0_OR_GREATER
-        using (_observersSync.EnterScope())
-#else
         lock (_observersSync)
-#endif
         {
             if (_disposed)
             {
@@ -279,31 +283,27 @@ internal sealed class ConsoleRenderer(
     {
         var parent = _cursor.Peek();
         var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-        if (frame.FrameType == RenderTreeFrameType.Attribute && (uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
-        {
-            var child = parent.Children[edit.SiblingIndex];
-            ApplyAttributeFrame(child, frame);
-        }
+        Debug.Assert(frame.FrameType == RenderTreeFrameType.Attribute, "SetAttribute edit must reference an Attribute frame.");
+        var child = BFSNonRegionChildren(parent).ElementAt(edit.SiblingIndex);
+        ApplyAttributeFrame(child, frame);
     }
 
     private void ApplyRemoveAttributeEdit(in RenderBatch batch, RenderTreeEdit edit)
     {
         var parent = _cursor.Peek();
         var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-        if (frame.FrameType == RenderTreeFrameType.Attribute && (uint)(edit.SiblingIndex) < (uint)parent.Children.Count)
+        Debug.Assert(frame.FrameType == RenderTreeFrameType.Attribute, "RemoveAttribute edit must reference an Attribute frame.");
+        var child = BFSNonRegionChildren(parent).ElementAt(edit.SiblingIndex);
+        if (frame.AttributeEventHandlerId != 0)
         {
-            var child = parent.Children[edit.SiblingIndex];
-            if (frame.AttributeEventHandlerId != 0)
+            child.RemoveEvent(frame.AttributeName!);
+        }
+        else
+        {
+            child.RemoveAttribute(frame.AttributeName!);
+            if (IsKeyAttribute(frame.AttributeName!))
             {
-                child.RemoveEvent(frame.AttributeName!);
-            }
-            else
-            {
-                child.RemoveAttribute(frame.AttributeName!);
-                if (IsKeyAttribute(frame.AttributeName!))
-                {
-                    parent.SetKey(null);
-                }
+                parent.SetKey(null);
             }
         }
     }
@@ -311,46 +311,28 @@ internal sealed class ConsoleRenderer(
     private void ApplyUpdateTextEdit(in RenderBatch batch, RenderTreeEdit edit)
     {
         var parent = _cursor.Peek();
-        if ((uint)edit.SiblingIndex < (uint)parent.Children.Count)
-        {
-            var child = parent.Children[edit.SiblingIndex];
-            var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
-            var textContent = frame.FrameType == RenderTreeFrameType.Text
-                ? frame.TextContent
-                : frame.MarkupContent;
-            child.SetText(textContent);
-        }
+        var child = BFSNonRegionChildren(parent).ElementAt(edit.SiblingIndex);
+        var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
+        var textContent = frame.FrameType == RenderTreeFrameType.Text
+            ? frame.TextContent
+            : frame.MarkupContent;
+        child.SetText(textContent);
     }
 
     private void ApplyStepInEdit(RenderTreeEdit edit)
     {
-        var parent = _cursor.Peek();
+        var vnode = _cursor.Peek();
+        var child = BFSNonRegionChildren(vnode).ElementAt(edit.SiblingIndex);
+        _cursor.Push(child);
 
-        // Process region wrapper
-        if (parent.Children is { Count: 1 } && parent.Children[0].Kind == VNodeKind.Region)
-        {
-            _cursor.Push(parent.Children[0]);
-            parent = _cursor.Peek();
-        }
-
-        if ((uint)edit.SiblingIndex < (uint)parent.Children.Count)
-        {
-            _cursor.Push(parent.Children[edit.SiblingIndex]);
-        }
+        return;
     }
 
     private void ApplyStepOutEdit()
     {
-        if (_cursor.Count > 0)
-        {
-            var parent = _cursor.Pop();
-
-            // Process region wrapper
-            if (parent.Kind == VNodeKind.Region && _cursor.Count > 0)
-            {
-                _cursor.Pop();
-            }
-        }
+        Debug.Assert(_cursor.Count > 0, "Cursor should not be empty after applying edits.");
+        _cursor.Pop();
+        return;
     }
 
     private (VNode Node, int NextIndex) BuildSubtree(ArrayRange<RenderTreeFrame> frames, int index)
@@ -451,6 +433,27 @@ internal sealed class ConsoleRenderer(
 
             default:
                 return (VNode.CreateRegion(), index + 1);
+        }
+    }
+
+    /// <summary>
+    /// BFS traversal to yield all non-region first-level children of a VNode. Grandchildren of none-region children are not included.
+    /// </summary>
+    private IEnumerable<VNode> BFSNonRegionChildren(VNode node)
+    {
+        foreach (var child in node.Children)
+        {
+            if (child.Kind != VNodeKind.Region)
+            {
+                yield return child;
+            }
+            else
+            {
+                foreach (var grandchild in BFSNonRegionChildren(child))
+                {
+                    yield return grandchild;
+                }
+            }
         }
     }
 
@@ -699,11 +702,7 @@ internal sealed class ConsoleRenderer(
     private void NotifyObserversInternal(Action<IObserver<RenderSnapshot>> action, Action<Exception> errorLogger)
     {
         IObserver<RenderSnapshot>[] observers;
-#if NET9_0_OR_GREATER
-        using (_observersSync.EnterScope())
-#else
         lock (_observersSync)
-#endif
         {
             if (_observers.Count == 0)
             {
@@ -754,11 +753,7 @@ internal sealed class ConsoleRenderer(
     private void CompleteObservers()
     {
         IObserver<RenderSnapshot>[] observers;
-#if NET9_0_OR_GREATER
-        using (_observersSync.EnterScope())
-#else
         lock (_observersSync)
-#endif
         {
             if (_observers.Count == 0)
             {
@@ -784,11 +779,7 @@ internal sealed class ConsoleRenderer(
 
     private void Unsubscribe(IObserver<RenderSnapshot> observer)
     {
-#if NET9_0_OR_GREATER
-        using (_observersSync.EnterScope())
-#else
         lock (_observersSync)
-#endif
         {
             _observers.Remove(observer);
         }
@@ -798,11 +789,7 @@ internal sealed class ConsoleRenderer(
     {
         if (disposing)
         {
-#if NET9_0_OR_GREATER
-            using (_observersSync.EnterScope())
-#else
             lock (_observersSync)
-#endif
             {
                 if (_disposed)
                 {

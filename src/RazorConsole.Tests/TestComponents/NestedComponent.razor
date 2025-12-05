@@ -1,0 +1,26 @@
+@using RazorConsole.Components
+@if(_isReady)
+{
+	<p>Component is ready. Current Offset: @_currentOffset</p>
+}
+<Component3>
+    <Component2>
+        @_currentOffset
+    </Component2>
+</Component3>
+
+@code {
+	private int _currentOffset = 0;
+	private bool _isReady = false;
+	internal void UpdateOffset(int newOffset)
+	{
+		_currentOffset = newOffset;
+		StateHasChanged();
+	}
+
+	internal void Ready()
+	{
+		_isReady = true;
+		StateHasChanged();
+	}
+}

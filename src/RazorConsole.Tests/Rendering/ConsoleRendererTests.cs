@@ -3,6 +3,9 @@
 #pragma warning disable BL0006 // RenderTree types are "internal-ish"; acceptable for console renderer tests.
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using RazorConsole.Core.Rendering;
+using RazorConsole.Core.Vdom;
+using RazorConsole.Tests.TestComponents;
 
 namespace RazorConsole.Tests.Rendering;
 
@@ -84,6 +87,140 @@ public sealed class ConsoleRendererTests
         text.Text.ShouldBe("Test");
     }
 
+    [Fact]
+    public async Task UpdatesAttribute_InsideRegion_AppliesCorrectly()
+    {
+        // Arrange
+        using var renderer = TestHelpers.CreateTestRenderer();
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            { "Value", "Start" }
+        });
+
+        // Act
+        var snapshot = await renderer.MountComponentAsync<RegionTestComponent>(parameters, CancellationToken.None);
+
+        var element = FindDiv(snapshot.Root!);
+        element.ShouldNotBeNull().Attributes["data-val"].ShouldBe("Start");
+
+        // Prepare for Update: catch the snapshot where value becomes "End"
+        var tcs = new TaskCompletionSource<ConsoleRenderer.RenderSnapshot>();
+        using var sub = renderer.Subscribe(new SimpleObserver(s =>
+        {
+            var el = FindDiv(s.Root);
+            if (el != null && el.Attributes.TryGetValue("data-val", out var val) && val == "End")
+            {
+                tcs.TrySetResult(s);
+            }
+        }));
+
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Update via captured instance
+            await RegionTestComponent.Instance!.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object?>
+            {
+                { "Value", "End" }
+            }));
+        });
+
+        // Assert
+        var updatedSnapshot = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
+        var updatedElement = FindDiv(updatedSnapshot.Root!);
+        updatedElement.ShouldNotBeNull().Attributes["data-val"].ShouldBe("End");
+    }
+
+    [Fact]
+    public async Task NestedComponentRenderingTestAsync()
+    {
+        // Arrange
+        using var renderer = TestHelpers.CreateTestRenderer();
+        var component = new NestedComponent();
+        await renderer.MountComponentAsync(component, ParameterView.Empty, CancellationToken.None);
+
+        // Act
+        var tcs = new TaskCompletionSource<ConsoleRenderer.RenderSnapshot>();
+        using var sub = renderer.Subscribe(new SimpleObserver(s =>
+        {
+            var rootNode = s.Root;
+            if (rootNode is not null &&
+                rootNode.Children.Count() > 0 &&
+                rootNode.Children[0].Children[0].Text.Contains("Component is ready."))
+            {
+                tcs.TrySetResult(s);
+            }
+        }));
+
+        component.UpdateOffset(10);
+        component.Ready();
+
+        // Assert
+        var updatedSnapshot = await tcs.Task.WaitAsync(TestContext.Current.CancellationToken);
+        var root = updatedSnapshot.Root.ShouldNotBeNull();
+        root.Children.Count().ShouldBe(2);
+        foreach (var child in root.Children[0].Children)
+        {
+            // child might be Text
+            if (child.Kind != VNodeKind.Element)
+            {
+                continue;
+            }
+            child.Children.Count().ShouldBe(2);
+            child.Children[0].Text.ShouldBe("10");
+            child.Children[1].Text.ShouldBe("10");
+        }
+    }
+
+
+    private Core.Vdom.VNode? FindDiv(Core.Vdom.VNode? node)
+    {
+        if (node == null)
+        {
+            return null;
+        }
+
+        if (node.Kind == Core.Vdom.VNodeKind.Element && node.TagName == "div")
+        {
+            return node;
+        }
+
+        foreach (var child in node.Children)
+        {
+            var found = FindDiv(child);
+            if (found != null)
+            {
+                return found;
+            }
+        }
+        return null;
+    }
+
+    private sealed class RegionTestComponent : ComponentBase
+    {
+        public static RegionTestComponent? Instance;
+        public RegionTestComponent() => Instance = this;
+
+        [Parameter] public string? Value { get; set; }
+        [Parameter] public bool HasAttribute { get; set; } = true;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenRegion(0);
+            builder.OpenElement(1, "div");
+            if (HasAttribute)
+            {
+                builder.AddAttribute(2, "data-val", Value);
+            }
+            builder.CloseElement();
+            builder.CloseRegion();
+        }
+    }
+
+    private sealed class SimpleObserver(Action<ConsoleRenderer.RenderSnapshot> onNext) : IObserver<ConsoleRenderer.RenderSnapshot>
+    {
+        public void OnCompleted() { }
+        public void OnError(Exception error) { }
+        public void OnNext(ConsoleRenderer.RenderSnapshot value) => onNext(value);
+    }
     private static IEnumerable<Core.Vdom.VNode> Enumerate(Core.Vdom.VNode node)
     {
         yield return node;
