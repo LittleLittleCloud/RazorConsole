@@ -479,6 +479,102 @@ export const components: ComponentInfo[] = [
         type: "string",
         default: "\"Select an option\"",
         description: "Placeholder when no selection is set."
+      },
+      {
+        "name": "OnSelected",
+        "type": "EventCallback<string?>",
+        "description": "Fired after a user confirms an option."
+      },
+      {
+        "name": "OnClear",
+        "type": "EventCallback",
+        "description": "Fired when selection is cleared."
+      },
+      {
+        "name": "Expand",
+        "type": "bool",
+        "default": "false",
+        "description": "Stretch the control horizontally."
+      },
+      {
+        "name": "FocusOrder",
+        "type": "int?",
+        "default": "null",
+        "description": "Order key for focus navigation."
+      },
+      {
+        "name": "BorderStyle",
+        "type": "BoxBorder",
+        "default": "BoxBorder.Rounded",
+        "description": "Border style for the input panel."
+      },
+    
+      // --- Appearance Parameters ---
+      {
+        "name": "PlaceholderColor",
+        "type": "Color",
+        "default": "Color.Grey70",
+        "description": "Styling when no selection exists (Color)."
+      },
+      {
+        "name": "PlaceholderDecoration",
+        "type": "Decoration",
+        "default": "Decoration.Italic",
+        "description": "Styling when no selection exists (Decoration)."
+      },
+      {
+        "name": "ValueColor",
+        "type": "Color",
+        "default": "Color.White",
+        "description": "Styling for selected value (Color)."
+      },
+      {
+        "name": "ValueDecoration",
+        "type": "Decoration",
+        "default": "Decoration.None",
+        "description": "Styling for selected value (Decoration)."
+      },
+      {
+        "name": "EmptyLabel",
+        "type": "string",
+        "default": "\"No options available\"",
+        "description": "Displayed when Options is empty."
+      },
+      {
+        "name": "EmptyForeground",
+        "type": "Color",
+        "default": "Color.Grey70",
+        "description": "Color for empty state text."
+      },
+      {
+        "name": "EmptyDecoration",
+        "type": "Decoration",
+        "default": "Decoration.Italic",
+        "description": "Decoration for empty state text."
+      },
+      {
+        "name": "OptionForeground",
+        "type": "Color",
+        "default": "Color.White",
+        "description": "Styling for list options (Color)."
+      },
+      {
+        "name": "OptionDecoration",
+        "type": "Decoration",
+        "default": "Decoration.None",
+        "description": "Styling for list options (Decoration)."
+      },
+      {
+        "name": "SelectedOptionForeground",
+        "type": "Color",
+        "default": "Color.Chartreuse1",
+        "description": "Highlight for the focused option (Color)."
+      },
+      {
+        "name": "SelectedOptionDecoration",
+        "type": "Decoration",
+        "default": "Decoration.Bold",
+        "description": "Highlight for the focused option (Decoration)."
       }
     ],
     examples: ["Select_1.razor"]
