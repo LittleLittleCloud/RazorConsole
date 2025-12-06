@@ -3,7 +3,7 @@
  */
 export interface WasmExports {
 	Registry: {
-		RegisterComponent: (elementId: string) => Promise<void>;
+		RegisterComponent: (elementId: string, cols: number, rows: number) => Promise<void>;
 		HandleKeyboardEvent: (
 			componentName: string,
 			xtermKey: string,

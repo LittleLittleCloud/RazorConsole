@@ -24,6 +24,8 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
     where TComponent : IComponent
 {
     private readonly string _componentId;
+    private readonly int _initialCols;
+    private readonly int _initialRows;
     private IServiceProvider? _serviceProvider;
     private ConsoleRenderer? _consoleRenderer;
     private IAnsiConsole? _ansiConsole;
@@ -33,9 +35,11 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
     private Task? _initializationTask;
     public event Action<string>? SnapshotRendered;
 
-    public RazorConsoleRenderer(string componentId)
+    public RazorConsoleRenderer(string componentId, int cols, int rows)
     {
         _componentId = componentId;
+        _initialCols = cols > 0 ? cols : 80;
+        _initialRows = rows > 0 ? rows : 150;
         _initializationTask = InitializeAsync();
     }
 
@@ -76,8 +80,8 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _ansiConsole.Profile.Capabilities.Unicode = true;
 
-        _ansiConsole.Profile.Width = 80;
-        _ansiConsole.Profile.Height = 150;
+        _ansiConsole.Profile.Width = _initialCols;
+        _ansiConsole.Profile.Height = _initialRows;
         var snapshot = await _consoleRenderer.MountComponentAsync<TComponent>(ParameterView.Empty, default).ConfigureAwait(false);
         _consoleRenderer.Subscribe(this);
         _consoleRenderer.Subscribe(focusManager);
@@ -116,10 +120,10 @@ internal class RazorConsoleRenderer<[DynamicallyAccessedMembers(DynamicallyAcces
             Out = new AnsiConsoleOutput(sw)
         });
 
-        console.Profile.Width = 80;
-        console.Profile.Height = 150;
+        console.Profile.Width = _initialCols;
+        console.Profile.Height = _initialRows;
 
-        var consoleOption = new RenderOptions(console.Profile.Capabilities, new Size(80, 150));
+        var consoleOption = new RenderOptions(console.Profile.Capabilities, new Size(_initialCols, _initialRows));
 
         var snapshot = await _consoleRenderer.MountComponentAsync<TComponent>(ParameterView.Empty, CancellationToken.None);
 

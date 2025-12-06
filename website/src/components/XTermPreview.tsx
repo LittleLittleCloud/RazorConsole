@@ -148,9 +148,8 @@ export default function XTermPreview({
 
                 term.open(terminalRef.current);
 
-                setTimeout(() => {
-                    fitAddon.fit();
-                }, 0);
+                // Fit the terminal first to get accurate dimensions
+                fitAddon.fit();
 
                 resizeObserver = new ResizeObserver(() => {
                     if (!disposed) {
@@ -172,7 +171,8 @@ export default function XTermPreview({
                 }
 
                 registerTerminalInstance(elementId, term);
-                await registerComponent(elementId);
+                // Pass the initial terminal dimensions to register the component with the correct size
+                await registerComponent(elementId, term.cols, term.rows);
 
                 attachKeyListener(elementId, {
                     invokeMethodAsync: async (methodName: string, ...args: unknown[]) => {

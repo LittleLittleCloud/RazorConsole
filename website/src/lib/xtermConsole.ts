@@ -261,12 +261,14 @@ async function getWasmExports(): Promise<WasmExports> {
 
 /**
  * Registers a Razor component so its renderer can stream updates into the terminal.
- * Calls into C# WASM: Registry.RegisterComponent(elementId)
+ * Calls into C# WASM: Registry.RegisterComponent(elementId, cols, rows)
  * @param elementId - The ID of the terminal element to register
+ * @param cols - The initial number of columns
+ * @param rows - The initial number of rows
  */
-export async function registerComponent(elementId: string): Promise<void> {
+export async function registerComponent(elementId: string, cols: number, rows: number): Promise<void> {
   const exports = await getWasmExports()
-  return exports.Registry.RegisterComponent(elementId)
+  return exports.Registry.RegisterComponent(elementId, cols, rows)
 }
 
 /**
